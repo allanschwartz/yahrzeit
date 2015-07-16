@@ -1,0 +1,155 @@
+/**
+ * NAME
+ *      led_wall2.c
+ *
+ * SYNOPSIS
+ *      These C files are the code for the LED CONTROLLER:
+ *          led_ctrl.c
+ *          led_device.c
+ *          read_switch.c
+ *          ser_ir.c
+ *
+ * ARCHITECTURE
+ *      Yahrzeit Wall - The LED array representing that many
+ *          souls to be remembered by illuminating the LEDs at
+ *          at the appropriate time.
+ *      Yahrzeit Appliance - LAMP (or equiv.) machine which presents
+ *          a browsable GUI to the the end-user.
+ *      LED Controller - The 8051-based micro-controller card
+ *          which sits behind the Yahrzeit wall and controls
+ *          the LED array.
+ *      Yahrzeit Pixel board (YPX) - the YPX board is a small
+ *          number of LEDs on a single narrow board.  We have
+ *          implemented 6-pixel, 8-pixel and 10-pixel YPX boards.
+ *          A string of 7 YPX boards comprise each column,
+ *          and 40 columns (a total 280 YPX boards) are connected
+ *          to comprise the entire LED array and the Yahrzeit Wall.
+ *          The YPX is sometimes referred to as the "light engine."
+ *      Digi One SP -- The Digit One SP is a communications device
+ *          which provides a TCP/IP bridge between the
+ *          LED Controller and the Yahrzeit Appliance.
+ *          With this device, the Yahrzeit Wall (through the
+ *          LED Controller) is a TCP/IP device, reachable with
+ *          "telnet".
+ *
+ * FURTHER DETAILS
+ *      The LED CONTROLLER board is implemented with an Atmel 82C51AC2 chip.
+ *
+ *      The 89C51AC2 is an 8051-compatible 8bit microprocessor with 32K Flash.
+ *      The AT89C51AC2 provides the following standard features: 32K
+ *      bytes of Flash, 2KB EEPROM, 1280 bytes of RAM, 32 I/O lines, three 16-bit
+ *      timer/counters, a six-vector two-level interrupt architecture,
+ *      a full-duplex serial port, on-chip oscillator, and clock circuitry.
+ *
+ * CLI
+ *      The LED CONTROLLER implements the following console commands,
+ *      to facilitate the yahrzeit appliance controlling the LED array.
+ *          ROws <value>
+ *          COl <value>
+ *          All on|off [<panel>]
+ *          DAta <address> <nbytes> <hexified data>
+ *          PIxel on|off <row> <col> [<panel>]
+ *          TEst <testnumber> [<panel>]
+ *          REfresh
+ *          DEbug
+ *          HElp
+ *          ?
+ *
+ *
+ * NOTES
+ *
+ * HISTORY
+ *      version 0.7 created for Congregation Beth Sholom, 2008
+ *      by Allan M. Schwartz, allanschwartz@sbcglobal.net
+ *
+ * COPYRIGHT NOTICE
+ *      copyright (c) 2008, by Allan M. Schwartz
+ *      All rights reserved.
+ *
+ * BUGS
+ *
+ *
+ * TODO
+ *     [ ]  the led data array should be recalled from EEPROM
+ *          on power-up; and stored in EEPROM on refresh.
+ *
+ *
+ *
+ * FUNCTION CONTENTS
+ *
+ *  line    Funtion Declarations
+ *  ----    ------------------------------------
+
+ */
+
+//#include "led_wall2.h"
+
+/*
+ * ----------------------------------------------------------------------------
+ *            G L O B A L   S T O R A G E
+ * ----------------------------------------------------------------------------
+ */
+
+//uint8_t     nrows = 56;                  // number of rows
+//uint8_t     nrows_div_8 = 56 / 8;        // number of bytes or pixel boards in a column
+//uint8_t     ncols = 40;                  // a column is 56 rows of pixel data
+//int         nled_boards = 40*7;          // number of LED pixel boards connected to this controller
+// each LED pixel board is 8 pixels, or 1 byte of data
+// assert  nled_boards == ncols * ( nrows / 8 )
+
+//char *arguments[ MAXARGS ];
+
+// the actual led_data
+//unsigned char led_data[ MAXBOARDS ];
+
+// the command from the host
+//char          cmd_buffer[ MAXCMDLINE ];
+
+
+
+
+/*
+ * ----------------------------------------------------------------------------
+ *            M A I N
+ * ----------------------------------------------------------------------------
+ */
+
+/**
+ * MAIN ... execution starts here.
+ *
+ * @TODO
+ *      - [DONE] experiment with other serial port settings
+ *      - [DONE] make sure interrupt driven character I/O works
+ *      - [  ]   experiment with a watchdog timer
+ *      - [DONE] experiment with a microsleep() function
+ *      - [DONE] does the XRAM have to be software selected to full size?
+ *              (crt does this)
+ *      - [  ]  play with LCD display, make that work.
+ *
+ * @NOTE
+ *      uses the following library functions:()
+ *          ser_init(), memset(), puts()
+ *
+ * @returns n/a
+ */
+
+void setup() {
+  // put your setup code here, to run once:
+
+#ifdef SDCC
+  // initialize 232 serial port
+  ser_init();
+#endif
+
+  extern void console_init(void);
+  console_init();
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  
+  extern void console_loop(void);
+  console_loop();
+}
+
+
