@@ -1,0 +1,478 @@
+
+Hexadecimal
+
+Area                               Addr   Size   Decimal Bytes (Attributes)
+--------------------------------   ----   ----   ------- ----- ------------
+CABS                               0000   0000 =      0. bytes (ABS,CON,CODE)
+
+      Value  Global
+   --------  --------------------------------
+  0C:0000    l_BIT_BANK
+  0C:0000    l_CABS
+  0C:0000    l_GSINIT1
+  0C:0000    l_GSINIT5
+  0C:0000    l_IABS
+  0C:0000    l_REG_BANK_1
+  0C:0000    l_REG_BANK_2
+  0C:0000    l_REG_BANK_3
+  0C:0000    l_RSEG
+  0C:0000    l_XABS
+  0C:0000    l_XINIT
+  0C:0000    l_XISEG
+  0C:0000    l__CODE
+  0C:0000    s_BSEG
+  0C:0000    s_CABS
+  0C:0000    s_DSEG
+  0C:0000    s_HOME
+  0C:0000    s_IABS
+  0C:0000    s_ISEG
+  0C:0000    s_PSEG
+  0C:0000    s_REG_BANK_0
+  0C:0000    s_XABS
+  0C:0002    l_BSEG_BYTES
+  0C:0003    l_GSFINAL
+  0C:0003    l_GSINIT0
+  0C:0006    l_ISEG
+  0C:0006    l_OSEG
+  0C:0008    l_REG_BANK_0
+  0C:0008    s_REG_BANK_1
+  0C:000A    l_GSINIT2
+  0C:0010    l_BSEG
+  0C:0010    s_REG_BANK_2
+  0C:0011    l_GSINIT
+  0C:0018    s_BIT_BANK
+  0C:0018    s_OSEG
+  0C:0018    s_REG_BANK_3
+  0C:0020    s_BSEG_BYTES
+  0C:0020    s__CODE
+  0C:0022    l_GSINIT3
+  0C:002A    l_GSINIT4
+  0C:002B    l_HOME
+  0C:002B    s_GSINIT0
+  0C:002C    l_PSEG
+  0C:002C    s_XSEG
+  0C:002E    s_GSINIT1
+  0C:002E    s_GSINIT2
+  0C:0038    s_GSINIT3
+  0C:005A    s_GSINIT4
+  0C:0072    s_RSEG
+  0C:0072    s_SSEG
+  0C:007E    l_DSEG
+  0C:0084    s_GSINIT
+  0C:0084    s_GSINIT5
+  0C:008E    l_SSEG
+  0C:0095    s_GSFINAL
+  0C:0098    s_CSEG
+  0C:0100    l_IRAM
+  0C:0450    l_XSEG
+  0C:047C    s_XISEG
+  0C:04C4    l_CONST
+  0C:1D25    l_CSEG
+  0C:1DBD    s_CONST
+  0C:2281    s_XINIT
+
+
+
+Hexadecimal
+
+Area                               Addr   Size   Decimal Bytes (Attributes)
+--------------------------------   ----   ----   ------- ----- ------------
+.  .ABS.                           0000   0000 =      0. bytes (ABS,CON)
+
+      Value  Global
+   --------  --------------------------------
+     0080    _P0
+     0080    _P0_0
+     0081    _P0_1
+     0081    _SP
+     0082    _DPL
+     0082    _P0_2
+     0083    _DPH
+     0083    _P0_3
+     0084    _P0_4
+     0085    _P0_5
+     0086    _P0_6
+     0087    _P0_7
+     0087    _PCON
+     0088    _IT0
+     0088    _TCON
+     0089    _IE0
+     0089    _TMOD
+     008A    _IT1
+     008A    _TL0
+     008B    _IE1
+     008B    _TL1
+     008C    _TH0
+     008C    _TR0
+     008D    _TF0
+     008D    _TH1
+     008E    _TR1
+     008F    _CKCON
+     008F    _TF1
+     0090    _P1
+     0090    _P1_0
+     0090    _T2
+     0091    _P1_1
+     0091    _T2EX
+     0092    _P1_2
+     0093    _P1_3
+     0094    _P1_4
+     0095    _P1_5
+     0096    _P1_6
+     0097    _P1_7
+     0098    _RI
+     0098    _SCON
+     0099    _SBUF
+     0099    _TI
+     009A    _RB8
+     009B    _TB8
+     009C    _REN
+     009D    _SM2
+     009E    _SM1
+     009F    _SM0
+     00A0    _P2
+     00A0    _P2_0
+     00A0    __XPAGE
+     00A1    _P2_1
+     00A2    _P2_2
+     00A3    _P2_3
+     00A4    _P2_4
+     00A5    _P2_5
+     00A6    _P2_6
+     00A7    _P2_7
+     00A8    _EX0
+     00A8    _IE
+     00A9    _ET0
+     00AA    _EX1
+     00AB    _ET1
+     00AC    _ES
+     00AD    _ET2
+     00AF    _EA
+     00B0    _P3
+     00B0    _P3_0
+     00B0    _RXD
+     00B1    _P3_1
+     00B1    _TXD
+     00B2    _INT0
+     00B2    _P3_2
+     00B3    _INT1
+     00B3    _P3_3
+     00B4    _P3_4
+     00B4    _T0
+     00B5    _P3_5
+     00B5    _T1
+     00B6    _P3_6
+     00B6    _WR
+     00B7    _P3_7
+     00B7    _RD
+     00B8    _IP
+     00B8    _PX0
+     00B9    _PT0
+     00BA    _PX1
+     00BB    _PT1
+     00BC    _PS
+     00BD    _PT2
+     00C8    _CP_RL2
+     00C8    _T2CON
+     00C8    _T2CON_0
+     00C9    _C_T2
+     00C9    _T2CON_1
+     00C9    _T2MOD
+     00CA    _RCAP2L
+     00CA    _T2CON_2
+     00CA    _TR2
+     00CB    _EXEN2
+     00CB    _RCAP2H
+     00CB    _T2CON_3
+     00CC    _T2CON_4
+     00CC    _TCLK
+     00CC    _TL2
+     00CD    _RCLK
+     00CD    _T2CON_5
+     00CD    _TH2
+     00CE    _EXF2
+     00CE    _T2CON_6
+     00CF    _T2CON_7
+     00CF    _TF2
+     00D0    _P
+     00D0    _PSW
+     00D1    _F1
+     00D1    _FL
+     00D2    _OV
+     00D3    _RS0
+     00D4    _RS1
+     00D5    _F0
+     00D6    _AC
+     00D7    _CY
+     00E0    _A
+     00E0    _ACC
+     00F0    _B
+     00F5    _B_5
+     00F6    _B_6
+     00F7    _B_7
+
+
+
+
+
+
+
+Hexadecimal
+
+Area                               Addr   Size   Decimal Bits  (Attributes)
+--------------------------------   ----   ----   ------- ----- ------------
+BSEG                               0000   0010 =     16. bits  (REL,CON,BIT)
+
+      Value  Global
+   --------  --------------------------------
+  0B:0001    _led_selftest_all_on_PARM_1
+  0B:0002    _led_store1_PARM_1
+  0B:0003    _led_store_in_panel_PARM_1
+
+
+Hexadecimal
+
+Area                               Addr   Size   Decimal Bytes (Attributes)
+--------------------------------   ----   ----   ------- ----- ------------
+DSEG                               0000   007E =    126. bytes (REL,CON)
+
+      Value  Global
+   --------  --------------------------------
+     0008    _led_store8_PARM_2
+     0009    _led_store8_PARM_3
+     000A    _led_data8_PARM_2
+     000B    _led_store1_PARM_3
+     000C    _led_data1_PARM_2
+     000D    _led_store_in_panel_PARM_3
+     000E    _led_store_in_panel_PARM_4
+     0013    _ser_gets_PARM_2
+     0016    _vprintf_PARM_2
+     0017    _bp
+     0022    _nrows
+     0023    _nrows_div_8
+     0024    _ncols
+     0025    _nled_boards
+     0027    _arguments
+     0040    _enforce_range_PARM_2
+     0042    _enforce_range_PARM_3
+     0044    _enforce_range_PARM_4
+     0047    _xdigits_decoded_PARM_2
+     0048    _led_data_cmd_PARM_2
+     004A    _led_data_cmd_PARM_3
+     004E    _led_selftest_PARM_2
+     004F    _led_selftest_PARM_3
+     0063    __print_format_PARM_2
+     0066    __print_format_PARM_3
+     0069    __print_format_PARM_4
+
+Hexadecimal
+
+Area                               Addr   Size   Decimal Bytes (Attributes)
+--------------------------------   ----   ----   ------- ----- ------------
+OSEG                               0018   0006 =      6. bytes (REL,OVR)
+
+      Value  Global
+   --------  --------------------------------
+     0018    __gptrput_PARM_2
+     0018    __mulint_PARM_2
+     0018    _calculate_digit_radix_1_1
+     0018    _gate_pixels_out_PARM_2
+     0018    _led_store8_offset_PARM_2
+     0018    _memset_PARM_2
+     0018    _strncmp_PARM_2
+     0019    _calculate_digit_i_1_1
+     0019    _memset_PARM_3
+     001B    _strncmp_PARM_3
+     001D    _strncmp_sloc0_1_0
+
+
+Hexadecimal
+
+Area                               Addr   Size   Decimal Bytes (Attributes)
+--------------------------------   ----   ----   ------- ----- ------------
+SSEG                               0072   008E =    142. bytes (REL,OVR)
+
+      Value  Global
+   --------  --------------------------------
+     0072    __start__stack
+
+
+
+Hexadecimal
+
+Area                               Addr   Size   Decimal Bytes (Attributes)
+--------------------------------   ----   ----   ------- ----- ------------
+XSEG                               002C   0450 =   1104. bytes (REL,CON,XDATA)
+
+      Value  Global
+   --------  --------------------------------
+  0D:022C    _cmd_buffer
+  0D:027C    _led_data
+
+
+Hexadecimal
+
+Area                               Addr   Size   Decimal Bytes (Attributes)
+--------------------------------   ----   ----   ------- ----- ------------
+HOME                               0000   002B =     43. bytes (REL,CON,CODE)
+
+      Value  Global
+   --------  --------------------------------
+  0C:0026    __sdcc_program_startup
+
+Hexadecimal
+
+Area                               Addr   Size   Decimal Bytes (Attributes)
+--------------------------------   ----   ----   ------- ----- ------------
+GSINIT0                            002B   0003 =      3. bytes (REL,CON,CODE)
+
+      Value  Global
+   --------  --------------------------------
+  0C:002B    __sdcc_gsinit_startup
+
+
+
+Hexadecimal
+
+Area                               Addr   Size   Decimal Bytes (Attributes)
+--------------------------------   ----   ----   ------- ----- ------------
+GSINIT3                            0038   0022 =     34. bytes (REL,CON,CODE)
+
+      Value  Global
+   --------  --------------------------------
+  0C:0038    __mcs51_genXINIT
+
+Hexadecimal
+
+Area                               Addr   Size   Decimal Bytes (Attributes)
+--------------------------------   ----   ----   ------- ----- ------------
+GSINIT4                            005A   002A =     42. bytes (REL,CON,CODE)
+
+      Value  Global
+   --------  --------------------------------
+  0C:005A    __mcs51_genRAMCLEAR
+  0C:0060    __mcs51_genXRAMCLEAR
+
+
+
+
+Hexadecimal
+
+Area                               Addr   Size   Decimal Bytes (Attributes)
+--------------------------------   ----   ----   ------- ----- ------------
+CSEG                               0098   1D25 =   7461. bytes (REL,CON,CODE)
+
+      Value  Global
+   --------  --------------------------------
+  0C:0098    _main
+  0C:00D1    _console_loop
+  0C:041F    _match_cmd_verb
+  0C:04E4    _parse_cmd_buffer
+  0C:0584    _enforce_range
+  0C:060B    _onoff_bool
+  0C:070A    _xdigitvalue
+  0C:0754    _xdigits_decoded
+  0C:076D    _led_data_cmd
+  0C:08A1    _led_debug
+  0C:09D1    _led_selftest
+  0C:0AE5    _led_selftest_corners
+  0C:0B95    _led_selftest_all_on
+  0C:0C25    _led_selftest_flashes
+  0C:0C66    _led_selftest_marching_row
+  0C:0DC7    _led_selftest_marching_col
+  0C:0F28    _led_selftest_cylon
+  0C:10CF    _led_store8_offset
+  0C:10E0    _led_store8
+  0C:1132    _led_data8
+  0C:1183    _led_store1
+  0C:11B1    _led_data1
+  0C:11D4    _led_store_in_panel
+  0C:11F6    _led_datarefresh
+  0C:1234    _gate_pixels_out
+  0C:1299    _putchar
+  0C:12AC    _getchar
+  0C:12AF    _sleep_ms
+  0C:12CC    _blink_n_times
+  0C:12F1    _read_switch
+  0C:1373    _ser_init
+  0C:13A3    _ser_handler
+  0C:13FF    _ser_putc
+  0C:1423    _ser_getc
+  0C:1443    _ser_puts
+  0C:1489    _ser_gets
+  0C:1528    _ser_can_xmt
+  0C:1530    _ser_can_rcv
+  0C:1534    _isxdigit
+  0C:155C    _strncmp
+  0C:15DC    _isspace
+  0C:1602    _memset
+  0C:1621    _atoi
+  0C:1705    _isdigit
+  0C:1719    __gptrput
+  0C:1732    __mulint
+  0C:1732    __mulint_dummy
+  0C:174F    _puts
+  0C:17A9    _vprintf
+  0C:17C2    _printf
+  0C:1882    __print_format
+  0C:1D85    _strlen
+  0C:1D9D    __gptrget
+  0C:1DB9    __sdcc_external_startup
+
+Hexadecimal
+
+Area                               Addr   Size   Decimal Bytes (Attributes)
+--------------------------------   ----   ----   ------- ----- ------------
+CONST                              1DBD   04C4 =   1220. bytes (REL,CON,CODE)
+
+      Value  Global
+   --------  --------------------------------
+  0C:1FF0    _commands
+  0C:220E    _led_store1_masks_1_1
+  0C:2216    _led_data1_masks_1_1
+  0C:221E    _led_row_of_panel
+  0C:2234    _led_col_of_panel
+  0C:224A    _nrows_perpanel
+  0C:2260    _ncols_perpanel
+
+ASxxxx Linker V01.75 + NoICE + SDCC Feb 1999,  page 1.
+
+Files Linked      [ module(s) ]
+
+led_ctrl.rel    
+led_device.rel  
+read_switch.rel 
+ser_ir.rel      
+
+Libraries Linked            [   object  file   ]
+
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [        _isxdigit ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [         _strncmp ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/mcs51.lib    [     crtclear.rel ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [         _isspace ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [          _memset ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/mcs51.lib    [     crtxinit.rel ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [            _atoi ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [         _isdigit ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [         _gptrput ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libint.lib    [          _mulint ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/mcs51.lib    [    crtxclear.rel ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [             puts ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [          vprintf ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [     printf_large ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/mcs51.lib    [   crtpagesfr.rel ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [          _strlen ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/mcs51.lib    [     crtstart.rel ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [         _gptrget ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [         _startup ]
+/Developer/sdcc/bin/../share/sdcc/lib/small/libsdcc.lib    [              _bp ]
+
+ASxxxx Linker V01.75 + NoICE + SDCC Feb 1999,  page 2.
+
+User Base Address Definitions
+
+HOME = 0x0000
+ISEG = 0x0000
+BSEG = 0x0000
+
+
