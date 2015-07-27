@@ -80,9 +80,9 @@ yyz_pixel LedMatrix(   DI_pin, OE_pin, CP_pin, ST_pin );
 byte mac[] = {
     0x11, 0x09, 0x19, 0x55, 0x06, 0x13
 };
-IPAddress ipaddr(192, 168, 3, 5);
-IPAddress dnsaddr(192, 168, 3, 1);
-IPAddress gateway(192, 168, 3, 1);
+IPAddress  ipaddr(192, 168, 13, 9);
+IPAddress dnsaddr( 8, 8,  8, 8);
+IPAddress gateway(192, 168, 13, 8);
 IPAddress subnet(255, 255, 255, 0);
 
 // telnet defaults to port 23, however we will list on port 2001
@@ -162,6 +162,9 @@ void setup()
 
     // restore the last pattern stored yesterday
     led_loaddata();
+    
+    // and referesh
+    LedMatrix.refresh();
 }
 
 

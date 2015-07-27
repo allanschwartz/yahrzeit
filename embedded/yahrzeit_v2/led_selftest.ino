@@ -129,7 +129,7 @@ void  selftest_marching_row( byte panel )
                 int rc = led_store_in_panel( 1, row, col, panel );
                 ASSERT(rc == NO_ERROR);
             }
-            sleep_ms( true, 150 );
+            sleep_ms( true, 300 );
 
             for ( byte col = 1; col <= ncols_perpanel[panel]; col++ ) {
                 int rc = led_store_in_panel( 0, row, col, panel );
@@ -138,7 +138,7 @@ void  selftest_marching_row( byte panel )
             sleep_ms( true, 1 );
         }
 //    }
-    sleep_ms( true, 10 );
+    sleep_ms( true, 500 );
 }
 
 
@@ -170,13 +170,13 @@ static void  selftest_marching_col( byte panel )
                 int rc = led_store_in_panel( 1, row, col, panel );
                 ASSERT(rc == NO_ERROR);
             }
-            sleep_ms( true, 190 );
+            sleep_ms( true, 300 );
 
             for ( byte row = 1; row <= nrows_perpanel[panel]; row++ ) {
                 int rc = led_store_in_panel( 0, row, col, panel );
                 ASSERT(rc == NO_ERROR);
             }
-            sleep_ms( true, 10 );
+            sleep_ms( true, 1 );
         }
 //    }
     sleep_ms( true, 500 );
@@ -196,16 +196,18 @@ static void  selftest_cylon( byte panel )
         for ( byte row = 1; row <= (nrows_perpanel[panel] - 1); row++ ) {
             led_store_in_panel( 1, row, col, panel );
             led_store_in_panel( 1, row+1, col, panel );
-            sleep_ms( true, 50 );
+            sleep_ms( true, 100 );
             led_store_in_panel( 0, row, col, panel );
             led_store_in_panel( 0, row+1, col, panel );
+            sleep_ms( true, 1 );
         }
         for ( byte row = nrows_perpanel[panel]; row > 1; row-- ) {
             led_store_in_panel( 1, row, col, panel );
             led_store_in_panel( 1, row-1, col, panel );
-            sleep_ms( true, 50 );
+            sleep_ms( true, 100 );
             led_store_in_panel( 0, row, col, panel );
             led_store_in_panel( 0, row-1, col, panel );
+            sleep_ms( true, 1 );
         }
         sleep_ms( true, 250 );
     }

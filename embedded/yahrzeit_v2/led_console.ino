@@ -36,8 +36,9 @@ void console_init( void )
     // some initial pattern, on power-up (as a self-test)
     console_log( "light test" );
     led_all_on( 1, PANEL0 );
-    selftest_marching_row( PANEL0 );
     led_all_on( 0, PANEL0 );
+    led_set_intensity( 10 );
+    selftest_marching_row( PANEL0 );
     console_log( "ready >" );
 }
 

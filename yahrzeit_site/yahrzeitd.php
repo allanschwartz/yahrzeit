@@ -144,6 +144,7 @@ function yz_main()
     }
 
     led_data_refresh();
+    echo "\nsave\n";
 }
 
 

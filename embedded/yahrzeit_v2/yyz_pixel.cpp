@@ -205,7 +205,7 @@ void yyz_pixel::refresh()
             bool pixel = led_pixel_value( row, col );
             digitalWrite(DATA, pixel ^ mask);
             digitalWrite(CP, HIGH);      //   on rising edge...  ____
-            delayMicroseconds(2);        // 2 u-sec pulse    ___/    \___
+            delayMicroseconds(1);        // 1 u-sec pulse    ___/    \___
             digitalWrite(CP, LOW);
         }
         delayMicroseconds(20);

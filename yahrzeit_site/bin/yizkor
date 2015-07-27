@@ -1,12 +1,15 @@
 #! /bin/sh -x
 
 YAHRZEIT=/Users/allan/Sites/yahrzeit
+EMBEDDED_CONTROLLER=192.168.13.9
 
 cat > /tmp/$$ << _EOF_
     
-re
-re
+#yizkor pattern .. most lights are on
+
+refresh
 all off
+refresh
 
 all on 1
 
@@ -50,9 +53,9 @@ all off 20
 
 all off 21
 
-re
-re
+refresh
+refresh
 
 _EOF_
 
-$YAHRZEIT/bin/yahr_conduit -i /tmp/$$ -n 192.168.2.9 -p 2001
+nc -i 2 $EMBEDDED_CONTROLLER 2001 < /tmp/$$
