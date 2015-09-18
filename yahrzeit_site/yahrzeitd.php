@@ -302,10 +302,17 @@ function isYahrzeitThisWeek( $person )
         }
 
         $yz_jd_date = jewishtojd ( $m, $person['hebYzDD'],  $hebrewYear );
-        // special case for Tishrei
+        // special case for date in Tishrei
         // if the yahrzeit is in Tishrei, and this is Elul, then that is NEXT YEAR
         if ( $m == 1 && $hebrewMonthName == "Elul" ) {
             $yz_jd_date = jewishtojd ( $m, $person['hebYzDD'],  1 + $hebrewYear );
+        }
+
+        // a similar special case if this is the first week of Tishrei
+        // and the person's yahrzeit is in Elul.   That would be Elul last week.
+        // not this coming Elul
+        if ( $m == 13 && $hebrewMonthName == "Tishri" ) {
+            $yz_jd_date = jewishtojd ( $m, $person['hebYzDD'],  $hebrewYear - 1 );
         }
         
         $yz_gregorian_date = JDToGregorian( $yz_jd_date );
@@ -361,6 +368,14 @@ function isYahrzeitToday( $person)
         if ( $m == 1 && $hebrewMonthName == "Elul" ) {
             $yz_jd_date = jewishtojd ( $m, $person['hebYzDD'],  1 + $hebrewYear );
         }
+
+        // a similar special case if this is the first week of Tishrei
+        // and the person's yahrzeit is in Elul.   That would be Elul last week.
+        // not this coming Elul
+        if ( $m == 13 && $hebrewMonthName == "Tishri" ) {
+            $yz_jd_date = jewishtojd ( $m, $person['hebYzDD'],  $hebrewYear - 1 );
+        }
+
         $yz_gregorian_date = JDToGregorian( $yz_jd_date );
         list( $mm, $dd, $yy ) = split ('/', $yz_gregorian_date );
 
