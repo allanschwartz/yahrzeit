@@ -1,1 +1,14 @@
 .DS_Store
+.history/
+
+# Editor / local history junk
+.history/
+*.swp
+.*.swp
+*~
+
+# macOS
+.DS_Store
+
+# Office temp files
+~$*

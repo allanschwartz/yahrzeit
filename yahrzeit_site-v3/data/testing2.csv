@@ -1,0 +1,10 @@
+panelId,nRows,nCols,nExtra,nNames,connectedTo,firstLedId,addressingMode
+lobby1,12,6,1,73,"/dev/tty1",1,"row-major"
+lobby2,12,6,1,73,"/dev/tty2",101,"row-major"
+glasswall1,48,6,0,288,"/dev/tty3",1001,"row-major"
+"Glass Wall two",42,75,2,288,"/dev/tty3",2001,"row-major"
+glasswall3,48,6,0,288,"/dev/tty3",3001,"row-major"
+glasswall4,48,6,0,288,"/dev/tty3",4001,"row-major"
+glasswall5,48,6,0,288,"/dev/tty3",5001,"row-major"
+glasswall6,48,6,0,288,"/dev/tty3",6001,"row-major"
+glasswall7,48,6,0,288,"/dev/tty3",7001,"row-major"

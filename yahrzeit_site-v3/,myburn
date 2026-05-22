@@ -1,0 +1,25 @@
+
+:
+---++ Yahrzeit Controller, Task Status, February 2007
+
+| *Deliverable*             | *status* | *Requirements* | *Design* | *Development* | *Integration*  | *Testing* |
+| *GUI*                     | ||||||
+| 0yahrzeit.php             | %X% 20% | %Y%   |(dsgn) |(dvlp) | (integ.) | (testing) |
+| 1viewpanels.php           | %X% 60% | %Y%   | %Y%   | %Y%   | (integ.) | (testing) |
+| 2addmodifypanel.php       | %X% 60% | %Y%   | %Y%   | %Y%   | (integ.) | (testing) |
+| 3singlepanel.php          | %X% 60% | %Y%   | %Y%   | %Y%   | (integ.) | (testing) |
+| 4viewnames.php            | %X% 30% | %Y%   | ???   |(dvlp) | (integ.) | (testing) |
+| 5singlename.php           | %X% 60% | %Y%   | %Y%   | %Y%   | (integ.) | (testing) |
+| 7minhag.php               | %X% 60% | %Y%   | %Y%   | %Y%   | (integ.) | (testing) |
+| 8easysetup.php            | %X% 20% | %Y%   |(dsgn) |(dvlp) | (integ.) | (testing) |
+| *server side*             | ||||||
+| daemon                    | %S% 0%  | (sow) |(dsgn) |(dvlp) | (integ.) | (testing) |
+| device i/f                | %S% 0%  | (sow) |(dsgn) |(dvlp) | (integ.) | (testing) |
+| *platform*                | ||||||
+| selection                 | %S% 0%  | (sow) |(dsgn) |(dvlp) | (integ.) | (testing) |
+| porting                   | %S% 0%  | (sow) |(dsgn) |(dvlp) | (integ.) | (testing) |
+| Installation / Upgrade    | %S% 0%  | (sow) |(dsgn) |(dvlp) | (integ.) | (testing) |
+
+<!--
+| _next task_               | %S% 0% | (sow) | (dsgn) |(dvlp) | (sat) | (integ.) | (testing) |
+ -->

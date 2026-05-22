@@ -1,0 +1,61 @@
+#! /bin/sh -x
+
+YAHRZEIT=/Users/allan/Sites/yahrzeit
+EMBEDDED_CONTROLLER=192.168.13.9
+
+cat > /tmp/$$ << _EOF_
+    
+#yizkor pattern .. most lights are on
+
+refresh
+all off
+refresh
+
+all on 1
+
+all on 2
+
+all on 3
+
+all on 4
+
+all on 5
+
+all on 6
+
+all on 7
+
+all on 8
+
+all on 9
+
+all on 10
+
+all off 11
+
+all off 12
+
+all on 13
+
+all on 14
+
+all off 15
+
+all on 16
+
+all off 17
+
+all off 18
+
+all on 19
+
+all off 20
+
+all off 21
+
+refresh
+refresh
+
+_EOF_
+
+nc -i 2 $EMBEDDED_CONTROLLER 2001 < /tmp/$$

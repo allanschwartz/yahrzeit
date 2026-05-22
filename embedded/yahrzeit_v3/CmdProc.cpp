@@ -1,0 +1,579 @@
+/**
+ * @file        CmdProc.cpp
+ *
+ * @brief       Command processor for console and socket interfaces.
+ *
+ *              Parses ASCII command lines, maps command verbs to internal
+ *              command identifiers, validates arguments, and dispatches
+ *              operations to LedWall and related subsystems.
+ *
+ * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
+ *              version 2.0 revised in July 2015
+ *              version 3.0 revised in April 2026
+ *
+ * @author      Allan M. Schwartz, allanschwartz@sbcglobal.net
+ *
+ * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
+ *              All rights reserved.
+ *
+ * @notes       see project notes in file yahrzeit_v3.h
+ */
+
+#include "yahrzeit_v3.h"
+
+// ----------------------------------------------------------------------------
+//            C O N S T R U C T O R
+// ----------------------------------------------------------------------------
+
+/**
+ * @brief   Construct the command processor.
+ *
+ * @param wall      logical LED wall abstraction
+ */
+CmdProc::CmdProc(LedWall& wall)
+    : ledWall_(wall)
+{
+}
+
+// ----------------------------------------------------------------------------
+//            C O N S O L E   C O M M A N D S
+// ----------------------------------------------------------------------------
+
+/**
+ * @COMMAND LANGUAGE
+ *      We have implemented a simple command interpreter that recognizes
+ *      several commands.
+ *      Each command may be abbreviated to 2 characters.
+ */
+
+#if 0       // this is now declared in the .h file
+enum CommandIds : byte  {
+    NONE_OF_THE_ABOVE = 0,  // must be zero
+    CMD_ALL = 1,            // turn on/off all LEDs
+    CMD_BRIGHT,             // set the brightness
+    CMD_CLEAR,              // clear one panel
+    CMD_DATA,               // set a specific data bit pattern
+    CMD_DUMP,               // dump the pixel memory
+    CMD_HELP,               // display command help
+    CMD_LOAD,               // load the pixel memory from EEPROM
+    CMD_PIXEL,              // set one pixel on/off
+    CMD_REFRESH,            // refresh the LED display from pixel memory
+    CMD_SAVE,               // store the pixel memory into EEPROM
+    CMD_STATUS,             // dump the current status/settings
+    CMD_TEST,               // run one of several LED test patterns
+    CMD_VERSION,            // print the version string
+    CMD_NOP,                // was required on the slower 8051 implementation
+    MISSING_ARG = 255
+};
+#endif
+namespace {     // private to this file
+
+/**
+ * @brief Command descriptor.
+ *
+ * Associates a textual command verb with an internal command identifier
+ * and required argument count.
+ */
+struct Command {
+    CommandIds  id;             // see enum cmd_ids above
+    byte  requiredArgs;         // 0, 1, 2 or 3 required arguments
+    const char *verb;          // the last entry is nullptr
+};
+
+/**
+ * @brief Table of supported commands.
+ *
+ * The table is terminated by a null verb pointer.
+ */
+static constexpr Command commands[] = {
+    { CMD_ALL,    1, "all"    },
+    { CMD_BRIGHT, 1, "bright" },
+    { CMD_CLEAR,  1, "clear"  },
+    { CMD_DATA,   3, "data"   },
+    { CMD_DUMP,   0, "dump"   },
+    { CMD_HELP,   0, "help"   },
+    { CMD_HELP,   0, "?"      },
+    { CMD_LOAD,   0, "load"   },
+    { CMD_PIXEL,  3, "pixel"  },
+    { CMD_REFRESH, 0, "refresh" },
+    { CMD_SAVE,   0, "save"   },
+    { CMD_STATUS, 0, "status" },
+    { CMD_TEST,   0, "test"   },
+    { CMD_VERSION, 0, "version" },
+    { CMD_NOP,    0, "nop"    },
+};
+
+//  these are declared in the .h file, repeated here for documentation
+// enum ResultIds {
+//     NO_ERROR = 0, ERR_SYNTAX, ERR_MISSING, ERR_ROW, 
+//     ERR_COL, ERR_PANEL, ERR_BRIGHT, ERR_TESTNUM,
+// };
+
+// Each command returns a ResultId,
+// Here are the corresponding strings for the each of the above ResultIds:
+const char* const resultStrings[8] = {
+    "OK", "Eh?", "ERR Missing Arg", "ERR Row", 
+    "ERR Col", "ERR Panel", "ERR Brightness", "ERR Test Number"
+};
+
+// displayed with the "help" command, or any syntax error
+const char HelpText[]  = 
+    "\n"
+    "\tAll  on|off [<panel>]\n"
+    "\tBRightness <n> (1:bright, 254:dim)\n"
+    "\tCLear <panel>\n"
+    "\tDAta <row> <col> <binary data>\n"
+    "\tDUmp [<panel>]\n"
+    "\tHElp\n"
+    "\tLOad\n"
+    "\tPIxel on|off <row> <col> [<panel>]\n"
+    "\tREfresh\n"
+    "\tSAve\n"
+    "\tSTatus\n"
+    "\tTEst <testnumber> [<panel>]\n"
+    "\tVErsion\n";
+    
+// displayed with the "test" command
+const char TestMenu[]  = 
+    "\n"
+    "\tTEst 1 [<panel>]     --   4 corners ON\n"
+    "\tTEst 2 [<panel>]     --   all pixels ON\n"
+    "\tTEst 3 [<panel>]     --   all pixels OFF\n"
+    "\tTEst 4 [<panel>] [k] --   checkerboard test\n"
+    "\tTEst 5 [<panel>] [k] --   marching row pattern\n"
+    "\tTEst 6 [<panel>] [k] --   marching column pattern\n"
+    "\tTEst 7 [<panel>] [k] --   Cylon pattern\n";
+
+}       // end anonymous namespace
+
+
+/**
+ * @brief       matches 2 characters of a string
+ *
+ * @returns     true for match
+ */
+inline bool strMatch2(const char *s1, const char *s2)
+{
+    return strncasecmp(s1, s2, 2) == 0;
+}
+
+/**
+ * @brief       matches command verb in the Commands table
+ *
+ * @param argv  argument array, required arguments are checked
+ *
+ * @returns     an commandsIDs enum representing the command identifier
+ */
+CommandIds CmdProc::match_cmd_verb(char * const argv[]) const
+{
+    for ( const Command &cmd: commands) {
+        if ( strMatch2( argv[0], cmd.verb ) ) {
+            // Verify that all required arguments are present.
+            if ( argv[cmd.requiredArgs] != nullptr ) {
+                return cmd.id;
+            }
+            else {
+                return MISSING_ARG;
+            }
+        }
+    }
+    return NONE_OF_THE_ABOVE;
+}
+
+// ----------------------------------------------------------------------------
+//            P U B L I C   F U N C T I O N S
+// ----------------------------------------------------------------------------
+
+/**
+ * @brief           Execute one parsed command line.
+ *
+ * @param streamID  output stream (SOCKET or CONSOLE)
+ * @param inputBuf  command line buffer (modified during parsing)
+ *
+ * @return          pointer to result string (static), or nullptr
+ *                  which is the command output
+ */
+const char *CmdProc::execute( const byte streamID, char *command )
+{
+    static constexpr byte kMaxArgs = 5;     // actually, right now the limit is 3
+    char *   arg_string[ kMaxArgs ] {};
+    int      arg_value[ kMaxArgs ] {};
+
+    // the producer of commands is a process on Unix, which generates comments and blank lines
+    if ( command[0] == 0 || command[0] == '#' || command[0] == '\r' || command[0] == '\n') {
+        return "";
+    }
+
+
+    parse_command(command, arg_string);         // tokenize the command into arg_string[]
+
+    // as an code-size optimization, lets convert argv[1] ... argv[n] from ascii to an int
+    // we are not putting NULs into arg_string[], therefore any text argument must be last
+    for (byte i = 0; i < kMaxArgs; ++i ) {
+        if ( arg_string[i] != nullptr ) {
+            arg_value[i] = atoi( arg_string[i] );
+        }
+    }
+
+    const CommandIds cmdId = match_cmd_verb( arg_string );
+    byte rc;                                        // result code
+    switch ( cmdId ) {
+
+        case CMD_ALL:
+            // all on|off [<panel>]
+            rc = ledWall_.allOn(
+                     onoff_bool( arg_string[1] ),  /* "on"|"off" or "0"|"1" */
+                     arg_value[2] );               /* <panel> */
+
+            break;
+
+        case CMD_BRIGHT:
+            // bright <brightness>
+            ledWall_.setBrightness( arg_value[1] );
+            rc = NO_ERROR;
+            break;
+
+        case CMD_CLEAR:
+            // clear <panel>
+            rc = ledWall_.allOn(
+                     0,                            /* off */
+                     arg_value[1] );               /* <panel> */
+            break;
+
+        case CMD_DATA:
+            //  data <row> <col> <binary data>
+            rc = console_data_cmd(
+                     arg_value[1],                 /* row */
+                     arg_value[2],                 /* col */
+                     arg_string[3] );              /* binary data */
+            break;
+
+        case CMD_DUMP:
+            // dump [<panel>]
+            rc = console_dump( streamID,
+                     arg_value[1] );               /* optional <panel> */ 
+            break;
+
+        case CMD_HELP:
+            // help or ? 
+            return HelpText;
+
+        case CMD_PIXEL:
+            // pixel 0|1 <row> <col> [<panel>]
+            // if 4 arguments, the 4th is the panel number
+            if ( arg_string[4] != nullptr ) {
+                rc = ledWall_.setPixelInPanel(
+                         onoff_bool( arg_string[1] ),  /* "on"|"off" or "0"|"1" */
+                         arg_value[2],              /* row */
+                         arg_value[3],              /* column */
+                         arg_value[4] );            /* panel */
+            }
+            else {
+                rc = ledWall_.setPixel(
+                         onoff_bool( arg_string[1] ),  /* "on"|"off" or "0"|"1" */
+                         arg_value[2],              /* row */
+                         arg_value[3] );            /* column */
+            }
+            break;
+
+        case CMD_REFRESH:
+            ledWall_.refresh();
+            rc = NO_ERROR;
+            break;
+
+        case CMD_LOAD:
+            ledWall_.loadPixels();
+            rc = NO_ERROR;
+            break;
+
+        case CMD_SAVE:
+            ledWall_.savePixels();
+            rc = NO_ERROR;
+            break;
+
+        case CMD_STATUS:
+            return console_status();
+
+        case CMD_TEST:
+        {
+            // test <testnumber> [<panel>]
+            if ( arg_string[1] == nullptr ) {
+                return TestMenu;
+            }
+            const byte repeat = arg_string[3] != nullptr ? arg_value[3] : 3;
+            rc = selftest(
+                     streamID,
+                     arg_value[1],                 /* test number */
+                     arg_value[2],                 /* optional <panel> */
+                     repeat );                     /* optional repeat count */
+            break;
+        }
+
+        case CMD_VERSION:        
+            // print the version string
+            return versionString;
+
+        case CMD_NOP:
+            return "\n";
+
+        case MISSING_ARG:
+            rc = ERR_MISSING;
+            break;
+
+        case 0:
+        default:
+            rc = ERR_SYNTAX;
+    }
+    return resultStrings[rc];       // convert the result code to a string
+}
+
+// ----------------------------------------------------------------------------
+//            P R I V A T E   F U N C T I O N S
+// ----------------------------------------------------------------------------
+
+/**
+ * @brief       parse the arguments in the command line
+ *
+ * @param command   the unparsed command
+ * @param argv      the resulting argument vector
+ */
+void  CmdProc::parse_command( char *command, char **argv )
+{
+    char *p = command;
+
+    for ( byte i = 0; i < kMaxArgs; ++i ) {
+        // skip white space
+        while ( *p && isspace(*p) ) {
+            p++;
+        }
+        if ( *p == 0 )
+            return;
+        argv[i] = p;       // record where arg starts
+        // walk over this arg
+        while ( *p && !isspace(*p) ) {
+            p++;
+        }
+        if ( *p == 0 )
+            return;
+    }
+}
+
+/**
+ * @brief       convert a string representing on/off, 
+ *              or true/false, or 1/0 to a bool
+ *
+ * @param token  the unparsed string
+ *
+ * @returns     true or false
+ */
+bool CmdProc::onoff_bool(  const char *token ) const
+{
+    if ( token == nullptr )
+        return false;
+    if ( strMatch2( token, "true" ) )
+        return true;
+    if ( strMatch2( token, "on" ) )
+        return true;
+    if ( strMatch2( token, "false" ) )
+        return false;
+    if ( strMatch2( token, "off" ) )
+        return false;
+    if ( isdigit( *token ) )
+        return ( atoi( token ) );
+
+    return false;
+}
+
+/**
+ * @brief performs the action of the "DATA" command.
+ *    The given data is decoded, stored into the led data-store
+ *
+ * @param row       starting row number
+ * @param col       the col number
+ * @param bindata   binary-encoded data. i.e., 0s and 1s in ascii chars
+ *
+ * @returns        NO_ERROR or an error code
+ */
+byte CmdProc::console_data_cmd( byte row, byte col, char *bindata )
+{
+    if ( row < 1 || row > displayConfig.nRows ) {
+        return ERR_ROW;
+    }
+    if ( col < 1 || col > displayConfig.nCols ) {
+        return ERR_COL;
+    }
+
+    bool bitvalue;
+    for ( char *p = bindata; *p; ++p, ++row ) {
+        if ( *p == '0' ) {
+            bitvalue = 0;
+        }
+        else if (*p == '1' ) {
+            bitvalue = 1;
+        }
+        else {
+            continue;
+        }
+        if ( row > displayConfig.nRows ) {
+            return ERR_ROW;
+        }
+        const byte rc = ledWall_.setPixel(bitvalue, row, col);
+        if (rc != NO_ERROR) {
+            return rc;
+        }
+    }
+    return NO_ERROR;
+}
+
+
+#if 0
+/**
+ * @brief           hexdump -- a general purpose routine to dump a section of memory in hex
+ *
+ * @param streamID  display output on the SOCKET or CONSOLE
+ * @param addr      pointer to memory to dump
+ * @param len       number of bytes
+ */
+void hexdump( byte streamID, void *addr, const unsigned int len )
+{
+    byte *p = (byte *)addr;
+    for ( unsigned int offset = 0; offset < len; ++offset ) {
+        if ( (offset & 31 )  == 0 )  {
+            sprintf( outputBuf, "\r\n%04x: ", offset );
+            my_puts( streamID, outputBuf );
+        }
+        sprintf ( outputBuf, "%02x ", p[offset] );
+        my_puts( streamID, outputBuf );
+    }
+    my_puts( streamID, "\n" );
+}
+#endif
+
+
+/**
+ * @brief         debug function to dump the LED data 
+ *
+ * @param panel   panel number 0 or [1..NPANELS]
+ *
+ * @returns       NO_ERROR or ERR_PANEL
+ */
+int CmdProc::console_dump( byte streamID, byte panel )
+{    
+    if (panel > displayConfig.nPanels ) {
+        return ERR_PANEL;
+    }
+    
+    if ( panel == PANEL0 ) {
+        
+        my_puts( streamID, "Dump of Pixel Data\n" );
+        for ( byte row = 1; row <= displayConfig.nRows; row++ ) {
+            snprintf(outputBuf, sizeof outputBuf, "%02d:  ", row);
+            for ( byte col = 1; col <= displayConfig.nCols; ++col ) {
+                #if CBS_56x40_WALL
+                if ( col == 6 || col == 12 || col == 18 || col == 24 || col == 30 || col == 36 ) {
+                   strcat( outputBuf, " .  " ); 
+                }
+                #endif
+                bool pixel = ledWall_.pixelValue( row,  col );
+                strcat( outputBuf, pixel ? "1 " : "0 " );
+            }
+            strcat( outputBuf, "\n" );
+            my_puts( streamID, outputBuf );
+            #if CBS_56x40_WALL
+            if ( row == 16 || row == 38 ) {
+                my_puts( streamID,  "    .........     ...........     ...........     ...........     ...........     ...........     .........\n" );
+            }
+            #else
+            if ( row == 8 || row == 16 || row == 24) {
+                my_puts( streamID, "     - - - \n");
+            }
+            #endif
+        }
+        my_puts( streamID, "\n" );   
+    }
+    else {
+
+        snprintf(outputBuf, sizeof outputBuf, "Dump of Pixel Data - panel %d\n", panel );
+        my_puts( streamID, outputBuf);
+        outputBuf[0] = '\0';
+        for ( byte row = 1; row <= ledWall_.rowsInPanel(panel); ++row ) {
+            for ( byte col = 1; col <= ledWall_.colsInPanel(panel); ++col ) {
+                bool pixel = ledWall_.pixelValueInPanel(row, col, panel);
+                strcat( outputBuf, pixel ? "1 " : "0 " );
+            }
+            strcat( outputBuf, "\n" );
+            my_puts( streamID, outputBuf );
+            outputBuf[0] = '\0';
+        }
+        my_puts( streamID, "\n" ); 
+    }
+    return NO_ERROR;
+}
+
+/**
+ * @brief         debug function to dump the current status/settings
+ *
+ * @returns       pointer to formatted status string
+ */
+const char * CmdProc::console_status()
+{
+    const EthernetHardwareStatus hardwareStatus = Ethernet.hardwareStatus();
+    const EthernetLinkStatus linkStatus = Ethernet.linkStatus();
+
+    snprintf(outputBuf, sizeof outputBuf,
+             "STATUS\n"
+             "\tbrightness=%u rows=%u cols=%u panels=%u\n"
+             "\tserialReady=%s ethernetReady=%s socketReady=%s\n"
+             "\tIP=%u.%u.%u.%u\n"
+             "\tgateway=%u.%u.%u.%u\n"
+             "\tsubnet=%u.%u.%u.%u\n"
+             "\tdns=%u.%u.%u.%u\n"
+             "\tMAC=%02X:%02X:%02X:%02X:%02X:%02X\n"
+             "\tethernetHardware=%s link=%s\n",
+
+             displayConfig.brightness,
+             displayConfig.nRows,
+             displayConfig.nCols,
+             displayConfig.nPanels,
+
+             Serial ? "true" : "false",
+             ethernet_is_ready() ? "true" : "false",
+             (socketClient && socketClient.connected()) ? "true" : "false",
+
+             networkConfig.ipAddr[0],
+             networkConfig.ipAddr[1],
+             networkConfig.ipAddr[2],
+             networkConfig.ipAddr[3],
+
+             networkConfig.gateway[0],
+             networkConfig.gateway[1],
+             networkConfig.gateway[2],
+             networkConfig.gateway[3],
+
+             networkConfig.subnet[0],
+             networkConfig.subnet[1],
+             networkConfig.subnet[2],
+             networkConfig.subnet[3],
+
+             networkConfig.dnsAddr[0],
+             networkConfig.dnsAddr[1],
+             networkConfig.dnsAddr[2],
+             networkConfig.dnsAddr[3],
+
+             networkConfig.mac[0],
+             networkConfig.mac[1],
+             networkConfig.mac[2],
+             networkConfig.mac[3],
+             networkConfig.mac[4],
+             networkConfig.mac[5],
+
+             (hardwareStatus == EthernetW5500
+                    ? "W5500"
+                    : ( hardwareStatus == EthernetNoHardware ? "none": "other")),
+
+             (linkStatus == LinkON ? "up": "down")
+        );
+
+    return outputBuf;
+}
+
