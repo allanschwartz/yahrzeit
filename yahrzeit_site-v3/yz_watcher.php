@@ -87,7 +87,7 @@ function yz_main()
     $jdDate = gregoriantojd($today_month,$today_day,$today_year);
     $hebrewMonthName = jdmonthname($jdDate,4);
     $hebrewDate = jdtojewish($jdDate);
-    list($hebrewMonth, $hebrewDay, $hebrewYear) = split('/',$hebrewDate);
+    list($hebrewMonth, $hebrewDay, $hebrewYear) = explode('/',$hebrewDate);
     echo "$hebrewDay $hebrewMonthName ($hebrewMonth) $hebrewYear";
 
     // time to run yahrzeitd... 
@@ -118,7 +118,7 @@ function yz_main()
         $hebrewMonthName = jdmonthname($jdDate,4);
         $hebrewDate = jdtojewish($jdDate);
         echo " hebrewDate $hebrewDate ";
-        list($hebrewMonth, $hebrewDay, $hebrewYear) = split('/',$hebrewDate);
+        list($hebrewMonth, $hebrewDay, $hebrewYear) = explode('/',$hebrewDate);
         echo "$hebrewDay $hebrewMonthName ($hebrewMonth) $hebrewYear\n";
 
         $n1 = panel_readDB();
@@ -145,7 +145,7 @@ function isYahrzeitThisWeek( $person )
         $yz_gregorian_date = JDToGregorian( $yz_jd_date );
         list( $mm, $dd, $yy ) = split ('/', $yz_gregorian_date );
 
-        #echo "debug yz_jd_date $yz_jd_date yz_gregorian_date $yz_gregorian_date hebMon ${person['hebYzMonth']} hebDay ${person['hebYzDD']} mm $mm dd $dd yy $yy\n" ;
+        #echo "debug yz_jd_date $yz_jd_date yz_gregorian_date $yz_gregorian_date hebMon {person['hebYzMonth']} hebDay {person['hebYzDD']} mm $mm dd $dd yy $yy\n" ;
 
         return engWeekMatch( $mm, $dd );
 
@@ -175,7 +175,7 @@ function isYahrzeitToday( $person)
         $yz_gregorian_date = JDToGregorian( $yz_jd_date );
         list( $mm, $dd, $yy ) = split ('/', $yz_gregorian_date );
 
-        #echo "debug yz_jd_date $yz_jd_date yz_gregorian_date $yz_gregorian_date hebMon ${person['hebYzMonth']} hebDay ${person['hebYzDD']} mm $mm dd $dd yy $yy\n" ;
+        #echo "debug yz_jd_date $yz_jd_date yz_gregorian_date $yz_gregorian_date hebMon ${person['hebYzMonth']} hebDay {person['hebYzDD']} mm $mm dd $dd yy $yy\n" ;
 
         return engDayMatch( $mm, $dd );
 

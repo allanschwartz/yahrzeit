@@ -56,7 +56,7 @@ function panel_readDB()
         die ("fopen failure");
     }
     $num_rows = 0;
-    while ( ( $rawrecord = fgetcsv ($fp, 512, "," ) ) !== false ) {
+    while ( ( $rawrecord = fgetcsv($fp, 512, ",", "\"", "") ) !== false ) {
         $panel = array (
             'panelId'          =>   trim( $rawrecord[0] ),
             'nRows'            =>   trim( $rawrecord[1] ),
@@ -85,7 +85,7 @@ function panel_writeDB()
         die ("fopen failure");
     }
     foreach ( $panelsDB as $key => $value ) {
-        fputcsv($fp, $panelsDB[$key] );
+        fputcsv($fp, $panelsDB[$key], ",", "\"", "");
     }
     fclose($fp);
     return true;

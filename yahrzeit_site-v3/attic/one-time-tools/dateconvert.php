@@ -248,7 +248,7 @@ function dateconvert_main()
     $jdDate = gregoriantojd($today_month,$today_day,$today_year);
     $hebrewMonthName = jdmonthname($jdDate,4);
     $hebrewDate = jdtojewish($jdDate);
-    list($hebrewMonth, $hebrewDay, $hebrewYear) = split('/',$hebrewDate);
+    list($hebrewMonth, $hebrewDay, $hebrewYear) = explode('/',$hebrewDate);
     echo "$hebrewDay $hebrewMonthName ($hebrewMonth) $hebrewYear\n";
 
     $n2 = yahrzeit_readDB();

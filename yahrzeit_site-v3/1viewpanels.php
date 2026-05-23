@@ -5,7 +5,7 @@
 
     $title = "View Yahrzeit Panels";
     $description =  "View the summary of all Yahrzeit panels installed at " .
-                    "${minhag['synagogueName']}. " .
+                    "{minhag['synagogueName']}. " .
                     "Click on a panel ID to view the names on that panel. " .
                     "Below are special lighting operations for Yizkor. ";
     $tab = 2;         // Panels

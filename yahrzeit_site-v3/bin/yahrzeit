@@ -38,7 +38,7 @@ CONTROLLER_PORT="2001"
 NC_DELAY="0.05"
 POST_SEND_DELAY="0.5"
 
-MODE="ordinary"
+MODE="yahrzeit"
 TRANSMIT=1
 INPUT_FILE=""
 TEST_NUMBER=""
@@ -63,29 +63,29 @@ Modes:
   --all-off
       Turn all LEDs off, refresh, and save.
 
-  --test N
+  --te, --test N
       Run embedded controller self-test N.
 
-  --file FILE
+  -f, --file FILE
       Send commands from FILE. Use "-" to read commands from stdin.
 
-  --status
+  --st, --status
       Ask controller for status.
 
-  --version
+  --ve, --version
       Ask controller for version.
 
-  --help-controller
+  --he, --help-controller
       Ask controller for its help text.
 
-  --brightness N
+  --br, --brightness N
       Set controller brightness. Controller convention: 1 is bright, 254 is dim.
 
 Transmit/control options:
-  --notransmit
+  --notransmit, --dry-run
       Print command stream to stdout instead of sending to controller.
 
-  --host HOST
+  --ip, --host HOST
       Override controller host. Default: 192.168.13.9.
 
   --port PORT
@@ -108,6 +108,62 @@ Examples:
 EOF
 }
 
+php_assistance1() {
+    cat >&2 <<EOF
+yahrzeit: no usable PHP executable was found.
+
+This command runs yahrzeitd.php, which uses PHP Calendar-extension functions
+such as gregoriantojd(), jdtojewish(), jewishtojd(), and jdmonthname().
+
+A historical PHP binary exists in this project at:
+
+    $PHP_BIN
+
+but on modern Macs it may fail with errors such as:
+
+    bad CPU type in executable
+
+On a modern Mac, install PHP with Homebrew:
+
+    brew install php
+
+Then verify PHP and the Calendar extension:
+
+    php -v
+    php -m | grep -i '^calendar$'
+    php -r 'echo jdtojewish(gregoriantojd(5,22,2026)), PHP_EOL;'
+
+After PHP is installed, rerun this command.
+EOF
+}
+
+php_assistance2() {
+    local php_cmd="$1"
+    cat >&2 <<EOF
+yahrzeit: PHP was found, but the PHP Calendar extension is missing.
+
+PHP executable:
+
+    $php_cmd
+
+yahrzeitd.php requires PHP Calendar-extension functions such as:
+
+    gregoriantojd()
+    jdtojewish()
+    jewishtojd()
+    jdmonthname()
+
+On a modern Mac using Homebrew, try:
+
+    brew install php
+
+Then verify:
+
+    php -m | grep -i '^calendar$'
+    php -r 'echo jdtojewish(gregoriantojd(5,22,2026)), PHP_EOL;'
+EOF
+}
+
 die() {
     echo "yahrzeit: error: $*" >&2
     exit 1
@@ -115,7 +171,7 @@ die() {
 
 set_mode() {
     local new_mode="$1"
-    if [[ "$MODE" != "ordinary" ]]; then
+    if [[ "$MODE" != "yahrzeit" ]]; then
         die "only one mode may be selected; already selected '$MODE', got '$new_mode'"
     fi
     MODE="$new_mode"
@@ -187,7 +243,7 @@ while [[ $# -gt 0 ]]; do
             [[ "$TEST_NUMBER" =~ ^[0-9]+$ ]] || die "--test requires a numeric test number"
 
             if (( TEST_NUMBER > 4 )); then
-                POST_SEND_DELAY="15.00"
+                POST_SEND_DELAY="20.00"
             fi
 
             shift 2
@@ -201,6 +257,48 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+php_works() {
+    local candidate="$1"
+
+    [[ -x "$candidate" ]] || return 1
+    "$candidate" -v >/dev/null 2>&1 || return 1
+
+    return 0
+}
+
+find_php() {
+    if php_works "$PHP_BIN"; then
+        echo "$PHP_BIN"
+        return 0
+    fi
+
+    if command -v php >/dev/null 2>&1; then
+        local system_php
+        system_php="$(command -v php)"
+
+        if php_works "$system_php"; then
+            echo "$system_php"
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
+php_has_hebrew_calendar() {
+    local php_cmd="$1"
+
+    "$php_cmd" -r '
+        exit(
+            function_exists("gregoriantojd") &&
+            function_exists("jdtojewish") &&
+            function_exists("jewishtojd") &&
+            function_exists("jdmonthname")
+            ? 0 : 1
+        );
+    ' >/dev/null 2>&1
+}
 
 # -----------------------------------------------------------------------------
 # Command-stream emitters
@@ -245,12 +343,25 @@ done
 # not remove these blank lines merely because they look cosmetic.
 # -----------------------------------------------------------------------------
 
-emit_ordinary() {
-    [[ -x "$PHP_BIN" ]] || die "PHP binary not found or not executable: $PHP_BIN"
-    [[ -f "$YAHRZEIT_DIR/yahrzeitd.php" ]] || die "missing $YAHRZEIT_DIR/yahrzeitd.php"
-    "$PHP_BIN" "$YAHRZEIT_DIR/yahrzeitd.php"
-}
 
+emit_yahrzeit() {
+    local php_cmd
+
+    [[ -f "$YAHRZEIT_DIR/yahrzeitd.php" ]] || \
+        die "missing $YAHRZEIT_DIR/yahrzeitd.php"
+
+    if ! php_cmd="$(find_php)"; then
+        php_assistance1
+        exit 1
+    fi
+
+    if ! php_has_hebrew_calendar "$php_cmd"; then
+        php_assistance2 "$php_cmd"
+    exit 1
+fi
+
+    "$php_cmd" "$YAHRZEIT_DIR/yahrzeitd.php"
+}
 
 emit_yizkor() {
     # Shortcut Yizkor pattern, based on the later nc-era bin/yizkor wrapper.
@@ -330,16 +441,16 @@ help
 EOF
 }
 
+emit_status() {
+    cat <<'EOF'
+status
+EOF
+}
+
 emit_test() {
     cat <<EOF
 test $TEST_NUMBER
 
-EOF
-}
-
-emit_status() {
-    cat <<'EOF'
-status
 EOF
 }
 
@@ -349,28 +460,32 @@ version
 EOF
 }
 
-
-
-
-
-
-
+# Dispatch to the selected command-stream emitter.
+#
+# Argument parsing above selects exactly one MODE.  This function converts that
+# mode into the literal controller command stream that should be transmitted.
 emit_commands() {
     case "$MODE" in
-        ordinary)        emit_ordinary ;;
+        yahrzeit)        emit_yahrzeit ;;
         yizkor)          emit_yizkor ;;
         all-on)          emit_all_on ;;
         all-off)         emit_all_off ;;
-        test)            emit_test ;;
-        file)            emit_file ;;
-        status)          emit_status ;;
-        version)         emit_version ;;
-        help-controller) emit_help_controller ;;
         brightness)      emit_brightness ;;
+        file)            emit_file ;;
+        help-controller) emit_help_controller ;;
+        status)          emit_status ;;
+        test)            emit_test ;;
+        version)         emit_version ;;
         *)               die "internal error: unknown mode '$MODE'" ;;
     esac
 }
 
+# Slowly copy stdin to stdout, preserving line boundaries.
+#
+# The embedded controller accepts a simple line-oriented command language over
+# TCP.  Although most V3 commands execute very quickly, pacing the stream avoids
+# overrunning the controller's socket command parser and makes behavior more
+# predictable during testing.
 slowcat() {
     local delay="$1"
     while IFS= read -r line; do
@@ -380,6 +495,13 @@ slowcat() {
     sleep "$POST_SEND_DELAY"
 }
 
+# Either print the generated command stream or transmit it to the controller.
+#
+# In --notransmit / --dry-run mode, the command stream is simply printed to
+# stdout for inspection.
+#
+# In normal mode, the stream is passed through slowcat and then into nc,
+# connecting to the Yahrzeit embedded controller
 transmit_commands() {
     if [[ "$TRANSMIT" -eq 0 ]]; then
         cat
@@ -391,4 +513,8 @@ transmit_commands() {
     slowcat "$NC_DELAY" | nc "$CONTROLLER_HOST" "$CONTROLLER_PORT"
 }
 
+# Main pipeline:
+#
+#   1. Generate the selected controller command stream.
+#   2. Either print it (--notransmit) or send it to the embedded controller.
 emit_commands | transmit_commands

@@ -6,7 +6,7 @@
 
     $title = "Yahrzeit Minhag";
     $description = "Special <i>minhag</i> or customs used for Yahrzeit panels " .
-                    "specific to ${minhag['synagogueName']}. " .
+                    "specific to {minhag['synagogueName']}. " .
                     "<br>These observances apply uniformly to all individuals. ";
     $tab = 5;         // Minhag
 

@@ -3,7 +3,7 @@
     $minhag = read_minhag_ini();
 
     $title = "Yahrzeit Controller";
-    $description = "These screens control all Yahrzeit panels at ${minhag['synagogueName']}.";
+    $description = "These screens control all Yahrzeit panels at {minhag['synagogueName']}.";
     $tab = 1;         // Yahrzeit
     
     emitHeader( $title, $tab );
@@ -49,7 +49,7 @@
             //$hebrewDate = jdtojewish($jdDate);
             //$hebrewMonthName = jdmonthname($jdDate,4);
 
-            list($hebrewMonth, $hebrewDay, $hebrewYear) = split('/',$hebrewDate);
+            list($hebrewMonth, $hebrewDay, $hebrewYear) = explode('/',$hebrewDate);
 
             if ( $hebrewMonthName == "AdarI" &&
                 $hebrewYear%19 != 0 &&

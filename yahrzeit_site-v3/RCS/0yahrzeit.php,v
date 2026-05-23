@@ -72,7 +72,7 @@ text
             //$hebrewDate = jdtojewish($jdDate);
             //$hebrewMonthName = jdmonthname($jdDate,4);
 
-            list($hebrewMonth, $hebrewDay, $hebrewYear) = split('/',$hebrewDate);
+            list($hebrewMonth, $hebrewDay, $hebrewYear) = explode('/',$hebrewDate);
 
             if ( $hebrewMonthName == "AdarI" &&
                 $hebrewYear%19 != 0 &&

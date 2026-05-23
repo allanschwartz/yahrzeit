@@ -108,4 +108,49 @@ Historical comma-prefixed scratch files were preserved under attic/notes.
 They show that, as of February 2007, the GUI screens were partially complete,
 `yahrzeitd` and `yizkord` were mostly done, and `yahrzeit_watcher` was already
 identified as needing a rewrite.
-EOF
+
+
+---
+
+## Obsolete transport: yahr_conduit
+
+The `yahr_conduit` program was an older C transport helper used during the
+serial/8051 and early network-controller eras. It supported transport experiments
+before the command-stream-over-TCP model settled.
+
+Later wrappers use `nc` directly. The V3 Arduino controller is reachable by
+telnet or `nc`, so `yahr_conduit` is preserved only as historical transport code.
+
+Old source, binaries, and conduit-era wrappers are preserved under:
+
+- `attic/transport/yahr_conduit_src/`
+- `attic/transport/yahr_conduit_bin/`
+
+---
+
+## Future watcher requirement
+
+The legacy system used multiple cron entries to run yahrzeit and Yizkor actions.
+This is fragile because Yizkor dates and times depend on synagogue minhag and
+may change year to year.
+
+Future design:
+
+- Keep cron or launchd simple.
+- Schedule only one periodic task: `yz_watcher`.
+- `yz_watcher` reads the current date/time, `minhag.ini`, and the name/panel data.
+- It decides whether the current state should be:
+  - ordinary yahrzeit lighting
+  - Yizkor lighting
+  - Yom HaShoah lighting
+  - Yom HaZikaron lighting
+  - Erev Shabbat / weekly extension lighting
+  - all off / no active observance
+- It emits the appropriate command stream only when the desired state changes.
+- It should log what it decided and why.
+
+The first implementation may still use cron, but cron should call only the watcher.
+
+
+
+

@@ -111,11 +111,8 @@ function LED_number( $panelId, $row, $column )
     if ( $column == 0 ) return 0;
 
     $led_nmbr = $first + ($column - 1) * 56 + ($row - 1);
-
-    #echo "debug75 LED_number panelid $panelId row $row column $column first $first LED_nmbr $led_nmbr\n";
     return $led_nmbr;
 }
-
 
 function nrows_perpanel( $panelId )
 {
@@ -133,30 +130,22 @@ function ncols_perpanel( $panelId )
 // turn the specified LED on
 function led_lighton( $panelId, $row, $column )
 {
-
     $ledaddress = $panelId . "-" . $row . "-" . $column;
     $led_nmbr = LED_number( $panelId, $row, $column );
     global $led_panel_mapping;
     $panel = $led_panel_mapping[ $panelId ];
     echo "pixel on $row $column $panel \n";
-
-    // send packet to controller
-    //led_protocol("pixel on $row $column $panel \n");
 }
 
 
 // turn the specified LED off
 function led_lightoff( $panelId, $row, $column )
 {
-
     $ledaddress = $panelId . "-" . $row . "-" . $column;
     $led_nmbr = LED_number( $panelId, $row, $column );
     global $led_panel_mapping;
     $panel = $led_panel_mapping[ $panelId ];
     echo "pixel off $row $column $panel \n";
-
-    // send packet to controller
-    //led_protocol("pixel off $row $column $panel \n");
 }
 
 function led_protocol( $str )
@@ -172,9 +161,6 @@ function led_protocol( $str )
 // turn the yahrzeit LED on
 function yz_lighton( $person )
 {
-//    if ( $person['onnow'] ) {
-//        return;
-//    }
     $person['onnow'] = true;
     $name = $person['firstName']." ".$person['lastName'];
     $yz_date = $person['engYzMonth']."/".$person['engYzDD'] . " or " .
@@ -186,9 +172,6 @@ function yz_lighton( $person )
     global $led_panel_mapping;
     $panel = $led_panel_mapping[ $person['panelId'] ];
     echo "pixel on $row $column $panel \n\n";
-
-    // send packet to controller
-    //led_protocol("pixel on $row $column $panel \n");
 }
 
 
@@ -209,9 +192,6 @@ function yz_lightoff( $person )
     global $led_panel_mapping;
     $panel = $led_panel_mapping[ $person['panelId'] ];
     echo "pixel off $row $column $panel \n\n";
-
-    // send packet to controller
-    //led_protocol("pixel off $row $column $panel\n");
 }
 
  
@@ -219,28 +199,20 @@ function yz_lightoff( $person )
 function led_self_test( $testnumber )
 {
     echo "test $testnumber\n";
-
-    // send packet to controller
-    //led_protocol("test $testnumber\n");
 }
 
 
 // all LEDs on or off
 function led_all( $onoff )
 {
-    echo "all $onoff\n\n\n\n";
-
-    // send packet to controller
-    //led_protocol("all $onoff\n");
+    echo "all $onoff\n\n";
 }
 
 
 // refresh the LEDs 
 function led_data_refresh()
 {
-    echo "refresh\nrefresh\n";
-    // send packet to controller
-    //led_protocol("refresh\n");
+    echo "refresh\n";
 }
 
 ?>
