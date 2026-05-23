@@ -1,7 +1,394 @@
-#! /bin/sh 
+#!/usr/bin/env bash
+#
+# bin/yahrzeit
+#
+# Unified command-stream generator/transmitter for the Yahrzeit wall.
+#
+# Default behavior preserves the old wrapper:
+#   - run yahrzeitd.php
+#   - transmit its command stream to the embedded controller
+#
+# Additional modes replace the old yizkor/alloff wrappers and much of
+# the old paneltest/conduit functionality.
+#
+# Examples:
+#   bin/yahrzeit
+#   bin/yahrzeit --notransmit
+#   bin/yahrzeit --yizkor
+#   bin/yahrzeit --all-on
+#   bin/yahrzeit --all-off
+#   bin/yahrzeit --test 3
+#   bin/yahrzeit --file commands.txt
+#   bin/yahrzeit --host 192.168.86.240 --status
+#
+# Notes:
+#   - State-changing operations emit "save".
+#   - "load" is intentionally not sent; the Arduino controller loads
+#     saved state autonomously on power-up.
+#   - Uses nc by default. yahr_conduit is obsolete.
 
-YAHRZEIT=/Users/allan/Sites/yahrzeit
-EMBEDDED_CONTROLLER=192.168.13.9
+set -euo pipefail
 
-$YAHRZEIT/bin/php $YAHRZEIT/yahrzeitd.php  > /tmp/$$
-cat /tmp/$$ | nc -i 2 $EMBEDDED_CONTROLLER 2001
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+YAHRZEIT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+PHP_BIN="$YAHRZEIT_DIR/bin/php"
+CONTROLLER_HOST="192.168.13.9"
+CONTROLLER_PORT="2001"
+NC_DELAY="0.05"
+POST_SEND_DELAY="0.5"
+
+MODE="ordinary"
+TRANSMIT=1
+INPUT_FILE=""
+TEST_NUMBER=""
+BRIGHTNESS_VALUE=""
+
+usage() {
+    cat <<'EOF'
+Usage:
+  yahrzeit [options]
+
+Default:
+  yahrzeit
+      Run yahrzeitd.php, then transmit generated commands.
+
+Modes:
+  --yizkor
+      Send the current shortcut Yizkor lighting pattern.
+
+  --all-on
+      Turn all LEDs on, refresh, and save.
+
+  --all-off
+      Turn all LEDs off, refresh, and save.
+
+  --test N
+      Run embedded controller self-test N.
+
+  --file FILE
+      Send commands from FILE. Use "-" to read commands from stdin.
+
+  --status
+      Ask controller for status.
+
+  --version
+      Ask controller for version.
+
+  --help-controller
+      Ask controller for its help text.
+
+  --brightness N
+      Set controller brightness. Controller convention: 1 is bright, 254 is dim.
+
+Transmit/control options:
+  --notransmit
+      Print command stream to stdout instead of sending to controller.
+
+  --host HOST
+      Override controller host. Default: 192.168.13.9.
+
+  --port PORT
+      Override controller TCP port. Default: 2001.
+
+  --nc-delay SECONDS
+      Delay between lines for nc transmission. Default: 0.05.
+
+  -h, --help
+      Show this help.
+
+Examples:
+  yahrzeit
+  yahrzeit --notransmit
+  yahrzeit --yizkor
+  yahrzeit --all-off
+  yahrzeit --test 4
+  yahrzeit --file saved-command-stream.txt
+  yahrzeit --host 192.168.86.240 --status
+EOF
+}
+
+die() {
+    echo "yahrzeit: error: $*" >&2
+    exit 1
+}
+
+set_mode() {
+    local new_mode="$1"
+    if [[ "$MODE" != "ordinary" ]]; then
+        die "only one mode may be selected; already selected '$MODE', got '$new_mode'"
+    fi
+    MODE="$new_mode"
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --yizkor)
+            set_mode "yizkor"
+            shift
+            ;;
+        --all-on)
+            set_mode "all-on"
+            shift
+            ;;
+        --all-off)
+            set_mode "all-off"
+            shift
+            ;;
+        --br|--brightness)
+            set_mode "brightness"
+            [[ $# -ge 2 ]] || die "--brightness requires a number"
+            BRIGHTNESS_VALUE="$2"
+            [[ "$BRIGHTNESS_VALUE" =~ ^[0-9]+$ ]] || die "--brightness requires a numeric value"
+            shift 2
+            ;;
+        -f|--file)
+            set_mode "file"
+            [[ $# -ge 2 ]] || die "--file requires a filename or '-'"
+            INPUT_FILE="$2"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --he|--help-controller)
+            set_mode "help-controller"
+            shift
+            ;;
+        --host|--ip)
+            [[ $# -ge 2 ]] || die "--host requires a value"
+            CONTROLLER_HOST="$2"
+            shift 2
+            ;;
+        --nc-delay)
+            [[ $# -ge 2 ]] || die "--nc-delay requires a value"
+            NC_DELAY="$2"
+            shift 2
+            ;;
+        --notransmit|--dry-run)
+            TRANSMIT=0
+            shift
+            ;;
+        -p|--port)
+            [[ $# -ge 2 ]] || die "--port requires a value"
+            CONTROLLER_PORT="$2"
+            [[ "$CONTROLLER_PORT" =~ ^[0-9]+$ ]] || die "--port requires a numeric value"
+            shift 2
+            ;;
+        --st|--status)
+            set_mode "status"
+            shift
+            ;;
+        --te|--test)
+            set_mode "test"
+            [[ $# -ge 2 ]] || die "--test requires a number"
+            TEST_NUMBER="$2"
+            [[ "$TEST_NUMBER" =~ ^[0-9]+$ ]] || die "--test requires a numeric test number"
+
+            if (( TEST_NUMBER > 4 )); then
+                POST_SEND_DELAY="15.00"
+            fi
+
+            shift 2
+            ;;
+        --ve|--version)
+            set_mode "version"
+            shift
+            ;;
+        *)
+            die "unknown argument: $1"
+            ;;
+    esac
+done
+
+# -----------------------------------------------------------------------------
+# Command-stream emitters
+# -----------------------------------------------------------------------------
+#
+# The following emit_*() functions produce the literal command streams that are
+# sent to the Yahrzeit embedded controller.  The final command stream is either
+# printed to stdout (--notransmit) or piped through slowcat/nc into the Arduino
+# V3 appliance over TCP port 2001.
+#
+# Most of these heredocs use:
+#
+#       cat <<'EOF'
+#
+# rather than:
+#
+#       cat <<EOF
+#
+# The quoted heredoc delimiter means "emit this text literally": no shell
+# variable expansion, no command substitution, and no backslash interpretation.
+# That is the right behavior for fixed controller command streams such as:
+#
+#       all off
+#       refresh
+#       save
+#
+# Use an unquoted heredoc delimiter only when shell variables intentionally need
+# to be expanded into the command stream.  For example, emit_brightness() needs
+# "$BRIGHTNESS_VALUE", and emit_test() needs "$TEST_NUMBER", so those functions
+# deliberately use:
+#
+#       cat <<EOF
+#
+# The embedded controller is instrumented to echo each command it executes, then
+# return a result code and the elapsed time for that command.  Depending on the
+# command, elapsed time may range from a few microseconds, to a few milliseconds,
+# to many seconds for visual self-tests.
+#
+# The blank line after "save" and after "test <n>" is intentional.  It gives the
+# controller and TCP connection one more line boundary, and keeps the socket open
+# long enough for the controller to send back its echo/result/timing output.  Do
+# not remove these blank lines merely because they look cosmetic.
+# -----------------------------------------------------------------------------
+
+emit_ordinary() {
+    [[ -x "$PHP_BIN" ]] || die "PHP binary not found or not executable: $PHP_BIN"
+    [[ -f "$YAHRZEIT_DIR/yahrzeitd.php" ]] || die "missing $YAHRZEIT_DIR/yahrzeitd.php"
+    "$PHP_BIN" "$YAHRZEIT_DIR/yahrzeitd.php"
+}
+
+
+emit_yizkor() {
+    # Shortcut Yizkor pattern, based on the later nc-era bin/yizkor wrapper.
+    # These are the lights panels containing memorial names rather than trying
+    # to compute every individual occupied LED from the database.
+    cat <<'EOF'
+# yizkor pattern .. most lights are on
+
+all off
+all on 1
+all on 2
+all on 3
+all on 4
+all on 5
+all on 6
+all on 7
+all on 8
+all on 9
+all on 10
+all off 11
+all off 12
+all on 13
+all on 14
+all off 15
+all on 16
+all off 17
+all off 18
+all on 19
+all off 20
+all off 21
+
+refresh
+save
+
+EOF
+}
+
+emit_all_on() {
+    cat <<'EOF'
+all on
+refresh
+save
+
+EOF
+}
+
+emit_all_off() {
+    cat <<'EOF'
+all off
+refresh
+save
+
+EOF
+}
+
+emit_brightness() {
+    cat <<EOF
+brightness $BRIGHTNESS_VALUE
+refresh
+save
+
+EOF
+}
+
+emit_file() {
+    if [[ "$INPUT_FILE" == "-" ]]; then
+        cat
+    else
+        [[ -f "$INPUT_FILE" ]] || die "command file not found: $INPUT_FILE"
+        cat "$INPUT_FILE"
+    fi
+}
+
+emit_help_controller() {
+    cat <<'EOF'
+help
+EOF
+}
+
+emit_test() {
+    cat <<EOF
+test $TEST_NUMBER
+
+EOF
+}
+
+emit_status() {
+    cat <<'EOF'
+status
+EOF
+}
+
+emit_version() {
+    cat <<'EOF'
+version
+EOF
+}
+
+
+
+
+
+
+
+emit_commands() {
+    case "$MODE" in
+        ordinary)        emit_ordinary ;;
+        yizkor)          emit_yizkor ;;
+        all-on)          emit_all_on ;;
+        all-off)         emit_all_off ;;
+        test)            emit_test ;;
+        file)            emit_file ;;
+        status)          emit_status ;;
+        version)         emit_version ;;
+        help-controller) emit_help_controller ;;
+        brightness)      emit_brightness ;;
+        *)               die "internal error: unknown mode '$MODE'" ;;
+    esac
+}
+
+slowcat() {
+    local delay="$1"
+    while IFS= read -r line; do
+        printf '%s\n' "$line"
+        sleep "$delay"
+    done
+    sleep "$POST_SEND_DELAY"
+}
+
+transmit_commands() {
+    if [[ "$TRANSMIT" -eq 0 ]]; then
+        cat
+        return
+    fi
+
+    command -v nc >/dev/null 2>&1 || die "nc not found"
+
+    slowcat "$NC_DELAY" | nc "$CONTROLLER_HOST" "$CONTROLLER_PORT"
+}
+
+emit_commands | transmit_commands

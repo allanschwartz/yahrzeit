@@ -136,13 +136,12 @@ const char HelpText[]  =
 // displayed with the "test" command
 const char TestMenu[]  = 
     "\n"
-    "\tTEst 1 [<panel>]     --   4 corners ON\n"
-    "\tTEst 2 [<panel>]     --   all pixels ON\n"
-    "\tTEst 3 [<panel>]     --   all pixels OFF\n"
-    "\tTEst 4 [<panel>] [k] --   checkerboard test\n"
-    "\tTEst 5 [<panel>] [k] --   marching row pattern\n"
-    "\tTEst 6 [<panel>] [k] --   marching column pattern\n"
-    "\tTEst 7 [<panel>] [k] --   Cylon pattern\n";
+    "\tTEst 1 [<panel>]  --   4 corners ON\n"
+    "\tTEst 2 [<panel>]  --   all pixels ON\n"
+    "\tTEst 3 [<panel>]  --   all pixels OFF\n"
+    "\tTEst 4 [<panel>]  --   checkerboard test\n"
+    "\tTEst 5 [<panel>]  --   marching row pattern\n"
+    "\tTEst 6 [<panel>]  --   marching column pattern\n";
 
 }       // end anonymous namespace
 
@@ -300,12 +299,10 @@ const char *CmdProc::execute( const byte streamID, char *command )
             if ( arg_string[1] == nullptr ) {
                 return TestMenu;
             }
-            const byte repeat = arg_string[3] != nullptr ? arg_value[3] : 3;
             rc = selftest(
                      streamID,
                      arg_value[1],                 /* test number */
-                     arg_value[2],                 /* optional <panel> */
-                     repeat );                     /* optional repeat count */
+                     arg_value[2]);                /* optional <panel> */
             break;
         }
 

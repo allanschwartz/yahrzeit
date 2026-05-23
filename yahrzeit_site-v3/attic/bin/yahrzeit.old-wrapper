@@ -1,0 +1,7 @@
+#! /bin/sh 
+
+YAHRZEIT=/Users/allan/Sites/yahrzeit
+EMBEDDED_CONTROLLER=192.168.13.9
+
+$YAHRZEIT/bin/php $YAHRZEIT/yahrzeitd.php  > /tmp/$$
+cat /tmp/$$ | nc -i 2 $EMBEDDED_CONTROLLER 2001

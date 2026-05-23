@@ -185,8 +185,8 @@ void YyzPixel::refresh()
     digitalWrite(cpPin_, LOW);
     digitalWrite(oePin_, HIGH);     // Disable LEDs while shifting
 
-    for (byte col = displayConfig.nCols; col > 0; --col) {
-        for (byte row = displayConfig.nRows; row > 0; --row) {
+    for (int col = displayConfig.nCols; col > 0; --col) {
+        for (int row = displayConfig.nRows; row > 0; --row) {
             const bool pixel = getPixel(col - 1, row - 1);
 
             digitalWrite(dataPin_, pixel ^ activeLow_);

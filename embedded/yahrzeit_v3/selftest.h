@@ -16,7 +16,7 @@
 /**
  * @brief   Dispatch one of the LED self-test patterns.
  */
-int     selftest(byte streamID, byte testNumber, byte panel, byte repeat);
+int     selftest(byte streamID, byte testNumber, byte panel);
 
 /**
  * @brief   SELF TEST 5: marching row pattern.
