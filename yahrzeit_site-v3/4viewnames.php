@@ -139,10 +139,11 @@
 ?>
 
                         <tr class="text">
-                            <td>  <!-- Name -->
-                                <a href="5singlename.php?row=<<?php echo h($name) ?></a>">
-                                     <?php echo h($name) ?></a></a>
-                            </td> 
+                            <td>
+                            <a href="5singlename.php?row=<?php echo h($i) ?>">
+                                <?php echo h($name) ?>
+                            </a>
+                            </td>
                             <td> <!-- English Yahrzeit Date -->
                                 <?php echo h($englishDate) ?>
                             </td>
@@ -184,7 +185,7 @@
         </tr>
 
 <?php
-        emitCopywrite(); 
+        emitCopyright(); 
 ?>
 
     </table>

@@ -1,22 +1,83 @@
 <?php 
     require_once "misc.inc.php";
     require_once "names.inc.php";
+
     $minhag = read_minhag_ini();
 
-    $title="Single Yahrzeit Name";
+    $title = "Single Yahrzeit Name";
     $description = "View or modify this individual's Yahrzeit observance.";
     $tab = 3;         // Names
 
+    function h($s)
+    {
+        return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
+    }
+
+    function post_value($name, $default = "")
+    {
+        return isset($_POST[$name]) ? $_POST[$name] : $default;
+    }
+
+    function blank_yahrzeit_person()
+    {
+        return array(
+            'lastName'       => "",
+            'firstName'      => "",
+
+            'engYzMonth'     => "",
+            'engYzDD'        => "",
+            'engYzYYYY'      => "",
+
+            'hebYzDD'        => "",
+            'hebYzMonth'     => "",
+            'hebYzMM'        => "",
+            'hebYzYYYY'      => "",
+
+            'useHeb'         => true,
+            'useEng'         => false,
+            'yomhashoah'     => false,
+            'yomhazikaron'   => false,
+            'onnow'          => false,
+            'reserved'       => false,
+            'manual'         => false,
+
+            'panelId'        => "",
+            'row'            => "",
+            'column'         => "",
+
+            'oldLocation'    => "",
+            'newyear'        => ""
+        );
+    }
+
     if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-        // handle the GET request
-        emitHeader( $title, $tab );
+        emitHeader($title, $tab);
+
+        $row = isset($_GET['row']) ? $_GET['row'] : "";
+        $is_add = isset($_GET['add']) || $row == "" || $row == "add";
+
+        if ($is_add) {
+            $person = blank_yahrzeit_person();
+        } else {
+            yahrzeit_readDB();
+
+            if (!ctype_digit((string)$row)) {
+                die("Invalid name row: " . h($row));
+            }
+
+            $person = yahrzeit_getObj((int)$row);
+
+            if ($person == null) {
+                die("Unknown name row: " . h($row));
+            }
+        }
 ?>
 
 <body class="bgNone">
-<form name="sngleNameForm" action="<?php echo $_SERVER['PHP_SELF'] ?>" method="POST" >
+<form name="singleNameForm" action="<?php echo h($_SERVER['PHP_SELF']) ?>" method="POST">
 
 <?php
-    emitTopOfScreen( $title, $description );
+    emitTopOfScreen($title, $description);
 ?>
 
     <table cellSpacing=0 cellPadding=4 width=90% border=0 class="botBorder">
@@ -26,43 +87,39 @@
         </tr>
 
         <tr>
-            <td colspan="3" class="header2Bg" align="left" height="25" >
+            <td colspan="3" class="header2Bg" align="left" height="25">
                 <span class=boldText> Single Yahrzeit Name </span>
             </td>
         </tr>
 
 <?php
-        if ( $_GET['row'] ) {
-            $n = yahrzeit_readDB();
-            $row = $_GET['row'];
-            $person = yahrzeit_getObj( $row );
+        if ($is_add) {
 ?>
-            <input type="hidden" name="rowIndex" value="<?php echo $row ?>">
+            <input type="hidden" name="add" value="1">
 <?php
         } else {
-            $person = array ("");
 ?>
-            <input type="hidden" name="add" >
+            <input type="hidden" name="rowIndex" value="<?php echo h($row) ?>">
 <?php
         }
 ?>
-        
+
         <tr>
             <td height="25" align="left" valign="top" class="text">
                 Name
             </td>
-            <td class="text" >
+            <td class="text">
                 First (and Middle)
                 <br>
                 <input type="text" name="firstName" maxlength="64" size="25" 
-                        value="<?php echo $person['firstName'] ?>"
+                        value="<?php echo h($person['firstName']) ?>"
                         class="formStyle">
             </td>
-            <td class="text" >
+            <td class="text">
                 Last name
                 <br>
                 <input type="text" name="lastName" maxlength="64" size="25" 
-                        value="<?php echo $person['lastName'] ?>"
+                        value="<?php echo h($person['lastName']) ?>"
                         class="formStyle">
             </td>
         </tr>
@@ -74,25 +131,25 @@
             <td class="text">
                 English
                     <select name="engYzMonth" style="width:50" class="formStyleSmall">
-                        <?php print_option1( $person['engYzMonth'], $english_month_names ); ?>
+                        <?php print_option1($person['engYzMonth'], $english_month_names); ?>
                     </select>
                     <select name="engYzDD" style="width:40" class="formStyleSmall">
-                        <?php print_option_n1n2( $person['engYzDD'], 1, 31, "%02d" ); ?>
+                        <?php print_option_n1n2($person['engYzDD'], 1, 31, "%02d"); ?>
                     </select>
                     <input type="text" name="engYzYYYY" maxlength="4" size="4" class="formStyle" style="width:40"
-                        value="<?php echo $person['engYzYYYY'] ?>" 
-                        onchange="validateNumber(this, 'dateErr', false);" >
+                        value="<?php echo h($person['engYzYYYY']) ?>" 
+                        onchange="validateNumber(this, 'dateErr', false);">
                 <br>
                 Hebrew
                     <select name="hebYzDD" style="width:40" class="formStyleSmall">
-                        <?php print_option_n1n2( $person['hebYzDD'], 1, 30, "%02d" ); ?>
+                        <?php print_option_n1n2($person['hebYzDD'], 1, 30, "%02d"); ?>
                     </select>
                     <select name="hebYzMonth" style="width:80" class="formStyleSmall">
-                        <?php print_option1( $person['hebYzMonth'], $hebrew_month_names ); ?>
+                        <?php print_option1($person['hebYzMonth'], $hebrew_month_names); ?>
                     </select>
                     <input type="text" name="hebYzYYYY" maxlength="4" size="4" class="formStyle" style="width:40"
-                        value="<?php echo $person['hebYzYYYY'] ?>" 
-                        onchange="validateNumber(this, 'dateErr', false);" >
+                        value="<?php echo h($person['hebYzYYYY']) ?>" 
+                        onchange="validateNumber(this, 'dateErr', false);">
             </td>
             <td id="dateErr">&nbsp;</td>
         </tr>
@@ -105,23 +162,24 @@
                 Panel Name &mdash; Row &mdash; Column
                 <br>
                 <input type="text" name="panelId" maxlength="20" size="20" class="formStyle" style="width:100"
-                    value="<?php echo $person['panelId'] ?>" >
+                    value="<?php echo h($person['panelId']) ?>">
 
                 &mdash;
                 <input type="text" name="row" maxlength="3" size="2" class="formStyle" style="width:30"
-                    value="<?php echo $person['row'] ?>" >
+                    value="<?php echo h($person['row']) ?>">
                 &mdash;
-                <input type="text" name="column" maxlength="3" size="2" class="formStyle" style="width:30"           
-                    value="<?php echo $person['column'] ?>"
+                <input type="text" name="column" maxlength="3" size="2" class="formStyle" style="width:30"
+                    value="<?php echo h($person['column']) ?>">
             </td>
             <td id="locationErr">&nbsp;</td>
+        </tr>
 
         <tr>
             <td colspan="3" height="10"></td>
         </tr>
 
         <tr>
-            <td colspan="3" class="header2Bg" align="left" valign="top" height="25" >
+            <td colspan="3" class="header2Bg" align="left" valign="top" height="25">
                 <span class=boldText> When is this yahrzeit light lit? </span>
             </td>
         </tr>
@@ -133,22 +191,22 @@
             <td class="text">
                 The family observes the <br>
                 &nbsp; &nbsp; <input type="radio" name="engOrHeb" value="eng"
-                    <?php echo ($person['useEng'] ? "checked" : "") ?> >
+                    <?php echo (!empty($person['useEng']) ? "checked" : "") ?> >
                     English yahrzeit date <br>
                 &nbsp; &nbsp; <input type="radio" name="engOrHeb" value="heb" 
-                    <?php echo ($person['useHeb'] ? "checked" : "") ?> >
+                    <?php echo (!empty($person['useHeb']) ? "checked" : "") ?> >
                     Hebrew yahrzeit date <br>
                 &nbsp;
                 <br>
-                In addition to the yahrzeit, and the synagogue-observed yizkor dates <br>
+                In addition to the yahrzeit, and the synagogue-observed Yizkor dates <br>
                 &nbsp; &nbsp; <input type="checkbox" name="yomhashoah" value="TRUE"
-                    <?php echo ($person['yomhashoah'] ? "checked" : "") ?> >
+                    <?php echo (!empty($person['yomhashoah']) ? "checked" : "") ?> >
                     observe Yom HaShoah  <br>
                 &nbsp; &nbsp; <input type="checkbox" name="yomhazikaron" value="TRUE" 
-                    <?php echo ($person['yomhazikaron'] ? "checked" : "") ?> >
-                    observe Yom Hazikaron 
+                    <?php echo (!empty($person['yomhazikaron']) ? "checked" : "") ?> >
+                    observe Yom HaZikaron 
             </td>
-            <td id="notused">&nbsp;</td>
+            <td>&nbsp;</td>
         </tr>
 
         <tr>
@@ -157,24 +215,26 @@
             </td>
             <td class="text" valign="top">
                 <input type="radio" name="yzmode" value="auto" 
-                    <?php echo (!$person['manual'] ? "checked" : "") ?> >
+                    <?php echo (empty($person['manual']) && empty($person['reserved']) ? "checked" : "") ?> >
                     <b>Automatic</b> or calendar driven.<br>
                     &nbsp; &nbsp; &nbsp; &nbsp; Per the observances above.  <br>
                 &nbsp; <br>
                 <input type="radio" name="yzmode" value="manual"
-                    <?php echo ($person['manual'] ? "checked" : "") ?> >
+                    <?php echo (!empty($person['manual']) ? "checked" : "") ?> >
                     <b>Manually</b> turn this light on/off.  <br>
                     &nbsp; &nbsp; &nbsp; &nbsp; turn light 
-                    <input type="radio" name="onoff" value="on" checked>on
-                    <input type="radio" name="onoff" value="off">off
+                    <input type="radio" name="onoff" value="on"
+                        <?php echo (!empty($person['onnow']) ? "checked" : "") ?> >on
+                    <input type="radio" name="onoff" value="off"
+                        <?php echo (empty($person['onnow']) ? "checked" : "") ?> >off
                 <br>
                 &nbsp; <br>
                 <input type="radio" name="yzmode" value="reserved"
-                    <?php echo ($person['reserved'] ? "checked" : "") ?> >
+                    <?php echo (!empty($person['reserved']) ? "checked" : "") ?> >
                     <b>Reserved</b> <br>
                     &nbsp; &nbsp; &nbsp; &nbsp; Light is always off. 
             </td>
-            <td id="notused">&nbsp;</td>
+            <td>&nbsp;</td>
         </tr>
 
         <tr>
@@ -190,7 +250,7 @@
         </tr>
 
 <?php
-        emitCopywrite();
+        emitCopyright();
 ?>
 
     </table>
@@ -202,52 +262,60 @@
         emitFooter();
     } 
     elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        // handle POST
+        yahrzeit_readDB();
 
-        $n = yahrzeit_readDB();
+        $engOrHeb = post_value('engOrHeb', 'heb');
+        $yzmode   = post_value('yzmode', 'auto');
 
-        // new (or modified) person
-        $person = array (
-            'lastName'          =>   $_POST['lastName'],
-            'firstName'         =>   $_POST['firstName'],
-            'engYzMonth'        =>   $_POST['engYzMonth'],
-            'engYzDD'           =>   $_POST['engYzDD'],
-            'engYzYYYY'         =>   $_POST['engYzYYYY'],
-            'hebYzDD'           =>   $_POST['hebYzDD'],
-            'hebYzMonth'        =>   $_POST['hebYzMonth'],
-            'hebYzYYYY'         =>   $_POST['hebYzYYYY'],
-            'useHeb'            =>   ( $_POST['engOrHeb'] == "heb" ),
-            'useEng'            =>   ( $_POST['engOrHeb'] != "heb" ),
-            'yomhashoah'        =>   ( $_POST['yomhashoah'] == "TRUE" ),
-            'yomhazikaron'      =>   ( $_POST['yomhazikaron'] == "TRUE" ),
-            'onnow'             =>   ( $_POST['onoff'] == "on" ),
-            'reserved'          =>   ( $_POST['yzmode'] == "reserved" ),
-            'manual'            =>   ( $_POST['yzmode'] == "manual" ),
-            'panelId'           =>   $_POST['panelId'],
-            'row'               =>   $_POST['row'],
-            'column'            =>   $_POST['column']
-            );
+        $person = array(
+            'lastName'          => post_value('lastName'),
+            'firstName'         => post_value('firstName'),
 
-        // write person record
-        if ( $_POST['add'] ) {
-            // add a new record
-            $n = yahrzeit_numrows() + 1;
+            'engYzMonth'        => post_value('engYzMonth'),
+            'engYzDD'           => post_value('engYzDD'),
+            'engYzYYYY'         => post_value('engYzYYYY'),
+
+            'hebYzDD'           => post_value('hebYzDD'),
+            'hebYzMonth'        => post_value('hebYzMonth'),
+            'hebYzYYYY'         => post_value('hebYzYYYY'),
+
+            'useHeb'            => ($engOrHeb == "heb"),
+            'useEng'            => ($engOrHeb != "heb"),
+            'yomhashoah'        => (post_value('yomhashoah') == "TRUE"),
+            'yomhazikaron'      => (post_value('yomhazikaron') == "TRUE"),
+
+            'onnow'             => (post_value('onoff') == "on"),
+            'reserved'          => ($yzmode == "reserved"),
+            'manual'            => ($yzmode == "manual"),
+
+            'panelId'           => post_value('panelId'),
+            'row'               => post_value('row'),
+            'column'            => post_value('column')
+        );
+
+        if (isset($_POST['add'])) {
+            $row = yahrzeit_numrows() + 1;
         } else {
-            // modify an existing record
-            $n = $_POST['rowIndex'];
+            $row = post_value('rowIndex');
+
+            if (!ctype_digit((string)$row)) {
+                die("Invalid name row: " . h($row));
+            }
         }
-        yahrzeit_putObj( $n, $person );
+
+        yahrzeit_putObj((int)$row, $person);
         yahrzeit_writeDB();
 
-        // now write a Message Page
-        emitHeader( $title, $tab );
-        emitMessagePage( "Name definition saved",
-                "click here to continue",
-                "6viewnames.php" );
+        emitHeader($title, $tab);
+        emitMessagePage(
+            "Name definition saved",
+            "click here to continue",
+            "4viewnames.php"
+        );
 
         emitFooter();
 
     } else {
-        die ("This script only works with GET and POST requests.");
+        die("This script only works with GET and POST requests.");
     }
 ?>

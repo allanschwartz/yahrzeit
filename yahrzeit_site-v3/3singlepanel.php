@@ -4,20 +4,139 @@
     require_once "names.inc.php";
     $minhag = read_minhag_ini();
 
-    $panelid = $_GET['panel'];
-    $title = "Single Yahrzeit Panel -- \"$panelid\"";
-    $description = "Click on a name to view/modify the Yahrzeit observances for that individual.";
+    $panelid = isset($_GET['panel']) ? $_GET['panel'] : "";
+    $title = "Single Yahrzeit Panel";
+    $description = "Click on a name to view the Yahrzeit observances for that individual.";
     $tab = 2;         // Panels
 
+    function panel_person_display_name($person)
+    {
+        $name = trim($person['firstName'] . " " . $person['lastName']);
+
+        if ($name == "") {
+            return "(unnamed)";
+        }
+
+        return $name;
+    }
+
+    function panel_person_is_reserved($person)
+    {
+        if (isset($person['reserved']) && $person['reserved']) {
+            return true;
+        }
+
+        $name = strtoupper(panel_person_display_name($person));
+        return ($name == "RESERVED" || strpos($name, "RESERVED") !== false);
+    }
+
+    function build_complete_panel($panelid)
+    {
+        $completePanel = array();
+
+        $n = yahrzeit_readDB();
+
+        for ($i = 0; $i < $n; $i++) {
+            $person = yahrzeit_getObj($i);
+
+            if (!isset($person['panelId']) || $person['panelId'] != $panelid) {
+                continue;
+            }
+
+            if (!isset($person['row']) || !isset($person['column'])) {
+                continue;
+            }
+
+            $row = (int)$person['row'];
+            $col = (int)$person['column'];
+
+            if ($row <= 0 || $col <= 0) {
+                continue;
+            }
+
+            $completePanel[$row][$col] = $person;
+        }
+
+        return $completePanel;
+    }
+
+    function emit_panel_cell($person, $cellWidth)
+    {
+        echo '<td width="' . h($cellWidth) . '%">';
+        echo '<table><tr class="text">';
+        echo '<td><img src="ledoff.gif"></td>';
+        echo '<td valign="center">';
+
+        if ($person == null) {
+            echo '<span class="textSmall"><i>(open)</i></span>';
+        }
+        elseif (panel_person_is_reserved($person)) {
+            echo '<span class="textSmall"><i>reserved</i></span>';
+        }
+        else {
+            $name = panel_person_display_name($person);
+            $key = isset($person['index']) ? $person['index'] : "";
+            echo '<a href="5singlename.php?row=' . h($key) . '">' . h($name) . '</a>';
+        }
+
+        echo '</td>';
+        echo '</tr></table>';
+        echo '</td>';
+    }
+
+    function emit_single_panel_table($panel, $completePanel)
+    {
+        $nRows = (int)$panel['nRows'];
+        $nCols = (int)$panel['nCols'];
+        $cellWidth = ($nCols > 0) ? floor(100 / $nCols) : 16;
+
+        echo '<table border="2">';
+
+        for ($row = 1; $row <= $nRows; $row++) {
+            echo '<tr class="text">';
+
+            for ($col = 1; $col <= $nCols; $col++) {
+                $person = isset($completePanel[$row][$col]) ? $completePanel[$row][$col] : null;
+                emit_panel_cell($person, $cellWidth);
+            }
+
+            echo '</tr>';
+        }
+
+        echo '</table>';
+    }
+
     if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-        // handle the GET request
-        emitHeader( $title, $tab );
-?>
+        if ($panelid == "") {
+            emitHeader($title, $tab);
+            emitMessagePage(
+                "Missing panel ID.",
+                "click here to return to the Panels page",
+                "1viewpanels.php"
+            );
+            emitFooter();
+            exit;
+        }
 
-<body class="bgNone" onload="initGS(this.document.forms[0])">
+        panel_readDB();
+        $panel = panel_getObj_byId($panelid);
 
-<?php
-    emitTopOfScreen( $title, $description );
+        if ($panel == null) {
+            emitHeader($title, $tab);
+            emitMessagePage(
+                "Unknown panel ID: " . h($panelid),
+                "click here to return to the Panels page",
+                "1viewpanels.php"
+            );
+            emitFooter();
+            exit;
+        }
+
+        $title = "Single Yahrzeit Panel -- \"" . $panelid . "\"";
+        $completePanel = build_complete_panel($panelid);
+
+        emitHeader($title, $tab);
+        emitTopOfScreen($title, $description);
 ?>
 
     <table cellSpacing=0 cellPadding=4 width=90% border=0 class="botBorder">
@@ -28,98 +147,29 @@
 
         <tr>
             <td colspan="3" class="header2Bg" align="left" height="25" >
-                <span class=boldText> <?php echo $panelid ?> </span>
+                <span class=boldText><?php echo h($panelid); ?></span>
             </td>
         </tr>
-
-<?php
-        $n1 = yahrzeit_readDB();
-
-        for( $i = 0 ; $i < $n1; $i++ ) {
-            $person = yahrzeit_getObj( $i );
-            if ( $panelid == $person['panelId'] ) {
-                $completePanel[ $person['row'] ][ $person['column'] ] = $person;
-            }
-        }
-
-        //echo "<pre>"; print_r($completePanel); echo "</pre>";
-        
-        $n2 = panel_readDB();
-        $panel = panel_getObj_byId( $panelid );
-
-        //echo "<pre>"; print_r($panel); echo "</pre>";
-
-?>
-
-
 
         <tr>
             <td colspan=3>
-
-                <table border=2>
-
 <?php
-                  for ($row = 1; $row <= $panel['nRows']; $row++ ) 
-                  {
+                emit_single_panel_table($panel, $completePanel);
 ?>
-                    <tr class="text">
-<?php
-                      for ($col = 1; $col <= $panel['nCols']; $col++ ) 
-                      {
-                        $person = $completePanel[ $row ][ $col ];
-                        if ( $person == null ) {
-                            $name = "<i>(open)</i>";
-                            $key = "add";
-                        } else {
-                            $name = $person['firstName']." ".$person['lastName'];
-                            $key = $person['index'];
-                        }
-?>
-                        <td width="16%">
-<table><tr class="text"><td><img src="ledoff.gif"></td><td valign="center"><a href="5singlename.php?row=<?php echo $key ?>"> <?php echo $name ?></a></td></tr></table>
-                        </td>
-<?php
-                      }
-?>
-                    </tr>
-<?php
-                  }
-?>
-                </table>
-                    
-            </td>
-
-        </tr>
-
-        <tr>
-            <td colspan="3" align="center">
-                <input type="button" name="CANCEL" value="Cancel" class="button"
-                    onclick="javascript:history.back(1);">
             </td>
         </tr>
 
 <?php
-        emitCopywrite();
+        emitCopyright();
 ?>
 
     </table>
 <br>&nbsp;<br>
-</form>
-</body>
 
 <?php 
         emitFooter();
-    }
-    elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        // now write a Message Page
-        emitHeader( $title, $tab );
-        emitMessagePage( "unknown request",
-                        "click here to continue",
-                        "1viewpanels.php" );
-        emitFooter();
-
     } else {
-        die ("This script only works with GET and POST requests.");
+        die("This script only works with GET requests.");
     }
 
 ?>

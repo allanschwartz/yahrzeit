@@ -208,7 +208,7 @@ function yahrzeit_map_internal($rawrecord)
     $person = array(
         'lastName'          => $lastname,
         'firstName'         => $firstname,
-
+        'lastNameFirst'     => yahrzeit_safe_field($rawrecord, 0),
         'engYzMonth'        => $eng['monthName'],
         'engYzDD'           => $eng['day'],
         'engYzYYYY'         => $eng['year'],
@@ -225,6 +225,7 @@ function yahrzeit_map_internal($rawrecord)
         'onnow'             => (stristr($options, 'ONNOW')     ? true : false),
         'reserved'          => (stristr($options, 'RESERVED')  ? true : false),
         'manual'            => (stristr($options, 'MANUAL')    ? true : false),
+        'options'           => $options,
 
         'panelId'           => $loc['panelId'],
         'row'               => $loc['row'],

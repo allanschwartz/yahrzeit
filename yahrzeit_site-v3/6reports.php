@@ -131,7 +131,7 @@
         </tr>
 
 <?php
-        emitCopywrite(); 
+        emitCopyright(); 
 ?>
 
     </table>

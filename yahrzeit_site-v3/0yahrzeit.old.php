@@ -1,16 +1,11 @@
 <?php
     require_once "misc.inc.php";
-    require_once "panels.inc.php";
-    require_once "names.inc.php";
-
-    date_default_timezone_set("America/Los_Angeles");
-
     $minhag = read_minhag_ini();
 
     $title = "Yahrzeit Controller";
-    $description = "These screens control the Yahrzeit panels at " .
-                   h($minhag['synagogueName']) . ".";
+    $description = "These screens control all Yahrzeit panels at " . $minhag['synagogueName'] . ".";
     $tab = 1;         // Yahrzeit
+    date_default_timezone_set("America/Los_Angeles");
 
     function cbs_sunset_timestamp($timestamp)
     {
@@ -44,64 +39,31 @@
             return $today;
         }
 
-        return strtotime("next Friday", $today);
+        return strtotime("next friday", $today);
     }
-
-
-    function is_hebrew_leap_year($year)
-    {
-        return ((7 * (int)$year + 1) % 19) < 7;
-    }
-
-
-    function current_hebrew_date_string()
-    {
-        $jdDate = gregoriantojd((int)date('n'), (int)date('j'), (int)date('Y'));
-        $hebrewDate = jdtojewish($jdDate);
-        $hebrewMonthName = jdmonthname($jdDate, 4);
-
-        list($hebrewMonth, $hebrewDay, $hebrewYear) = explode('/', $hebrewDate);
-
-        // PHP's jdmonthname() may use AdarI for Adar in non-leap years.
-        if ($hebrewMonthName == "AdarI" && !is_hebrew_leap_year($hebrewYear)) {
-            $hebrewMonthName = "Adar";
-        }
-
-        return $hebrewDay . " " . $hebrewMonthName . " " . $hebrewYear;
-    }
-
-
-    function controller_summary_lines()
-    {
-        $panelCount = panel_readDB();
-        $nameCount = yahrzeit_readDB();
-
-        return array(
-            h($panelCount) . ' panels defined (click on <a href="1viewpanels.php">Panels</a>)',
-            h($nameCount) . ' names defined (click on <a href="4viewnames.php">Names</a>)',
-            'Manual lighting operations are available from the Panels screen'
-        );
-    }
-
-    emitHeader($title, $tab);
+    
+    emitHeader( $title, $tab );
 ?>
 
+<body class="bgNone">
+
 <?php
-    emitTopOfScreen($title, $description);
+    emitTopOfScreen( $title, $description );
 ?>
 
     <table cellSpacing=0 cellPadding=4 width=90% border=0 class="botBorder">
-        <tr>
-            <td width="35%"></td>
+        <tr><td width="35%"></td>
             <td width="40%"></td>
             <td width="25%"></td>
         </tr>
 
         <tr>
             <td colspan="3" class="header2Bg" align="left" height="25">
-                <span class="boldText">
-                    <?php echo h($minhag['synagogueName']); ?> Yahrzeit Controller
-                </span>
+                <span class=boldText> 
+<?php
+                echo $minhag['synagogueName']; 
+?>
+                Yahrzeit Controller </span>
             </td>
         </tr>
 
@@ -110,8 +72,32 @@
                 Date / Time
             </td>
             <td class="text">
-                <?php echo h(date("l F j, Y, g:i a")); ?><br>
-                <?php echo h(current_hebrew_date_string()); ?>
+<?php
+            echo date("l F j, Y, g:i a");
+
+            $gregorianMonth = date('n');
+            $gregorianDay   = date('j');
+            $gregorianYear  = date('Y');
+
+            $jdDate = gregoriantojd($gregorianMonth, $gregorianDay, $gregorianYear);
+            $hebrewDate = jdtojewish($jdDate);
+            $hebrewMonthName = jdmonthname($jdDate, 4);
+
+            list($hebrewMonth, $hebrewDay, $hebrewYear) = explode('/', $hebrewDate);
+
+            if ($hebrewMonthName == "AdarI" &&
+                $hebrewYear % 19 != 0 &&
+                $hebrewYear % 19 != 3 &&
+                $hebrewYear % 19 != 6 &&
+                $hebrewYear % 19 != 8 &&
+                $hebrewYear % 19 != 11 &&
+                $hebrewYear % 19 != 14 &&
+                $hebrewYear % 19 != 17) {
+                    $hebrewMonthName = "Adar";
+            }
+
+            echo "<br>$hebrewDay $hebrewMonthName $hebrewYear";
+?>
             </td>
             <td id="notused">&nbsp;</td>
         </tr>
@@ -122,18 +108,23 @@
             </td>
             <td class="text">
 <?php
-            $todaySunsetText = cbs_sunset_string(time());
-            echo "Today's sunset in San Francisco is about " . h($todaySunsetText) . ".<br>";
+            $todaySunset = cbs_sunset_string(time());
 
             $nextFriday = next_friday_timestamp();
             $fridaySunsetTimestamp = cbs_sunset_timestamp($nextFriday);
 
             if ($fridaySunsetTimestamp === false) {
+                echo "Today's sunset time is unknown.<br>";
                 echo "This week's Shabbat sunset time is unknown.<br>";
             } else {
+                $todaySunsetText = cbs_sunset_string(time());
                 $fridaySunsetText = date("l F j, Y, g:i a", $fridaySunsetTimestamp);
-                echo "On " . h($fridaySunsetText) . " this week's yahrzeits will be lit.<br>";
+
+                echo "Today's sunset in San Francisco is about $todaySunsetText.<br>";
+                echo "On $fridaySunsetText this week's yahrzeits will be lit.<br>";
             }
+        //The next Yizkor date, $yname, will be $ymmm $ydd, $yyyyy
+        // echo "The next Yizkor date, the eighth day of Pesach, will be April 10, 2007 (22 Nisan 5767)"
 ?>
                 <br>
             </td>
@@ -142,14 +133,16 @@
 
         <tr>
             <td height="25" align="left" valign="top" class="text">
-                Controller Summary
+                Controller Parameters
             </td>
             <td class="text">
-<?php
-                foreach (controller_summary_lines() as $line) {
-                    echo $line . "<br>\n";
-                }
-?>
+                21 panels defined (click on <a href="1viewpanels.php">Panels</a>)
+                <br>
+                23 names are now lit
+                <br>
+                1432 names defined (click on <a href="4viewnames.php">Names</a>)
+                <br>
+                3 reports are available
             </td>
             <td id="notused">&nbsp;</td>
         </tr>
@@ -166,6 +159,7 @@
 
     </table>
 <br>&nbsp;<br>
+</body>
 
 <?php 
     emitFooter();

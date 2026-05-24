@@ -36,13 +36,7 @@
  *          function print_option1($selected, $options) 
  *          function print_option2($selected, $options) 
  *          function myBool( $v ) 
- *          function h($s)
-{
-    return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
-}
-
-
-function emitMessagePage( $message, $click_here_msg, $click_here_url ) 
+ *          function emitMessagePage( $message, $click_here_msg, $click_here_url ) 
  *          function emitTopOfScreen( $title, $description ) 
  *          function toptab ( $selected, $fileref, $tabname ) 
  *          function emitHeader( $title, $tab )
@@ -284,12 +278,6 @@ function myBool($v)
 // GUI rendering helpers
 // -----------------------------------------------------------------------------
 
-function h($s)
-{
-    return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
-}
-
-
 function emitMessagePage( $message, $click_here_msg, $click_here_url ) 
 {
 $text = <<< ENDOFTEXT
@@ -433,6 +421,9 @@ function emitHeader( $title, $tab )
             <!-- tab 5 -->
             <?php  toptab ($tab == 5, "7minhag.php", "Minhag" ); ?>
 
+            <!-- tab 6 -->
+            <?php  toptab ($tab == 6, "8easysetup.php", "Easy&nbsp;Setup" ); ?>
+
           </tr>
         </table>
         <!-- END top tabs table -->
@@ -557,8 +548,8 @@ function emitCopyright()
 
         <tr>
             <td colspan="3" height="10" >
-            <span class="textSmall">Yahrzeit Controller V3</span> <br>
-            <span class="textSmall">copyright &copy; 2007, 2015, 2026 AMS Consulting</span> <br>
+            <span class=textSmall>controller version 0.2</span> <br>
+            <span class=textSmall>copyright (c) 2007 AMS Consulting </span> <br>
         </tr>
 
 <?php
