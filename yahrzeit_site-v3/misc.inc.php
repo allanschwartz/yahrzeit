@@ -36,7 +36,6 @@
  *          function print_option1($selected, $options) 
  *          function print_option2($selected, $options) 
  *          function myBool( $v ) 
- *          function myfputcsv($filePointer, $line, $delimiter=",", $quote="\"") 
  *          function emitMessagePage( $message, $click_here_msg, $click_here_url ) 
  *          function emitTopOfScreen( $title, $description ) 
  *          function toptab ( $selected, $fileref, $tabname ) 
@@ -194,7 +193,7 @@ function read_minhag_ini()
 function write_minhag_ini( $assoc_arr) 
 {
 
-    $filename = "/Users/allan/Sites/yahrzeit/data/minhag.ini";
+    $filename = "data/minhag.ini";
 
     $content = "";
 
@@ -260,53 +259,24 @@ function print_option2($selected, $options)
 } 
 
 
-function myBool( $v ) 
+function myBool($v)
 {
-    return ( (bool) $v ? "YES" : "NO");
+    if (is_bool($v)) {
+        return $v ? "YES" : "NO";
+    }
+
+    $v = strtoupper(trim((string)$v));
+
+    if ($v == "YES" || $v == "Y" || $v == "TRUE" || $v == "1" || $v == "ON") {
+        return "YES";
+    }
+
+    return "NO";
 }
 
-
-
-function myfputcsv($filePointer, $line, $delimiter=",", $quote="\"") 
-{
-   // Write a line to a file
-   // $filePointer = the file resource to write to
-   // $dataArray = the data to write out
-   // $delimeter = the field separator
-    
-   // Build the string
-   $string = "";
- 
-    // No leading delimiter
-    $writeDelimiter = FALSE;
-    // for each array element, which represents a line in the csv file...
-    foreach($line as $dataElement) {
-
-      
-        // Replaces a double quote with two double quotes
-        $dataElement=str_replace("\"", "\"\"", $dataElement);
-          
-        // Adds a delimiter before each field (except the first)
-        if ($writeDelimiter) {
-            $string .= $delimiter;
-        }
-          
-        // Encloses each field with $enclosure and adds it to the string
-        $string .= $quote . $dataElement . $quote;
-          
-        // Delimiters are used every time except the first.
-        $writeDelimiter = TRUE;
-
-
-   } // end foreach($dataArray as $line)
-
-   // Append new line
-   $string .= "\n";
-
-   // Write the string to the file
-   fwrite($filePointer, $string);
-}
-
+// -----------------------------------------------------------------------------
+// GUI rendering helpers
+// -----------------------------------------------------------------------------
 
 function emitMessagePage( $message, $click_here_msg, $click_here_url ) 
 {

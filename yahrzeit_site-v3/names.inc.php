@@ -49,6 +49,15 @@ global $yahrzeitDB;
 // Name, Date of Death, Hebrew Date of Death, options, location
 // Eheved Pinskaya,1/24/1970,17 SHEVAT 5730,Yes,10N3I
 
+// note that is has been changed to an 8-column format in "rev4"
+//  0  Name of DECEASED on plaque
+//  1  Last-Name-First
+//  2  Eng. DOD
+//  3  Heb. DOD
+//  4  empty (or year)
+//  5  OPTIONS
+//  6  OLD Location
+//  7  New Location panel-col-row
 
 function yahrzeit_safe_field($rawrecord, $index)
 {
@@ -229,36 +238,68 @@ function yahrzeit_map_internal($rawrecord)
 }
 
 
-function yahrzeit_map_external( $person )
+function yahrzeit_map_external($person)
 {
     global $english_month_mapping;
 
-    $name = $person['firstName'] . " " . $person['lastName'];
-    if ($person['engYzMonth'] == "" || $person['engYzDD'] == "" ) {
-        $dod = " ";
+    $first = isset($person['firstName']) ? trim($person['firstName']) : "";
+    $last  = isset($person['lastName'])  ? trim($person['lastName'])  : "";
+
+    $name = trim($first . " " . $last);
+
+    if ($last != "" && $first != "") {
+        $lastNameFirst = $last . ", " . $first;
+    } else {
+        $lastNameFirst = $name;
     }
-    else {
-        $dod = $english_month_mapping[ $person['engYzMonth']] . "/" . $person['engYzDD'] . "/" . $person['engYzYYYY'];
+
+    if ($person['engYzMonth'] == "" || $person['engYzDD'] == "") {
+        $dod = "";
+    } else {
+        $month = isset($english_month_mapping[$person['engYzMonth']])
+               ? $english_month_mapping[$person['engYzMonth']]
+               : $person['engYzMonth'];
+
+        $dod = $month . "/" . $person['engYzDD'] . "/" . $person['engYzYYYY'];
     }
-    //if ($person['hebYzDD'] == "" && $person['hebYzMonth'] = "Av":
-    $hdod = $person['hebYzDD'] . " " . $person['hebYzMonth'] . " " . $person['hebYzYYYY'];
-    $options = 
-            ( $person['useHeb'      ] ? 'HEB' : "" ) . " " .
-            ( $person['useEng'      ] ? 'ENG' : "" ) . " " .
-            ( $person['yomhashoah'  ] ? 'HASHOAH': "" ) . " " .
+
+    if ($person['hebYzDD'] == "" || $person['hebYzMonth'] == "") {
+        $hdod = "";
+    } else {
+        $hdod = $person['hebYzDD'] . " " . $person['hebYzMonth'] . " " . $person['hebYzYYYY'];
+    }
+
+    $options =
+            ( $person['useHeb']       ? 'HEB'       : "" ) . " " .
+            ( $person['useEng']       ? 'ENG'       : "" ) . " " .
+            ( $person['yomhashoah']   ? 'HASHOAH'   : "" ) . " " .
             ( $person['yomhazikaron'] ? 'HAZIKARON' : "" ) . " " .
-            ( $person['onnow'       ] ? 'ONNOW' : "" ) . " " .
-            ( $person['reserved'    ] ? 'RESERVED' : "" ) . " " .
-            ( $person['manual'      ] ? 'MANUAL' : "" );
-    if ( $person['column'] == "" && $person['row'] == "" ) {
-        $columnrow = " ";
-    } 
-    else {
-        $columnrow = $person['column'] . "-" . $person['row'];
+            ( $person['onnow']        ? 'ONNOW'     : "" ) . " " .
+            ( $person['reserved']     ? 'RESERVED'  : "" ) . " " .
+            ( $person['manual']       ? 'MANUAL'    : "" );
+
+    $options = trim(preg_replace('/\s+/', ' ', $options));
+
+    $newLocation = "";
+
+    if ($person['panelId'] != "") {
+        if ($person['column'] == "" && $person['row'] == "") {
+            $newLocation = $person['panelId'];
+        } else {
+            $newLocation = $person['panelId'] . "-" . $person['column'] . "-" . $person['row'];
+        }
     }
-    $location = $person['panelId'] . "-" . $columnrow;
-    $rec =  array( $name, $dod, $hdod, $options, $location );
-    return $rec;
+
+    return array(
+        $name,
+        $lastNameFirst,
+        $dod,
+        $hdod,
+        $person['newyear'],
+        $options,
+        $person['oldLocation'],
+        $newLocation
+    );
 }
 
 
@@ -306,7 +347,7 @@ function yahrzeit_readDB()
     global $yahrzeitDB;
     global $yahrzeitHash;
 
-    $filename = "/Users/allan/Sites/yahrzeit/data/yahrzeits-rev4.csv";
+    $filename = "data/yahrzeits-rev4.csv";
 
     if ( ( $fp = fopen( $filename, "r" )) === false ) {
         die ("fopen failure");
@@ -350,10 +391,28 @@ function yahrzeit_writeDB()
     if ( ( $fp = fopen( $filename, "w" )) === false ) {
         die ("fopen failure");
     }
+
+    fputcsv($fp, array(
+        "DECEASED",
+        "Last-Name-First",
+        "Eng. DOD",
+        "Heb. DOD",
+        "YEAR",
+        "OPTIONS",
+        "OLD Location",
+        "New Location",
+        "",
+        "",
+        ""
+    ), ",", "\"", "");
+
+    fputcsv($fp, array("", "", "", "", "", "", "", "", "", "", ""), ",", "\"", "");
+
     foreach ( $yahrzeitDB as $key => $value ) {
         $record = yahrzeit_map_external( $value );
         fputcsv($fp, $record, ",", "\"", "");
     }
+
     fclose($fp);
 }
 
