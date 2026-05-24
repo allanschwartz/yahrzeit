@@ -139,6 +139,7 @@ static void controller_begin()
 {
     yyzPixels.begin();
     ledWall.begin();
+    serial_log( "LED wall up\n" );
 
     // splash
     my_puts( CONSOLE, versionString );
@@ -169,9 +170,11 @@ void setup()
 
     // initialize the serial console logic thread
     serial_init();
+    serial_log( "Serial up" );
     
     // initialize the Ethernet
     ethernet_init();
+    serial_log( "Ethernet up" );
 
     // start listening for socket clients to connect
     socket_init();

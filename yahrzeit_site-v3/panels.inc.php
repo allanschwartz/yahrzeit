@@ -5,11 +5,18 @@
  *      panels.inc.php
  *
  * DESCRIPTION
- *      The Yahrzeit Panels "database":
- *      class and functions.
+ *      Static Congregation Beth Sholom Yahrzeit Wall panel geometry.
  *
  * NOTES
+ *      This is no longer a writable CSV-backed "database".
  *
+ *      The V3 embedded controller owns physical LED addressing.  The PHP
+ *      appliance only needs stable panel geometry and panelId lookup for
+ *      display, validation, and legacy GUI support.
+ *
+ *      Panel IDs are physical wall locations such as col1a, col1b, col1c.
+ *      Controller panel numbers are maintained in leds.inc.php.
+ * 
  * HISTORY
  *      version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net
@@ -44,100 +51,97 @@ global $num_rows;
 global $panelsDB;
 global $panelHash;
 
+global $panel_static_geometry;
+$panel_static_geometry = array(
+    array('panelId' => 'col1a', 'nRows' => 16, 'nCols' => 5, 'nNames' => 80),
+    array('panelId' => 'col1b', 'nRows' => 22, 'nCols' => 5, 'nNames' => 110),
+    array('panelId' => 'col1c', 'nRows' => 18, 'nCols' => 5, 'nNames' => 90),
+
+    array('panelId' => 'col2a', 'nRows' => 16, 'nCols' => 6, 'nNames' => 96),
+    array('panelId' => 'col2b', 'nRows' => 22, 'nCols' => 6, 'nNames' => 132),
+    array('panelId' => 'col2c', 'nRows' => 18, 'nCols' => 6, 'nNames' => 108),
+
+    array('panelId' => 'col3a', 'nRows' => 16, 'nCols' => 6, 'nNames' => 96),
+    array('panelId' => 'col3b', 'nRows' => 22, 'nCols' => 6, 'nNames' => 132),
+    array('panelId' => 'col3c', 'nRows' => 18, 'nCols' => 6, 'nNames' => 108),
+
+    array('panelId' => 'col4a', 'nRows' => 16, 'nCols' => 6, 'nNames' => 96),
+    array('panelId' => 'col4b', 'nRows' => 22, 'nCols' => 6, 'nNames' => 132),
+    array('panelId' => 'col4c', 'nRows' => 18, 'nCols' => 6, 'nNames' => 108),
+
+    array('panelId' => 'col5a', 'nRows' => 16, 'nCols' => 6, 'nNames' => 96),
+    array('panelId' => 'col5b', 'nRows' => 22, 'nCols' => 6, 'nNames' => 132),
+    array('panelId' => 'col5c', 'nRows' => 18, 'nCols' => 6, 'nNames' => 108),
+
+    array('panelId' => 'col6a', 'nRows' => 16, 'nCols' => 6, 'nNames' => 96),
+    array('panelId' => 'col6b', 'nRows' => 22, 'nCols' => 6, 'nNames' => 132),
+    array('panelId' => 'col6c', 'nRows' => 18, 'nCols' => 6, 'nNames' => 108),
+
+    array('panelId' => 'col7a', 'nRows' => 16, 'nCols' => 5, 'nNames' => 80),
+    array('panelId' => 'col7b', 'nRows' => 22, 'nCols' => 5, 'nNames' => 110),
+    array('panelId' => 'col7c', 'nRows' => 18, 'nCols' => 5, 'nNames' => 90),
+);
 
 function panel_readDB()
 {
-    $filename = "/Users/allan/Sites/yahrzeit/data/panels.csv";
     global $num_rows;
     global $panelsDB;
     global $panelHash;
+    global $panel_static_geometry;
 
-    if ( ( $fp = fopen( $filename, "r" )) === false ) {
-        die ("fopen failure");
-    }
     $num_rows = 0;
-    while ( ( $rawrecord = fgetcsv($fp, 512, ",", "\"", "") ) !== false ) {
-        $panel = array (
-            'panelId'          =>   trim( $rawrecord[0] ),
-            'nRows'            =>   trim( $rawrecord[1] ),
-            'nCols'            =>   trim( $rawrecord[2] ),
-            'nExtra'           =>   trim( $rawrecord[3] ),
-            'nNames'           =>   trim( $rawrecord[4] ),
-            'connectedTo'      =>   trim( $rawrecord[5] ),
-            'firstLedId'       =>   trim( $rawrecord[6] ), 
-            'addressingMode'   =>   trim( $rawrecord[7] )
-            );
+    $panelsDB = array();
+    $panelHash = array();
+
+    foreach ($panel_static_geometry as $panel) {
         $panelsDB[$num_rows] = $panel;
         $panelHash[$panel['panelId']] = $num_rows;
         $num_rows++;
     }
-    fclose( $fp );
+
     return $num_rows;
 }
 
-
 function panel_writeDB()
 {
-    $filename = "/Users/allan/Sites/yahrzeit/data/panels.csv";
-    global $panelsDB;
-
-    if ( ( $fp = fopen( $filename, "w" )) === false ) {
-        die ("fopen failure");
-    }
-    foreach ( $panelsDB as $key => $value ) {
-        fputcsv($fp, $panelsDB[$key], ",", "\"", "");
-    }
-    fclose($fp);
-    return true;
+    die("panel_writeDB disabled: panel geometry is now static in panels.inc.php");
 }
-
 
 function panel_numrows()
 {
     global $num_rows;
 
-    return ( $num_rows );
+    return $num_rows;
 }
 
-
-function panel_getObj( $row )
+function panel_getObj($row)
 {
     global $panelsDB;
 
-    return ( $panelsDB[$row] );
+    return isset($panelsDB[$row]) ? $panelsDB[$row] : null;
 }
 
-
-function panel_getObj_byId( $panelId )
+function panel_getObj_byId($panelId)
 {
     global $panelHash;
     global $panelsDB;
-    $row = $panelHash[$panelId];
 
-    return ( $panelsDB[$row] );
+    if (!isset($panelHash[$panelId])) {
+        return null;
+    }
+
+    return $panelsDB[$panelHash[$panelId]];
 }
 
-function panel_putObj( $row, $panel )
+function panel_putObj($row, $panel)
 {
-    global $panelsDB;
-
-    $panelsDB[$row] = $panel;
+    die("panel_putObj disabled: panel geometry is static");
 }
 
 
-function panel_delObj( $row )
+function panel_delObj($row)
 {
-    global $panelsDB;
-
-    unset( $panelsDB[$row] );
+    die("panel_delObj disabled: panel geometry is static");
 }
 
-function panel_delObj_byId( $panelId )
-{
-    global $panelHash;
-    global $panelsDB;
-    $row = $panelHash[$panelId];
-
-    unset ( $panelsDB[$row] );
-}
 ?>

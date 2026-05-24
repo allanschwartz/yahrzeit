@@ -55,7 +55,7 @@ static constexpr byte ledRowOfPanel[NPANELS + 1] = {
 #endif
 
 #if TEST_3x24_HARNESS
-    1, 1
+    1, 1, 1
 #endif
 };
 
@@ -75,7 +75,7 @@ static constexpr byte ledColOfPanel[NPANELS + 1] = {
 #endif
 
 #if TEST_3x24_HARNESS
-    1, 1
+    1, 1, 4
 #endif
 };
 
@@ -95,7 +95,7 @@ static constexpr byte nRowsPerPanel[NPANELS + 1] = {
 #endif
 
 #if TEST_3x24_HARNESS
-    NROWS, NROWS
+    24, 24, 24
 #endif
 };
 
@@ -115,7 +115,7 @@ static constexpr byte nColsPerPanel[NPANELS + 1] = {
 #endif
 
 #if TEST_3x24_HARNESS
-    NCOLS, NCOLS
+    6, 3, 3,
 #endif
 };
 

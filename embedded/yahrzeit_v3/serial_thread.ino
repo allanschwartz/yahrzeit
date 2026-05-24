@@ -29,15 +29,12 @@ void serial_init()
     Serial.begin(9600);
 
     const unsigned long start = millis();
-    // we would hope the serial port comes up in 3 seconds.
-    while (!Serial && (millis() - start < 3000)) {
+    // we would hope the serial port comes up in 2 seconds.
+    while (!Serial && (millis() - start < 2000)) {
         delay(10);
     }
-
-    if (Serial) {
-        Serial.println("setup() started...");
-        Serial.flush();
-    }
+    Serial.print("\n\n");
+    serial_log( "Yahrzeit Wall Embedded Controller" );
 }
 
 

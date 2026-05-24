@@ -3,8 +3,48 @@
     $minhag = read_minhag_ini();
 
     $title = "Yahrzeit Controller";
-    $description = "These screens control all Yahrzeit panels at {minhag['synagogueName']}.";
+    $description = "These screens control all Yahrzeit panels at " . $minhag['synagogueName'] . ".";
     $tab = 1;         // Yahrzeit
+    date_default_timezone_set("America/Los_Angeles");
+
+    function cbs_sunset_timestamp($timestamp)
+    {
+        // Congregation Beth Sholom / San Francisco coordinates.
+        // 301 14th Avenue, San Francisco area.
+        //
+        // date_sunset() is deprecated in modern PHP.  date_sun_info()
+        // returns timestamps for sunrise, sunset, and twilight values.
+        $latitude  = 37.7793;
+        $longitude = -122.4942;
+
+        $sun = date_sun_info($timestamp, $latitude, $longitude);
+
+        return isset($sun['sunset']) ? $sun['sunset'] : false;
+    }
+
+
+    function cbs_sunset_string($timestamp)
+    {
+        $sunset = cbs_sunset_timestamp($timestamp);
+
+        if ($sunset === false) {
+            return "unknown";
+        }
+
+        return date("g:i a", $sunset);
+    }
+
+
+    function next_friday_timestamp()
+    {
+        $today = strtotime("today");
+
+        if (date("l", $today) == "Friday") {
+            return $today;
+        }
+
+        return strtotime("next friday", $today);
+    }
     
     emitHeader( $title, $tab );
 ?>
@@ -37,30 +77,29 @@
             </td>
             <td class="text">
 <?php
-            echo (date("l F j, Y, g:i a"));
-            //$hmmm, $hdd, $hyyyy
-            //$mmm $dd $yyyy hh:mm <br>
-            //$today = mktime( 0, 0, 0, date("m") , date("d"), date("y"));
+            echo date("l F j, Y, g:i a");
 
             $gregorianMonth = date('n');
-            $gregorianDay = date('j');
-            $gregorianYear = date('Y');
-            //$jdDate = gregoriantojd($gregorianMonth,$gregorianDay,$gregorianYear);
-            //$hebrewDate = jdtojewish($jdDate);
-            //$hebrewMonthName = jdmonthname($jdDate,4);
+            $gregorianDay   = date('j');
+            $gregorianYear  = date('Y');
 
-            list($hebrewMonth, $hebrewDay, $hebrewYear) = explode('/',$hebrewDate);
+            $jdDate = gregoriantojd($gregorianMonth, $gregorianDay, $gregorianYear);
+            $hebrewDate = jdtojewish($jdDate);
+            $hebrewMonthName = jdmonthname($jdDate, 4);
 
-            if ( $hebrewMonthName == "AdarI" &&
-                $hebrewYear%19 != 0 &&
-                $hebrewYear%19 != 3 &&
-                $hebrewYear%19 != 6 &&
-                $hebrewYear%19 != 8 &&
-                $hebrewYear%19 != 11 &&
-                $hebrewYear%19 != 14 &&
-                $hebrewYear%19 != 17) {
+            list($hebrewMonth, $hebrewDay, $hebrewYear) = explode('/', $hebrewDate);
+
+            if ($hebrewMonthName == "AdarI" &&
+                $hebrewYear % 19 != 0 &&
+                $hebrewYear % 19 != 3 &&
+                $hebrewYear % 19 != 6 &&
+                $hebrewYear % 19 != 8 &&
+                $hebrewYear % 19 != 11 &&
+                $hebrewYear % 19 != 14 &&
+                $hebrewYear % 19 != 17) {
                     $hebrewMonthName = "Adar";
             }
+
             echo "<br>$hebrewDay $hebrewMonthName $hebrewYear";
 ?>
             </td>
@@ -73,20 +112,23 @@
             </td>
             <td class="text">
 <?php
-            // San Francisco Co          37° 46' N    122° 26' W
-            /* calculate the sunset time for 94121 San Francisco
-            Latitude: 37.7793 N
-            Longitude: 122.4942 West
-            Zenith ~= 90
-            offset: +8 GMT
-            */
+            $todaySunset = cbs_sunset_string(time());
 
-            $sunset = date_sunset(time(), SUNFUNCS_RET_STRING, 37.7793, 122.4942, 94.3, 8.0);
-            $shabbatsunset = date("l F j, Y, g:i a", strtotime("next friday, $sunset"));
-            echo "On $shabbatsunset this week's yahrzeits will be lit. <br>";
-            echo "&nbsp;<br>";
+            $nextFriday = next_friday_timestamp();
+            $fridaySunsetTimestamp = cbs_sunset_timestamp($nextFriday);
+
+            if ($fridaySunsetTimestamp === false) {
+                echo "Today's sunset time is unknown.<br>";
+                echo "This week's Shabbat sunset time is unknown.<br>";
+            } else {
+                $todaySunsetText = cbs_sunset_string(time());
+                $fridaySunsetText = date("l F j, Y, g:i a", $fridaySunsetTimestamp);
+
+                echo "Today's sunset in San Francisco is about $todaySunsetText.<br>";
+                echo "On $fridaySunsetText this week's yahrzeits will be lit.<br>";
+            }
         //The next Yizkor date, $yname, will be $ymmm $ydd, $yyyyy
-        echo "The next Yizkor date, the eighth day of Pesach, will be April 10, 2007 (22 Nisan 5767)"
+        // echo "The next Yizkor date, the eighth day of Pesach, will be April 10, 2007 (22 Nisan 5767)"
 ?>
                 <br>
             </td>
@@ -102,7 +144,7 @@
                 <br>
                 23 names are now lit
                 <br>
-                1432 names defined (click on <a href="6viewnames.php">Names</a>)
+                1432 names defined (click on <a href="4viewnames.php">Names</a>)
                 <br>
                 3 reports are available
             </td>

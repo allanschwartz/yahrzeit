@@ -130,9 +130,9 @@ constexpr byte NCOLS   = 40;                  // a column is 56 rows of consecut
 // constexpr byte NPANELS = 1;                 // In this test-harness we have 1 panel
 // constexpr byte NROWS   = 24;                // three 8-pixel YyzPixel boards is 24 rows
 // constexpr byte NCOLS   = 3;                 // and we only have three columns
-constexpr byte NPANELS = 21;                  // At Beth Shalom, we have 3 * 7 panels
-constexpr byte NROWS   = 56;                  // number of rows
-constexpr byte NCOLS   = 40;                  // a column is 56 rows of consecutive pixel data
+constexpr byte NPANELS = 2;                  // At Beth Shalom, we have 3 * 7 panels
+constexpr byte NROWS   = 24;                  // number of rows
+constexpr byte NCOLS   = 6;                  // a column is 56 rows of consecutive pixel data
 
 #endif
 

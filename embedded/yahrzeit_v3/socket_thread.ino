@@ -53,13 +53,13 @@ void ethernet_init()
         serial_log("ethernet: no hardware");
     }
     else if (hw == EthernetW5100) {
-        serial_log("ethernet: W5100");
+        // serial_log("ethernet: W5100");
     }
     else if (hw == EthernetW5200) {
-        serial_log("ethernet: W5200");
+        // serial_log("ethernet: W5200");
     }
     else if (hw == EthernetW5500) {
-        serial_log("ethernet: W5500");
+        // serial_log("ethernet: W5500");
     }
 
     if (Ethernet.linkStatus() == LinkOFF) {
@@ -85,7 +85,6 @@ void socket_init()
     }
 
     socket.begin();
-
     serial_log("socket: listening on 2001");
 }
 
