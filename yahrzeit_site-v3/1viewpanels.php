@@ -4,11 +4,42 @@
     $minhag = read_minhag_ini();
 
     $title = "View Yahrzeit Panels";
-    $description =  "View the summary of all Yahrzeit panels installed at " .
-                    "{minhag['synagogueName']}. " .
-                    "Click on a panel ID to view the names on that panel. " .
+    $description =  "View the fixed Yahrzeit panel geometry installed at " .
+                    $minhag['synagogueName'] . ". " .
+                    "Click a panel in the photo, or click a panel ID in the table, " .
+                    "to view the names etched on that panel. " .
                     "Below are special lighting operations for Yizkor. ";
     $tab = 2;         // Panels
+
+    function run_yahrzeit_operation($operation)
+    {
+        $script = __DIR__ . "/bin/yahrzeit";
+
+        if (!is_executable($script)) {
+            return array(false, "Yahrzeit command script is not executable: $script");
+        }
+
+        $allowed = array(
+            "all-on"  => "--all-on",
+            "all-off" => "--all-off",
+            "yizkor"  => "--yizkor",
+        );
+
+        if (!isset($allowed[$operation])) {
+            return array(false, "Unsupported lighting operation: $operation");
+        }
+        
+        // Local lab override.  Remove this for CBS deployment so bin/yahrzeit
+        // uses its default production controller host.
+$allanHostArg = "--host 192.168.86.240";
+$cmd = escapeshellcmd($script) . " " . $allanHostArg . " " . $allowed[$operation] . " 2>&1";
+
+        $output = array();
+        $rc = 0;
+        exec($cmd, $output, $rc);
+    
+        return array($rc == 0, implode("\n", $output));
+    }
 
     if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         // handle the GET request
@@ -46,7 +77,7 @@
                 <AREA HREF="3singlepanel.php?panel=col3a" COORDS=241,0,337,134>
                 <AREA HREF="3singlepanel.php?panel=col3b" COORDS=241,135,337,232>
                 <AREA HREF="3singlepanel.php?panel=col3c" COORDS=241,233,337,332>
-                <AREA HREF="3singlepanel.php?panel=col4a" COORDS=338,0,429,135>
+               <AREA HREF="3singlepanel.php?panel=col4a" COORDS=338,0,429,135>
                 <AREA HREF="3singlepanel.php?panel=col4b" COORDS=338,136,429,230>
                 <AREA HREF="3singlepanel.php?panel=col4c" COORDS=338,231,429,326>
                 <AREA HREF="3singlepanel.php?panel=col5a" COORDS=430,0,517,137>
@@ -72,33 +103,26 @@
 
                 <table border=2>
                     <tr class="text">
-                        <th>Select</th>
                         <th>Panel ID</th>
-                        <th>rows/cols</th>
-                        <th>names</th>
+                        <th>Geometry</th>
+                        <th>Capacity</th>
                     </tr>
 
 <?php
-                    for ( $i = 1; $i < $n; $i++ ) {
+                    for ( $i = 0; $i < $n; $i++ ) {
                         $panel = panel_getObj( $i ); 
 ?>
 
                         <tr class="text">
                             <td>
-                                <input type="radio" name="panelrow" 
-                                        value="<?php echo $i ?>"
-                                        onclick="rurl='2addmodifypanel.php?row=<?php echo $i ?>';" >
-                            </td>
-                            <td>
                                 <a href="3singlepanel.php?panel=<?php echo $panel['panelId'] ?>"><?php echo $panel['panelId'] ?></a>
                             </td>
                             <td>
-                                <?php echo $panel['nRows'] ?> rows, 
-                                <?php echo $panel['nCols'] ?> columns
+                                <?php echo $panel['nRows'] ?> x
+                                <?php echo $panel['nCols'] ?> 
                             </td>
                             <td>
-                                <?php echo $panel['nNames'] ?> names, 
-                                2 lit
+                                <?php echo $panel['nNames'] ?> places
                             </td>
                         </tr>
 <?php
@@ -110,66 +134,29 @@
         </tr>
 
         <tr>
-            <td colspan="3" align="center">
-                <!-- no ADD, no DEL, no MODIFY 
-                <input type=submit name=submit value="ADD" class="button"
-                    onclick='window.location="2addmodifypanel.php?add";return false;'>
-                <input type=submit name=submit value="DELETE" class="button">
-                <input type=submit name=submit value="MODIFY" class="button"
-                    onclick='window.location=rurl;return false;'>
-                    -->
-            </td>
-        </tr>
-
-        <tr>
-            <td colspan="3" height="64"></td>
-        </tr>
-
-        <tr>
             <td colspan="3" class="header2Bg" align="left" height="25">
-                <span class=boldText> Special Lighting Operations for Yizkor </span>
+                <span class=boldText> Manual / Special Lighting Operations for Yizkor </span><br>
+                <span class="textSmall">Use these controls if automatic scheduling is unavailable or incorrect</span><br>
             </td>
         </tr>
 
         <tr>
-            <td width="35%" height="25" align="left" valign="top" class="text">
-                Turn all lights on or off.
-            </td>
-            <td width="40%" colspan=2>
-            <!--
-                <input type="radio" name="alllights" value="1">
-                <span class="text">All lights </span> <br>
-                <input type="radio" name="alllights" value="2">
-                <span class="text">All lights, unless reserved </span> <br>
-                &nbsp; &nbsp; &nbsp; 
-                <span class="textSmall">All lights unless the space is marked with the placeholder "reserved"</span><br>
-                <input type="radio" name="alllights" value="3">
-                <span class="text">All lights on selected panel </span> <br>
-                &nbsp; &nbsp; &nbsp; 
-                <span class="textSmall"> click on a <b>Select</b> button in the above table </span><br>
-                --!>
-                <span class="text"> All LEDs  </span>
-                        <select name="onoff" >
-                            <option>On
-                            <option>Off
-                        </select>
-                <span class="text"> panel  </span>
-                <input type="text" name="panelno" maxlength="3" size="2" value="" onchange="validateNumber(this, 'testmodeErr', false);" > 
-                <input type=submit name=onoff value="TURN ON/OFF" class="button">
-            </td>
-        </tr>
+        <td width="35%" height="25" align="left" valign="top" class="text">
+            Manual lighting controls
+        </td>
+        <td width="40%" colspan="2" class="text">
+            <button type="submit" name="lighting_operation" value="all-off" class="button">
+                Turn all lights off
+            </button>
 
+            <button type="submit" name="lighting_operation" value="all-on" class="button">
+                Turn all lights on
+            </button>
 
-        <tr>
-            <td width="35%" height="25" align="left" valign="top" class="text">
-                Test Modes
-            </td>
-            <td width="40%" class="text">
-                panel <input type="text" name="panelno" maxlength="3" size="2" value="" onchange="validateNumber(this, 'testmodeErr', false);" > 
-                test <input type="text" name="testno" maxlength="3" size="2" value="" onchange="validateNumber(this, 'testmodeErr', false);" > 
-                <input type=submit name=submit value="START TEST" class="button">
-            </td>
-            <td id="testmodeErr">&nbsp;</td>
+            <button type="submit" name="lighting_operation" value="yizkor" class="button">
+                Run Yizkor pattern
+            </button>
+        </td>
         </tr>
 
 <?php 
@@ -185,23 +172,30 @@
         emitFooter();
     }
     elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        // handle POST
-        //echo "<pre>"; print_r($_POST); echo "</pre>";
+        emitHeader($title, $tab);
 
-        if ($_POST['submit'] == 'DELETE') {
-            $n = panel_readDB( );
+        $operation = "";
 
-            // write panel record
-            panel_delObj( $_POST['panelrow'] );
-            panel_writeDB();
-
-            // now write a Message Page
-            emitHeader( $title, $tab );
-            emitMessagePage( "Selected element deleted",
-                            "click here to continue",
-                            "1viewpanels.php" );
-            emitFooter();
+        if (isset($_POST['lighting_operation'])) {
+            $operation = $_POST['lighting_operation'];
         }
+
+        list($ok, $message) = run_yahrzeit_operation($operation);
+
+        $title_text = $ok ? "Lighting operation completed" : "Lighting operation failed";
+
+        echo "<pre>";
+        echo htmlspecialchars($title_text) . "\n\n";
+        echo htmlspecialchars($message);
+        echo "</pre>";
+
+        emitMessagePage(
+            $title_text,
+            "click here to return to the Panels page",
+            "1viewpanels.php"
+        );
+
+    emitFooter();
 
     } else {
         die ("This script only works with GET and POST requests.");
