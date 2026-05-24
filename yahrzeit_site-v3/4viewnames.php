@@ -5,16 +5,61 @@
     $minhag = read_minhag_ini();
 
     $title = "Yahrzeit Names";
-    $description = "List all observed Yahrzeits, click on name to view or modify that individual.";
+    $description = "List observed Yahrzeits.  Click on a name to view that individual record.";
     $tab = 3;         // Names
 
+    function h($s)
+    {
+        return htmlspecialchars((string)$s, ENT_QUOTES, "UTF-8");
+    }
+
+    function yahrzeit_person_matches_query($person, $query)
+    {
+        if ($query == "") {
+            return true;
+        }
+
+        $haystack = strtolower(
+            $person['firstName'] . " " .
+            $person['lastName'] . " " .
+            $person['lastNameFirst'] . " " .
+            $person['engYzMonth'] . "/" .
+            $person['engYzDD'] . "/" .
+            $person['engYzYYYY'] . " " .
+            $person['hebYzDD'] . " " .
+            $person['hebYzMonth'] . " " .
+            $person['hebYzYYYY'] . " " .
+            $person['options'] . " " .
+            $person['panelId'] . "-" .
+            $person['row'] . "-" .
+            $person['column']
+        );
+
+        $words = preg_split('/\s+/', strtolower(trim($query)));
+        if ($words === false) {
+            return true;
+        }
+
+        foreach ($words as $word) {
+            if ($word == "") {
+                continue;
+            }
+
+            if (strpos($haystack, $word) === false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-        // handle the GET request
         emitHeader( $title, $tab );
+
+        $query = isset($_GET['q']) ? trim($_GET['q']) : "";
 ?>
 
-<body class="bgNone" onload="initGS(this.document.forms[0])">
-<form name="viewpanels" action="<?php echo $_SERVER['PHP_SELF'] ?>" method="POST" >
+<body class="bgNone">
 
 <?php   
     emitTopOfScreen( $title, $description );
@@ -33,64 +78,93 @@
         </tr>
 
         <tr>
-            
+            <td colspan=3 align="center">
+                <form name="searchnames" action="<?php echo h($_SERVER['PHP_SELF']) ?>" method="GET">
+                    <span class="text">Search names, dates, options, or location:</span>
+                    <input type="text" name="q" size="40" value="<?php echo h($query) ?>">
+                    <input type="submit" value="Search" class="button">
+                    <input type="button" value="Clear" class="button"
+                           onclick='window.location="4viewnames.php";return false;'>
+                </form>
+            </td>
+        </tr>
+
+        <tr>
             <td colspan=3 align="center">
 <?php
                 $n = yahrzeit_readDB();
+                $displayed = 0;
 ?>
                 <table border=2>
                     <tr class="text">
-                        <th>Select</th>
                         <th>Name</th>
-                        <th>Yahrzeit Date</th>
-                        <th>Hebrew Yahrzeit Date</th>
-                        <th>options</th>
-                        <th>location</th>
+                        <th>English Date</th>
+                        <th>Hebrew Date</th>
+                        <th>Options</th>
+                        <th>Location</th>
                     </tr>
 
-
-
 <?php
-                    for ( $i = 1; $i < $n; $i++ ) {
+                    for ( $i = 0; $i < $n; $i++ ) {
                         $remembered = yahrzeit_getObj( $i );
-                        $rec = yahrzeit_map_external( $remembered );
+
+                        if (!yahrzeit_person_matches_query($remembered, $query)) {
+                            continue;
+                        }
+                        $name = trim($remembered['firstName'] . " " . $remembered['lastName']);
+
+                        $englishDate = trim(
+                            $remembered['engYzMonth'] . "/" .
+                            $remembered['engYzDD'] . "/" .
+                            $remembered['engYzYYYY'],
+                            "/"
+                        );
+
+                        $hebrewDate = trim(
+                            $remembered['hebYzDD'] . " " .
+                            $remembered['hebYzMonth'] . " " .
+                            $remembered['hebYzYYYY']
+                        );
+
+                        $options = isset($remembered['options']) ? trim($remembered['options']) : "";
+
+                        $location = trim(
+                            $remembered['panelId'] . "-" .
+                            $remembered['row'] . "-" .
+                            $remembered['column'],
+                            "-"
+                        );
+
+                        $displayed++;
 ?>
 
                         <tr class="text">
-<?php
-                        if ($remembered['firstName'] == "" && $remembered['lastName'] == "" ) {
-?>
-                            <td colspan=6>
-                                <hr>
-                            </td>
-<?php
-                        } else {
-?>
-                            <td> <!-- Select -->
-                                
-                                <input type="radio" name="nameselect"
-                                        value="<?php echo $i ?>"
-                                        onclick="rurl='5singlename.php?row=<?php echo $i ?>';" >
-                            </td>
                             <td>  <!-- Name -->
-                                <a href="5singlename.php?row=<?php echo $i ?>">
-                                     <?php echo $rec[0] ?></a>
+                                <a href="5singlename.php?row=<<?php echo h($name) ?></a>">
+                                     <?php echo h($name) ?></a></a>
                             </td> 
                             <td> <!-- English Yahrzeit Date -->
-                                <?php echo $rec[1] ?> 
+                                <?php echo h($englishDate) ?>
                             </td>
                             <td> <!-- Hebrew Yahrzeit Date -->
-                                <?php echo $rec[2] ?> 
+                                <?php echo h($hebrewDate) ?>
                             </td>
                             <td> <!-- Options -->
-                                <?php echo $rec[3] ?> 
+                                <?php echo h($options) ?> 
                             </td>
                             <td> <!-- Location -->
-                                <?php echo $rec[4] ?> 
+                                <?php echo h($location) ?> 
                             </td>
+                        </tr>
 <?php
-                        }
+                    }
+
+                    if ($displayed == 0) {
 ?>
+                        <tr class="text">
+                            <td colspan=5 align="center">
+                                <i>No matching Yahrzeit records found.</i>
+                            </td>
                         </tr>
 <?php
                     }
@@ -100,12 +174,8 @@
         </tr>
 
         <tr>
-            <td colspan="3" align="center">
-                <input type=submit name=submit value="ADD" class="button"
-                    onclick='window.location="5singlename.php?add";return false;'>
-                <input type=submit name=submit value="DELETE" class="button">
-                <input type=submit name=submit value="MODIFY" class="button"
-                    onclick='window.location=rurl;return false;'>
+            <td colspan=3 align="center" class="textSmall">
+                Showing <?php echo h($displayed) ?> of <?php echo h($n) ?> records.
             </td>
         </tr>
 
@@ -119,33 +189,13 @@
 
     </table>
 <br>&nbsp;<br>
-</form>
 </body>
 
 <?php 
         emitFooter();
     }
-    elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        // handle POST
-
-        if ($_POST['submit'] == 'DELETE') {
-            $n = yahrzeit_readDB();
-
-            // write panel record
-            $n = $_POST['nameselect'];
-            yahrzeit_delObj( $n );
-            yahrzeit_writeDB();
-
-            // now write a Message Page
-            emitHeader( $title, $tab );
-            emitMessagePage( "Selected name deleted",
-                            "click here to continue",
-                            "4viewnames.php" );
-            emitFooter();
-        }
-
-    } else {
-        die ("This script only works with GET and POST requests.");
+    else {
+        die ("This script only works with GET requests.");
     }
 
 ?>
