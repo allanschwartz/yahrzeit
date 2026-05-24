@@ -183,6 +183,8 @@ extern NetworkConfig networkConfig;
 
 extern char outputBuf[256];
 
+extern bool timingOutputEnabled;
+
     
 // ----------------------------------------------------------------------------
 //            F U N C T I O N   P R O T O T Y P E S

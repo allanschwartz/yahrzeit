@@ -127,10 +127,12 @@ void  socket_thread()
                     my_puts( SOCKET, result );
                     my_puts( SOCKET, "\n");
                 }
-                const unsigned long elapsedUs = micros() - startUs;
-                snprintf( feedbackLine, sizeof feedbackLine, "%s | %lu.%03lu ms\n",
-                      display_uptime(), elapsedUs/1000UL, elapsedUs % 1000UL);
-                my_puts( SOCKET, feedbackLine );
+                if (timingOutputEnabled) {
+                    const unsigned long elapsedUs = micros() - startUs;
+                    snprintf( feedbackLine, sizeof feedbackLine, "%s | %lu.%03lu ms\n",
+                        display_uptime(), elapsedUs/1000UL, elapsedUs % 1000UL);
+                    my_puts( SOCKET, feedbackLine );
+                }
                 
             }
             else {

@@ -26,6 +26,7 @@ enum CommandIds : byte {
     CMD_REFRESH,        // refresh the LED display from pixel memory
     CMD_SAVE,           // store the pixel memory into EEPROM
     CMD_STATUS,         // dump the current status/settings
+    CMD_TIMING,         // toggle or turn on/off the timing instrumentation
     CMD_TEST,           // do one of several LED test patterns
     CMD_VERSION,        // print the version string
     CMD_NOP,            // (was required on the slower 8051 implementation)

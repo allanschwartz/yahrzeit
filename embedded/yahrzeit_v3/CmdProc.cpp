@@ -61,6 +61,7 @@ enum CommandIds : byte  {
     CMD_SAVE,               // store the pixel memory into EEPROM
     CMD_STATUS,             // dump the current status/settings
     CMD_TEST,               // run one of several LED test patterns
+    CMD_TIMING,             // toggle or turn on/off the timing instrumentation
     CMD_VERSION,            // print the version string
     CMD_NOP,                // was required on the slower 8051 implementation
     MISSING_ARG = 255
@@ -98,6 +99,7 @@ static constexpr Command commands[] = {
     { CMD_REFRESH, 0, "refresh" },
     { CMD_SAVE,   0, "save"   },
     { CMD_STATUS, 0, "status" },
+    { CMD_TIMING, 0, "timing" },
     { CMD_TEST,   0, "test"   },
     { CMD_VERSION, 0, "version" },
     { CMD_NOP,    0, "nop"    },
@@ -305,6 +307,19 @@ const char *CmdProc::execute( const byte streamID, char *command )
                      arg_value[2]);                /* optional <panel> */
             break;
         }
+
+        case CMD_TIMING:
+            // timing [on|off|0|1]
+            // With no argument, toggle timing output.
+            if (arg_string[1] == nullptr) {
+                timingOutputEnabled = !timingOutputEnabled;
+            }
+            else {
+                timingOutputEnabled = onoff_bool(arg_string[1]);
+            }
+            snprintf(outputBuf, sizeof outputBuf, "timing instrumentation is %s",
+                     timingOutputEnabled ? "ON" : "OFF");
+            return outputBuf;
 
         case CMD_VERSION:        
             // print the version string
@@ -526,7 +541,8 @@ const char * CmdProc::console_status()
              "\tsubnet=%u.%u.%u.%u\n"
              "\tdns=%u.%u.%u.%u\n"
              "\tMAC=%02X:%02X:%02X:%02X:%02X:%02X\n"
-             "\tethernetHardware=%s link=%s\n",
+             "\tethernetHardware=%s link=%s\n"
+             "\ttiming=%s\n",
 
              displayConfig.brightness,
              displayConfig.nRows,
@@ -568,7 +584,9 @@ const char * CmdProc::console_status()
                     ? "W5500"
                     : ( hardwareStatus == EthernetNoHardware ? "none": "other")),
 
-             (linkStatus == LinkON ? "up": "down")
+             (linkStatus == LinkON ? "up": "down"),
+             (timingOutputEnabled ? "on": "off")
+
         );
 
     return outputBuf;
