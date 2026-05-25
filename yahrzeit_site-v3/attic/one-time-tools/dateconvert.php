@@ -43,8 +43,8 @@
  */
 
 
-require_once "misc.inc.php";
-//require_once "names.inc.php";
+require_once "include/misc.inc.php";
+//require_once "include/names.inc.php";
 
 global $num_rows;
 global $yahrzeitDB;

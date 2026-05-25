@@ -1,6 +1,6 @@
 <?php
-    require_once "misc.inc.php";
-    require_once "panels.inc.php";
+    require_once "include/misc.inc.php";
+    require_once "include/panels.inc.php";
 
     $minhag = read_minhag_ini();
 

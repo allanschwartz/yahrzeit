@@ -1,0 +1,35 @@
+# yahrzeit command-stream smoke test
+# Purpose:
+#   Short enough to inspect by eye.
+#   Long enough to exercise parser, panel addressing, refresh, save, and timing echoes.
+#
+# Expected visible behavior on test fixture:
+#   1. Clear display.
+#   2. Light a small diagonal-ish pattern on panel 1.
+#   3. Refresh and save.
+#   4. Turn one pixel off.
+#   5. Refresh and save again.
+#   6. Print controller status.
+#
+# Safe for test fixture. For the real wall, this will modify saved display state.
+
+version
+status
+
+all off
+refresh
+
+pixel on 1 1 1
+pixel on 2 2 1
+pixel on 3 3 1
+pixel on 4 1 1
+pixel on 5 2 1
+pixel on 6 3 1
+refresh
+save
+
+pixel off 3 3 1
+refresh
+save
+
+status

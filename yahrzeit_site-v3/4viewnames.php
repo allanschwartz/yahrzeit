@@ -1,17 +1,14 @@
 <?php 
-    require_once "misc.inc.php";
-    require_once "panels.inc.php";
-    require_once "names.inc.php";
+    require_once "include/misc.inc.php";
+    require_once "include/panels.inc.php";
+    require_once "include/names.inc.php";
     $minhag = read_minhag_ini();
 
     $title = "Yahrzeit Names";
     $description = "List observed Yahrzeits.  Click on a name to view that individual record.";
     $tab = 3;         // Names
 
-    function h($s)
-    {
-        return htmlspecialchars((string)$s, ENT_QUOTES, "UTF-8");
-    }
+  
 
     function yahrzeit_person_matches_query($person, $query)
     {

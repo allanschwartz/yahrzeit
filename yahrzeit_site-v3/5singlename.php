@@ -1,6 +1,6 @@
 <?php 
-    require_once "misc.inc.php";
-    require_once "names.inc.php";
+    require_once "include/misc.inc.php";
+    require_once "include/names.inc.php";
 
     $minhag = read_minhag_ini();
 
@@ -8,10 +8,7 @@
     $description = "View or modify this individual's Yahrzeit observance.";
     $tab = 3;         // Names
 
-    function h($s)
-    {
-        return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
-    }
+   
 
     function post_value($name, $default = "")
     {

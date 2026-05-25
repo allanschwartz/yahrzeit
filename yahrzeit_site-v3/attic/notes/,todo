@@ -57,17 +57,7 @@ B    - JS support for Conservative/Reform/Orthadox
 B    - JS support for time/date validation
 B    - JS support for numberic validation
 
-8easysetup.php
-B   - JS support for English to Hebrew data conversion
-B    - SAVE action class
-        - date/time setting action class
-        - timezone/ DST setting action class
-        - (or consider loosing the DST checkbox, and using native Unix facility)
-        - conversion of Zip code to Latitude / Logitude
-        - storing these setting in .ini file.
-C    - Administrators section
-        - storing these settings in excrypted file
-        - action class for "Normal User / Administrator"
+
 
 ----------------------------------------------------------------
 LIBRARIES

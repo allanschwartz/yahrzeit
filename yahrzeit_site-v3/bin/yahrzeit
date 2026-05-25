@@ -20,6 +20,9 @@
 #   bin/yahrzeit --test 3
 #   bin/yahrzeit --file commands.txt
 #   bin/yahrzeit --host 192.168.86.240 --status
+#   bin/yahrzeit --audit
+#   bin/yahrzeit --report week
+#   bin/yahrzeit --report month --date 2026-05-25
 #
 # Notes:
 #   - State-changing operations emit "save".
@@ -43,6 +46,9 @@ TRANSMIT=1
 INPUT_FILE=""
 TEST_NUMBER=""
 BRIGHTNESS_VALUE=""
+REPORT_KIND=""
+REPORT_DATE=""
+DEBUG_LEVEL=""
 
 usage() {
     cat <<'EOF'
@@ -81,6 +87,20 @@ Modes:
   --br, --brightness N
       Set controller brightness. Controller convention: 1 is bright, 254 is dim.
 
+Reports / dry-run modes:
+  --audit
+      Run yahrzeitd.php audit mode.  Output is printed; nothing is sent to the controller.
+
+  --report KIND
+      Run a yahrzeit report.  Output is printed; nothing is sent to the controller.
+      Planned KIND values: day, week, next-week, month, next-month.
+
+  --date YYYY-MM-DD
+      Optional report date.  Used by report modes; ignored by controller-only modes.
+
+  --debug N
+      Pass debug level N to yahrzeitd.php for yahrzeit/audit/report modes.
+
 Transmit/control options:
   --notransmit, --dry-run
       Print command stream to stdout instead of sending to controller.
@@ -105,6 +125,9 @@ Examples:
   yahrzeit --test 4
   yahrzeit --file saved-command-stream.txt
   yahrzeit --host 192.168.86.240 --status
+  yahrzeit --audit
+  yahrzeit --report week
+  yahrzeit --report month --date 2026-05-25
 EOF
 }
 
@@ -191,11 +214,29 @@ while [[ $# -gt 0 ]]; do
             set_mode "all-off"
             shift
             ;;
+        --audit)
+            set_mode "audit"
+            TRANSMIT=0
+            shift
+            ;;
         --br|--brightness)
             set_mode "brightness"
             [[ $# -ge 2 ]] || die "--brightness requires a number"
             BRIGHTNESS_VALUE="$2"
             [[ "$BRIGHTNESS_VALUE" =~ ^[0-9]+$ ]] || die "--brightness requires a numeric value"
+            shift 2
+            ;;
+        --date)
+            [[ $# -ge 2 ]] || die "--date requires YYYY-MM-DD"
+            REPORT_DATE="$2"
+            [[ "$REPORT_DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || \
+                die "--date requires YYYY-MM-DD"
+            shift 2
+            ;;
+        --debug)
+            [[ $# -ge 2 ]] || die "--debug requires a number"
+            DEBUG_LEVEL="$2"
+            [[ "$DEBUG_LEVEL" =~ ^[0-9]+$ ]] || die "--debug requires a numeric value"
             shift 2
             ;;
         -f|--file)
@@ -232,6 +273,21 @@ while [[ $# -gt 0 ]]; do
             [[ "$CONTROLLER_PORT" =~ ^[0-9]+$ ]] || die "--port requires a numeric value"
             shift 2
             ;;
+        --report)
+            set_mode "report"
+            [[ $# -ge 2 ]] || die "--report requires a kind"
+            REPORT_KIND="$2"
+            case "$REPORT_KIND" in
+                day|daily|week|weekly|next-week|month|this-month|next-month)
+                    ;;
+                *)
+                    die "unknown report kind: $REPORT_KIND"
+                    ;;
+            esac
+            TRANSMIT=0
+            shift 2
+            ;;
+
         --st|--status)
             set_mode "status"
             shift
@@ -300,6 +356,41 @@ php_has_hebrew_calendar() {
     ' >/dev/null 2>&1
 }
 
+find_yahrzeit_php() {
+    local php_cmd
+
+    [[ -f "$SCRIPT_DIR/yahrzeitd.php" ]] || \
+        die "missing $SCRIPT_DIR/yahrzeitd.php"
+
+    if ! php_cmd="$(find_php)"; then
+        php_assistance1
+        exit 1
+    fi
+
+    if ! php_has_hebrew_calendar "$php_cmd"; then
+        php_assistance2 "$php_cmd"
+        exit 1
+    fi
+
+    echo "$php_cmd"
+}
+
+run_yahrzeitd() {
+    local php_cmd
+
+    php_cmd="$(find_yahrzeit_php)"
+
+    if [ -n "${REPORT_DATE:-}" ] && [ -n "${DEBUG_LEVEL:-}" ]; then
+        "$php_cmd" "$SCRIPT_DIR/yahrzeitd.php" "$@" --date "$REPORT_DATE" -d "$DEBUG_LEVEL"
+    elif [ -n "${REPORT_DATE:-}" ]; then
+        "$php_cmd" "$SCRIPT_DIR/yahrzeitd.php" "$@" --date "$REPORT_DATE"
+    elif [ -n "${DEBUG_LEVEL:-}" ]; then
+        "$php_cmd" "$SCRIPT_DIR/yahrzeitd.php" "$@" -d "$DEBUG_LEVEL"
+    else
+        "$php_cmd" "$SCRIPT_DIR/yahrzeitd.php" "$@"
+    fi
+}
+
 # -----------------------------------------------------------------------------
 # Command-stream emitters
 # -----------------------------------------------------------------------------
@@ -345,22 +436,15 @@ php_has_hebrew_calendar() {
 
 
 emit_yahrzeit() {
-    local php_cmd
+    run_yahrzeitd
+}
 
-    [[ -f "$YAHRZEIT_DIR/yahrzeitd.php" ]] || \
-        die "missing $YAHRZEIT_DIR/yahrzeitd.php"
+emit_audit() {
+    run_yahrzeitd -a
+}
 
-    if ! php_cmd="$(find_php)"; then
-        php_assistance1
-        exit 1
-    fi
-
-    if ! php_has_hebrew_calendar "$php_cmd"; then
-        php_assistance2 "$php_cmd"
-    exit 1
-fi
-
-    "$php_cmd" "$YAHRZEIT_DIR/yahrzeitd.php"
+emit_report() {
+    run_yahrzeitd --report "$REPORT_KIND"
 }
 
 emit_yizkor() {
@@ -467,6 +551,8 @@ EOF
 emit_commands() {
     case "$MODE" in
         yahrzeit)        emit_yahrzeit ;;
+        audit)           emit_audit ;;
+        report)          emit_report ;;
         yizkor)          emit_yizkor ;;
         all-on)          emit_all_on ;;
         all-off)         emit_all_off ;;

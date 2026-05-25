@@ -1,7 +1,7 @@
 <?php 
-    require_once "misc.inc.php";
-    require_once "panels.inc.php";
-    require_once "names.inc.php";
+    require_once "include/misc.inc.php";
+    require_once "include/panels.inc.php";
+    require_once "include/names.inc.php";
     $minhag = read_minhag_ini();
 
     $panelid = isset($_GET['panel']) ? $_GET['panel'] : "";
@@ -64,7 +64,7 @@
     {
         echo '<td width="' . h($cellWidth) . '%">';
         echo '<table><tr class="text">';
-        echo '<td><img src="ledoff.gif"></td>';
+        echo '<td><img src="images/ledoff.gif"></td>';
         echo '<td valign="center">';
 
         if ($person == null) {
