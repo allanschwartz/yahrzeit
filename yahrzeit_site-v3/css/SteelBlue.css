@@ -27,7 +27,7 @@ a:hover {
 }
 
 .header1Bg {
-    background-image: url(images/tableheader-bg.gif)
+    background-image: url(../images/tableheader-bg.gif)
 }
 
 .header2 {
@@ -120,38 +120,38 @@ a:hover {
 
 /* bg style for the table containing the higher level tabs */
 .tabsBg {
-    background-image: url(images/tabsBg.gif);
+    background-image: url(../images/tabsBg.gif);
     margin: 0px;
     padding: 0px;
 }
 
 /* higher level tab style */
 .tabSelectedBeg {
-	background-image:  url(images/t_selectedbeg.gif);
+	background-image:  url(../images/t_selectedbeg.gif);
 
 }
 
 .tabSelectedEnd {
-	background-image:  url(images/t_selectedend.gif);
+	background-image:  url(../images/t_selectedend.gif);
 
 }
 
 .tabUnselectedBeg {
-    background-image:  url(images/unselectedBeg.gif);
+    background-image:  url(../images/unselectedBeg.gif);
 }
 
 .tabUnselectedEnd {
-    background-image:  url(images/t_unselectedend.gif);
+    background-image:  url(../images/t_unselectedend.gif);
 }
 
 .tabUnselectedBg {
-    background-image: url(images/t_unselectedbg.gif);
+    background-image: url(../images/t_unselectedbg.gif);
     margin: 0px;
     padding: 0px;
 }
 
 .tabSelectedBg {
-	background-image: url(images/t_selectedbg.gif);
+	background-image: url(../images/t_selectedbg.gif);
 	margin: 0px;
 	padding: 0px;
 	background-color: #5388DE;
@@ -268,7 +268,7 @@ TABLE.NobotBorder TD {border-bottom:thin none}
 }
 
 .headgGrad {
-	background-image: url(images/heading.gif);
+	background-image: url(../images/heading.gif);
 	background-repeat: repeat;
 	background-position: right top;
 	height: 18px;
@@ -327,7 +327,7 @@ TABLE.NobotBorder TD {border-bottom:thin none}
 }
 .mapbg {
     background-attachment: fixed;
-    background-image: url(images/mapbg.jpg);
+    background-image: url(../images/mapbg.jpg);
     background-repeat: repeat-x;
     background-position: left top;
     background-color: #E0E3EE;
@@ -348,11 +348,11 @@ TABLE.NobotBorder TD {border-bottom:thin none}
 }
 
 .calTopBorderBg {
-    background-image:  url(images/calTopBorder.gif);
+    background-image:  url(../images/calTopBorder.gif);
 }
 
 .calLeftBorderBg {
-    background-image:  url(images/calLeftBorder.gif);
+    background-image:  url(../images/calLeftBorder.gif);
 }
 
 .calMonthYrBg {
@@ -360,11 +360,11 @@ TABLE.NobotBorder TD {border-bottom:thin none}
 }
 
 .calInBorderBg {
-    background-image:  url(images/calInBorder.gif);
+    background-image:  url(../images/calInBorder.gif);
 }
 
 .calInBorderBg1 {
-    background-image:  url(images/calInBorder1.gif);
+    background-image:  url(../images/calInBorder1.gif);
 }
 
 .calDateBg {
@@ -380,11 +380,11 @@ TABLE.NobotBorder TD {border-bottom:thin none}
 }
 
 .calInBorderBg3 {
-    background-image:  url(images/calInBorder3.gif);
+    background-image:  url(../images/calInBorder3.gif);
 }
 
 .calRightBorderBg {
-    background-image:  url(images/calRightBorder.gif);
+    background-image:  url(../images/calRightBorder.gif);
 }
 
 .calGreenBg {
@@ -392,23 +392,23 @@ TABLE.NobotBorder TD {border-bottom:thin none}
 }
 
 .calPreBtmLeftBg {
-    background-image:  url(images/calPreBtmLeft.gif);
+    background-image:  url(../images/calPreBtmLeft.gif);
 }
 
 .calPreBtmRightBg {
-    background-image:  url(images/calPreBtmRight.gif);
+    background-image:  url(../images/calPreBtmRight.gif);
 }
 
 .calBtmLeftBg {
-    background-image:  url(images/calBtmLeft.gif);
+    background-image:  url(../images/calBtmLeft.gif);
 }
 
 .calBtmRightBg {
-    background-image:  url(images/calBtmRight.gif);
+    background-image:  url(../images/calBtmRight.gif);
 }
 
 .calBtmBg {
-    background-image:  url(images/calBtm.gif);
+    background-image:  url(../images/calBtm.gif);
 }
 
 .calSelected {
@@ -452,7 +452,7 @@ TABLE.NobotBorder TD {border-bottom:thin none}
 }
 
 .pagenavBg {
-        background-image: url(images/pagenavBg.gif);
+        background-image: url(../images/pagenavBg.gif);
 }
 
 .opBg {
@@ -476,7 +476,7 @@ TABLE.NobotBorder TD {border-bottom:thin none}
 }
 
 .SnmpBodyBg {
-    background-image:  url(images/snmpgrad.gif);
+    background-image:  url(../images/snmpgrad.gif);
     background-repeat: repeat-x;
 }
 
@@ -537,7 +537,7 @@ TABLE.NobotBorder TD {border-bottom:thin none}
 }
 .gradHeaderBg {
     background-color: #8FC1E6;
-    background-image: url(images/gradHeader.gif);
+    background-image: url(../images/gradHeader.gif);
     background-repeat: no-repeat;
 }
 
@@ -563,7 +563,7 @@ TABLE.NobotBorder TD {border-bottom:thin none}
 
 .bgNone {
     background-color: #FFFFFF;
-    background-image: url(images/bgNone.gif);
+    background-image: url(../images/bgNone.gif);
     margin: 0px;
     padding: 0px;
 }

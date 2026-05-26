@@ -1,0 +1,551 @@
+#!/usr/bin/env php
+<?php
+/*
+ * NAME
+ *      yahrzeit_scheduler
+ *
+ * DESCRIPTION
+ *      Scheduled runner for the CBS Yahrzeit wall.
+ *
+ *      This script is intended to be run from cron every 15 minutes.  At
+ *      each run it does at most one thing:
+ *
+ *          - run normal yahrzeit lighting
+ *          - run Yizkor lighting
+ *          - restore normal yahrzeit lighting after Yizkor
+ *          - do nothing
+ *
+ *      The scheduler deliberately uses a loose time window.  If cron runs
+ *      every 15 minutes, a scheduled action may be handled a few minutes
+ *      early or late.  A small state file prevents repeated execution
+ *      during the same scheduled window.
+ */
+
+require_once dirname(__DIR__) . "/include/misc.inc.php";
+
+date_default_timezone_set("America/Los_Angeles");
+
+const DEFAULT_WINDOW_MINUTES = 8;           // the event might trigger up to 8 minutes before, but alway on a 15 minute boundary
+const STATE_FILENAME = "data/yahrzeit_scheduler_state.ini";
+const CBS_LATITUDE = 37.78259;
+const CBS_LONGITUDE = -122.47324;
+
+function scheduler_usage()
+{
+    global $argv;
+    $prog = basename($argv[0]);
+
+    echo "Usage:\n";
+    echo "  $prog [options]\n\n";
+    echo "Options:\n";
+    echo "  --dry-run             Show what would be run; do not call bin/yahrzeit.\n";
+    echo "  --now 'YYYY-MM-DD HH:MM'\n";
+    echo "                        Test as if the current time were the supplied time.\n";
+    echo "  --window MINUTES      Time window for matching scheduled actions. Default: 15.\n";
+    echo "  --no-state            Do not read or write the state file. Useful for tests.\n";
+    echo "  --verbose             Print non-action diagnostics.\n";
+    echo "  -h, --help            Show this help.\n\n";
+    echo "Typical cron entry:\n";
+    echo "  */15 * * * * cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler >> data/scheduler.log 2>&1\n";
+}
+
+function fail($message)
+{
+    fwrite(STDERR, "yahrzeit_scheduler: $message\n");
+    exit(1);
+}
+
+function parse_options($argv)
+{
+    $opts = array(
+        'dry_run' => false,
+        'now' => time(),
+        'window_minutes' => DEFAULT_WINDOW_MINUTES,
+        'use_state' => true,
+        'verbose' => false,
+    );
+
+    for ($i = 1; $i < count($argv); $i++) {
+        $arg = $argv[$i];
+
+        switch ($arg) {
+        case '-h':
+        case '--help':
+            scheduler_usage();
+            exit(0);
+
+        case '--dry-run':
+            $opts['dry_run'] = true;
+            break;
+
+        case '--no-state':
+            $opts['use_state'] = false;
+            break;
+
+        case '--verbose':
+            $opts['verbose'] = true;
+            break;
+
+        case '--now':
+            $i++;
+            if ($i >= count($argv)) {
+                fail("--now requires 'YYYY-MM-DD HH:MM'");
+            }
+            $ts = strtotime($argv[$i]);
+            if ($ts === false) {
+                fail("invalid --now value: " . $argv[$i]);
+            }
+            $opts['now'] = $ts;
+            break;
+
+        case '--window':
+            $i++;
+            if ($i >= count($argv) || !is_numeric($argv[$i])) {
+                fail("--window requires a numeric minute value");
+            }
+            $opts['window_minutes'] = max(1, (int)$argv[$i]);
+            break;
+
+        default:
+            fail("unknown option: $arg");
+        }
+    }
+
+    return $opts;
+}
+
+function state_path()
+{
+    return site_root() . "/" . STATE_FILENAME;
+}
+
+function read_state()
+{
+    $path = state_path();
+
+    if (!file_exists($path)) {
+        return array();
+    }
+
+    $state = parse_ini_file($path);
+    return is_array($state) ? $state : array();
+}
+
+function write_state($state)
+{
+    $path = state_path();
+    $dir = dirname($path);
+
+    if (!is_dir($dir)) {
+        mkdir($dir, 0775, true);
+    }
+
+    ksort($state);
+
+    $tmp = $path . ".tmp";
+    $content = "";
+
+    foreach ($state as $key => $value) {
+        $safe_key = preg_replace('/[^A-Za-z0-9_.-]/', '_', $key);
+        $content .= $safe_key . " = " . $value . "\n";
+    }
+
+    if (file_put_contents($tmp, $content) === false) {
+        fail("could not write temporary state file: $tmp");
+    }
+
+    if (!rename($tmp, $path)) {
+        fail("could not replace state file: $path");
+    }
+}
+
+function prune_state($state, $now)
+{
+    // Keep roughly two months of state.  This is long enough to avoid
+    // accidental duplicate special-day actions, but short enough to keep the
+    // file tiny.
+    $cutoff = $now - 60 * 24 * 60 * 60;
+
+    foreach ($state as $key => $value) {
+        if (is_numeric($value) && (int)$value < $cutoff) {
+            unset($state[$key]);
+        }
+    }
+
+    return $state;
+}
+
+function timestamp_line($message)
+{
+    global $log_now;
+
+    $ts = isset($log_now) ? $log_now : time();
+    echo date("Y-m-d H:i:s", $ts) . "  " . $message . "\n";
+}
+
+function bool_yes($value)
+{
+    return isset($value) && strtoupper(trim((string)$value)) == "YES";
+}
+
+function parse_clock_time($hh_key, $mm_key, $ampm_key, $minhag, $base_timestamp)
+{
+    $hh = isset($minhag[$hh_key]) ? (int)$minhag[$hh_key] : 0;
+    $mm = isset($minhag[$mm_key]) ? (int)$minhag[$mm_key] : 0;
+    $ampm = isset($minhag[$ampm_key]) ? strtolower(trim($minhag[$ampm_key])) : "am";
+
+    if ($hh < 1 || $hh > 12 || $mm < 0 || $mm > 59) {
+        return false;
+    }
+
+    if ($ampm == "pm" && $hh != 12) {
+        $hh += 12;
+    }
+    if ($ampm == "am" && $hh == 12) {
+        $hh = 0;
+    }
+
+    return mktime($hh, $mm, 0,
+                  (int)date('n', $base_timestamp),
+                  (int)date('j', $base_timestamp),
+                  (int)date('Y', $base_timestamp));
+}
+
+function cbs_sunset_timestamp($base_timestamp)
+{
+    $noon = mktime(12, 0, 0,
+                   (int)date('n', $base_timestamp),
+                   (int)date('j', $base_timestamp),
+                   (int)date('Y', $base_timestamp));
+
+    $sun = date_sun_info($noon, CBS_LATITUDE, CBS_LONGITUDE);
+
+    return isset($sun['sunset']) ? $sun['sunset'] : false;
+}
+
+function yahrzeit_daily_target($minhag, $now)
+{
+    if (isset($minhag['yahrzeitLightTime']) && $minhag['yahrzeitLightTime'] == 'atSunset') {
+        $sunset = cbs_sunset_timestamp($now);
+        if ($sunset === false) {
+            return false;
+        }
+
+        $minutes_before = isset($minhag['yahrzeitMinBefore'])
+            ? (int)$minhag['yahrzeitMinBefore']
+            : 18;
+
+        return $sunset - ($minutes_before * 60);
+    }
+
+    return parse_clock_time('yahrzeitLightOnHH',
+                            'yahrzeitLightOnMM',
+                            'yahrzeitLightOnAmPm',
+                            $minhag,
+                            $now);
+}
+
+function yizkor_on_target($minhag, $now)
+{
+    if (isset($minhag['yizkorLightTime']) && $minhag['yizkorLightTime'] == 'atSunset') {
+        $sunset = cbs_sunset_timestamp($now);
+        if ($sunset === false) {
+            return false;
+        }
+
+        $minutes_before = isset($minhag['yizkorMinBefore'])
+            ? (int)$minhag['yizkorMinBefore']
+            : 18;
+
+        return $sunset - ($minutes_before * 60);
+    }
+
+    return parse_clock_time('yizkorLightOnHH',
+                            'yizkorLightOnMM',
+                            'yizkorLightOnAmPm',
+                            $minhag,
+                            $now);
+}
+
+function yizkor_off_target($minhag, $now)
+{
+    if (isset($minhag['yizkorLightTime']) && $minhag['yizkorLightTime'] == 'atSunset') {
+        $sunset = cbs_sunset_timestamp($now);
+        if ($sunset === false) {
+            return false;
+        }
+
+        $minutes_after = isset($minhag['yizkorMinAfter'])
+            ? (int)$minhag['yizkorMinAfter']
+            : 72;
+
+        return $sunset + ($minutes_after * 60);
+    }
+
+    return parse_clock_time('yizkorLightOffHH',
+                            'yizkorLightOffMM',
+                            'yizkorLightOffAmPm',
+                            $minhag,
+                            $now);
+}
+
+function motzei_shabbat_target($minhag, $now)
+{
+    if (date('w', $now) != 6) {
+        return false;
+    }
+
+    $sunset = cbs_sunset_timestamp($now);
+    if ($sunset === false) {
+        return false;
+    }
+
+    $minutes_after = isset($minhag['yahrzeitMinAfter'])
+        ? (int)$minhag['yahrzeitMinAfter']
+        : 72;
+
+    return $sunset + ($minutes_after * 60);
+}
+
+function is_due_now($target, $now, $window_minutes)
+{
+    if ($target === false) {
+        return false;
+    }
+
+    $window_seconds = $window_minutes * 60;
+
+    return (($target - $window_seconds) <= $now) &&
+           ($now <= ($target + $window_seconds));
+}
+
+function hebrew_date_parts($timestamp)
+{
+    $jd = gregoriantojd((int)date('n', $timestamp),
+                        (int)date('j', $timestamp),
+                        (int)date('Y', $timestamp));
+
+    $hebrew = jdtojewish($jd);
+    $parts = explode('/', $hebrew);
+
+    if (count($parts) < 3) {
+        return false;
+    }
+
+    return array(
+        'month' => (int)$parts[0],
+        'day' => (int)$parts[1],
+        'year' => (int)$parts[2],
+        'month_name' => jdmonthname($jd, 4),
+    );
+}
+
+function yizkor_reasons_today($minhag, $now)
+{
+    global $english_month_mapping;
+    global $hebrew_month_mapping;
+
+    $reasons = array();
+    $h = hebrew_date_parts($now);
+
+    if ($h !== false) {
+        if (bool_yes($minhag['yizkorYomKippur']) && $h['month'] == 1 && $h['day'] == 10) {
+            $reasons[] = "Yom Kippur";
+        }
+
+        if (bool_yes($minhag['yizkorShmini']) && $h['month'] == 1 && $h['day'] == 22) {
+            $reasons[] = "Shemini Atzeret";
+        }
+
+        if (bool_yes($minhag['yizkorPesach'])) {
+            $pesach_day = isset($minhag['yizkorPesachDay']) ? (int)$minhag['yizkorPesachDay'] : 8;
+            $nisan_day = ($pesach_day == 7) ? 21 : 22;
+
+            if ($h['month'] == 8 && $h['day'] == $nisan_day) {
+                $reasons[] = "Pesach day $pesach_day";
+            }
+        }
+
+        if (bool_yes($minhag['yizkorShavuot'])) {
+            $shavuot_day = isset($minhag['yizkorShavuotDay']) ? (int)$minhag['yizkorShavuotDay'] : 2;
+            $sivan_day = ($shavuot_day == 1) ? 6 : 7;
+
+            if ($h['month'] == 10 && $h['day'] == $sivan_day) {
+                $reasons[] = "Shavuot day $shavuot_day";
+            }
+        }
+
+        if (bool_yes($minhag['yizkorOther']) && isset($minhag['otherEngOrHeb']) && $minhag['otherEngOrHeb'] == 'heb') {
+            $other_month_name = closest_hebrew_month(isset($minhag['otherHebMM']) ? $minhag['otherHebMM'] : "");
+            $other_day = isset($minhag['otherHebDD']) ? (int)$minhag['otherHebDD'] : 0;
+
+            if ($other_month_name != "" &&
+                isset($hebrew_month_mapping[$other_month_name]) &&
+                $h['month'] == $hebrew_month_mapping[$other_month_name] &&
+                $h['day'] == $other_day) {
+                $reasons[] = "Other Hebrew date: $other_day $other_month_name";
+            }
+        }
+    }
+
+    if (bool_yes($minhag['yizkorOther']) && isset($minhag['otherEngOrHeb']) && $minhag['otherEngOrHeb'] == 'eng') {
+        $mm_name = isset($minhag['otherEngMM']) ? $minhag['otherEngMM'] : "";
+        $dd = isset($minhag['otherEngDD']) ? (int)$minhag['otherEngDD'] : 0;
+
+        if (isset($english_month_mapping[$mm_name]) &&
+            (int)date('n', $now) == $english_month_mapping[$mm_name] &&
+            (int)date('j', $now) == $dd) {
+            $reasons[] = "Other English date: $mm_name $dd";
+        }
+    }
+
+    return $reasons;
+}
+
+function action_key($name, $target, $extra = "")
+{
+    $key = date('Y-m-d', $target) . "-" . $name;
+
+    if ($extra != "") {
+        $key .= "-" . preg_replace('/[^A-Za-z0-9_.-]/', '_', $extra);
+    }
+
+    return $key;
+}
+
+function make_action($name, $target, $args, $reason, $extra_key = "")
+{
+    return array(
+        'name' => $name,
+        'target' => $target,
+        'args' => $args,
+        'reason' => $reason,
+        'key' => action_key($name, $target, $extra_key),
+    );
+}
+
+function decide_action($minhag, $state, $now, $window_minutes)
+{
+    $yizkor_reasons = yizkor_reasons_today($minhag, $now);
+
+    if (count($yizkor_reasons) > 0) {
+        $reason_text = implode(", ", $yizkor_reasons);
+
+        $target = yizkor_on_target($minhag, $now);
+        if (is_due_now($target, $now, $window_minutes)) {
+            return make_action("yizkor-on",
+                               $target,
+                               array("--yizkor"),
+                               "Yizkor lighting on: $reason_text",
+                               $reason_text);
+        }
+
+        $target = yizkor_off_target($minhag, $now);
+        if (is_due_now($target, $now, $window_minutes)) {
+            return make_action("yizkor-off",
+                               $target,
+                               array(),
+                               "Yizkor service over; restore normal yahrzeit lighting: $reason_text",
+                               $reason_text);
+        }
+    }
+
+    $target = yahrzeit_daily_target($minhag, $now);
+    if (is_due_now($target, $now, $window_minutes)) {
+        return make_action("daily-yahrzeit",
+                           $target,
+                           array(),
+                           "daily yahrzeit update");
+    }
+
+    if (!bool_yes($minhag['yahrzeitFullWeek'])) {
+        $target = motzei_shabbat_target($minhag, $now);
+        if (is_due_now($target, $now, $window_minutes)) {
+            return make_action("motzei-shabbat-yahrzeit",
+                               $target,
+                               array(),
+                               "Motzei Shabbat yahrzeit restore");
+        }
+    }
+
+    return null;
+}
+
+function already_ran($state, $key)
+{
+    return isset($state[$key]);
+}
+
+function run_yahrzeit_command($args, $reason, $opts)
+{
+    $cmd = escapeshellarg(__DIR__ . "/yahrzeit");
+
+    foreach ($args as $arg) {
+        $cmd .= " " . escapeshellarg($arg);
+    }
+
+    timestamp_line("ACTION: $reason");
+    timestamp_line("COMMAND: $cmd");
+
+    if ($opts['dry_run']) {
+        return 0;
+    }
+
+    passthru($cmd, $rc);
+
+    if ($rc != 0) {
+        timestamp_line("ERROR: command exited with status $rc");
+    }
+
+    return $rc;
+}
+
+function main($argv)
+{
+    $opts = parse_options($argv);
+    $now = $opts['now'];
+    global $log_now;
+    $log_now = $now;
+
+    $minhag = read_minhag_ini();
+    $state = $opts['use_state'] ? read_state() : array();
+    $state = prune_state($state, $now);
+
+    $action = decide_action($minhag, $state, $now, $opts['window_minutes']);
+
+    if ($action === null) {
+        if ($opts['verbose']) {
+            timestamp_line("No scheduled action due. now=" . date('Y-m-d H:i:s', $now));
+        }
+        if ($opts['use_state']) {
+            write_state($state);
+        }
+        return 0;
+    }
+
+    $target_text = date('Y-m-d H:i:s', $action['target']);
+
+    if (already_ran($state, $action['key'])) {
+        timestamp_line("SKIP: already ran " . $action['name'] . " for target $target_text");
+        if ($opts['use_state']) {
+            write_state($state);
+        }
+        return 0;
+    }
+
+    $rc = run_yahrzeit_command($action['args'],
+                               $action['reason'] . "; target=$target_text",
+                               $opts);
+
+    if ($rc == 0) {
+        $state[$action['key']] = $now;
+    }
+
+    if ($opts['use_state']) {
+        write_state($state);
+    }
+
+    return $rc;
+}
+
+exit(main($argv));

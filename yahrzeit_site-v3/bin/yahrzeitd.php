@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 
 /*
@@ -5,50 +6,53 @@
  *      yahrzeitd.php
  *
  * SYNOPSIS
+ *      php bin/yahrzeitd.php [options]
+ *      bin/yahrzeitd.php [options]
+ *
+ * OPTIONS
+ *      -a, --audit
+ *          Validate the Yahrzeit database and panel geometry.
+ *
+ *      --report KIND
+ *          Emit a human-readable report.  KIND may be:
+ *          day, daily, week, weekly, next-week, month, this-month, next-month.
+ *
+ *      --date YYYY-MM-DD
+ *          Use this Gregorian date as the report or command-generation base.
+ *
+ *      -d N
+ *          Set debug verbosity.  Debug lines are emitted as comments.
+ *
+ *      -h, --help
+ *          Display usage.
  *
  * DESCRIPTION
- *      This deamon runs at either sunset or sunrise or some other
- *      time, and turns on LEDs representing YAHRZEITs, or turns them
- *      off (if they are on).
+ *      Date/name engine for the CBS Yahrzeit wall.
+ *
+ *      In normal mode, this script emits the controller command stream that
+ *      clears the wall, lights the currently active memorial LEDs, refreshes
+ *      the display, and saves the controller state.
+ *
+ *      In audit mode, it validates memorial records against the static panel
+ *      geometry and reports malformed locations and duplicate LED positions.
+ *
+ *      In report mode, it lists yahrzeit names for a selected date range.
  *
  * NOTES
- *      english date == gregorian calendar
- *      julian is obsolete
+ *      "English date" means Gregorian calendar date.
  *
  * HISTORY
- *      version 1 created for Congregation Beth Sholom, 2007-2008
- *      by Allan M. Schwartz, allanschwartz@sbcglobal.net
+ *      Version 1 created for Congregation Beth Sholom, 2007-2008
+ *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
+ *
+ *      Modernized for the Arduino V3 controller and PHP 8 in 2026.
  *
  * COPYRIGHT NOTICE
- *      copyright (c) 2008, by Allan M. Schwartz
+ *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
  *      All rights reserved.
- *
- * BUGS
- *
- *
- * TODO
- *
- *
- *
- * CONTENTS
- *
- *  line    Funtion Declarations
- *  ----    ------------------------------------
- *	  63    function yz_main()
- *	 138    function yz_lighton( $person )
- *	 153    function yz_lightoff( $person )
- *	 169    function yz_process_person( $person )
- *	 207    function engWeekMatch( $month, $day )
- *	 244    function engDayMatch( $month, $day )
- *	 306    function isYahrzeitToday( $person)
- *	 341    function isLeapYear( $year ) 
- *	 361    function haYomShabbat()
-
  */
 
-
 require_once dirname(__DIR__) . "/include/misc.inc.php";
-
 require_once site_root() . "/include/panels.inc.php";
 require_once site_root() . "/include/names.inc.php";
 require_once site_root() . "/include/leds.inc.php";
@@ -66,13 +70,141 @@ require_once site_root() . "/include/leds.inc.php";
 // Debug output is emitted as comment lines beginning with "#", so it remains
 // harmless if accidentally included in a controller command stream.
 
+$options = parse_options();
+$minhag = read_minhag_ini();
+
+exit(yz_main());
+
+
+// ---------------------------------------------------------------------------
+// Program entry and option handling
+// ---------------------------------------------------------------------------
+
+function usage($exit_status = 0)
+{
+    $message = <<<USAGE
+Usage:
+    php bin/yahrzeitd.php [options]
+    bin/yahrzeitd.php [options]
+
+Options:
+    -a, --audit
+        Validate the Yahrzeit database and panel geometry.
+
+    --report KIND
+        Emit a report.  KIND may be:
+        day, daily, week, weekly, next-week, month, this-month, next-month.
+
+    --date YYYY-MM-DD
+        Use this Gregorian date as the base date.
+
+    -d N
+        Set debug verbosity.
+
+    -h, --help
+        Show this help.
+
+Examples:
+    php bin/yahrzeitd.php
+    php bin/yahrzeitd.php --audit
+    php bin/yahrzeitd.php --report week --date 2026-05-26
+
+USAGE;
+
+    if ($exit_status == 0) {
+        fwrite(STDOUT, $message);
+    } else {
+        fwrite(STDERR, $message);
+    }
+
+    exit($exit_status);
+}
+
+
+function parse_options()
+{
+    $options = getopt("ad:h:", array("audit", "date:", "help", "report:"));
+
+    if (isset($options['h']) || isset($options['help'])) {
+        usage(0);
+    }
+
+    // Accept either -a or --audit.  The rest of the code tests -a.
+    if (isset($options['audit'])) {
+        $options['a'] = true;
+    }
+
+    return $options;
+}
+
+
+// Main function for yahrzeitd.php.
+//
+// Normal mode:
+//   - compute today's Gregorian/Hebrew context
+//   - emit a controller command stream for currently active names
+//
+// Audit/report modes:
+//   - emit human-readable text only
+//   - do not emit controller commands
+function yz_main()
+{
+    global $today_month;
+    global $today_day;
+    global $today_year;
+
+    global $hebrewDay;
+    global $hebrewMonth;
+    global $hebrewMonthName;
+    global $hebrewYear;
+    global $options;
+
+    $selected_ts = selected_timestamp();
+    setup_yahrzeit_date_context($selected_ts);
+
+    if (isset($options['report'])) {
+        return emit_yahrzeit_report($options['report'], $selected_ts);
+    }
+
+    if (audit_mode()) {
+        return emit_audit_report();
+    }
+
+    // Normal command-stream path.
+    echo "\n# Today is ";
+    if (haYomShabbat()) {
+        echo "SHABBAT ";
+    }
+    echo "$today_month/$today_day/$today_year ... ";
+    echo "$hebrewDay $hebrewMonthName ($hebrewMonth) $hebrewYear\n";
+
+    led_all("off");
+
+    panel_readDB();
+    $n = yahrzeit_readDB();
+
+    for ($i = 0; $i < $n; $i++) {
+        $person = yahrzeit_getObj($i);
+        yz_process_person($person);
+    }
+
+    led_data_refresh();
+    echo "\nsave\n";
+
+    return 0;
+}
+
+
+// ---------------------------------------------------------------------------
+// Logging and date context helpers
+// ---------------------------------------------------------------------------
+
 function debug_level()
 {
     global $options;
 
     return isset($options['d']) ? (int)$options['d'] : 0;
 }
-
 
 function debug_log($level, $message, $line = null)
 {
@@ -100,7 +232,6 @@ function warn_log($message)
     echo "# WARNING: $message\n";
 }
 
-
 function selected_timestamp()
 {
     global $options;
@@ -116,7 +247,6 @@ function selected_timestamp()
 
     return time();
 }
-
 
 function setup_yahrzeit_date_context($timestamp)
 {
@@ -139,7 +269,6 @@ function setup_yahrzeit_date_context($timestamp)
     list($hebrewMonth, $hebrewDay, $hebrewYear) = explode('/', $hebrewDate);
 }
 
-
 function hebrew_year_for_timestamp($timestamp)
 {
     $jd = gregoriantojd(date('n', $timestamp), date('j', $timestamp), date('Y', $timestamp));
@@ -150,51 +279,200 @@ function hebrew_year_for_timestamp($timestamp)
 }
 
 
-function person_name($person)
-{
-    $first = isset($person['firstName']) ? $person['firstName'] : "";
-    $last  = isset($person['lastName'])  ? $person['lastName']  : "";
 
-    return trim($first . " " . $last);
+// ---------------------------------------------------------------------------
+// Audit reporting
+// ---------------------------------------------------------------------------
+
+function build_panel_geometry_map()
+{
+    $n = panel_readDB();
+    $panels = array();
+
+    for ($i = 0; $i < $n; $i++) {
+        $panel = panel_getObj($i);
+
+        if (!isset($panel['panelId'])) {
+            continue;
+        }
+
+        $panels[$panel['panelId']] = $panel;
+    }
+
+    return $panels;
+}
+
+function emit_audit_report()
+{
+    $panels = build_panel_geometry_map();
+    $n = yahrzeit_readDB();
+
+    $errors = 0;
+    $warnings = 0;
+    $seen_locations = array();
+
+    echo "# AUDIT: Starting yahrzeit database audit\n";
+    echo "# AUDIT: Panels defined: " . count($panels) . "\n";
+    echo "# AUDIT: Memorial records: $n\n";
+
+    for ($i = 0; $i < $n; $i++) {
+        $person = yahrzeit_getObj($i);
+        $name = person_name($person);
+        $location = person_location($person);
+
+        if ($name == "") {
+            echo "# AUDIT WARNING: row $i has no name, location=$location\n";
+            $warnings++;
+            continue;
+        }
+
+        $panel_id = isset($person['panelId']) ? $person['panelId'] : "";
+        $row = isset($person['row']) ? $person['row'] : "";
+        $col = isset($person['column']) ? $person['column'] : "";
+
+        if ($panel_id == "" || $row == "" || $col == "") {
+            echo "# AUDIT ERROR: row $i $name has incomplete location '$location'\n";
+            $errors++;
+            continue;
+        }
+
+        if (!isset($panels[$panel_id])) {
+            echo "# AUDIT ERROR: row $i $name uses unknown panel '$panel_id'\n";
+            $errors++;
+            continue;
+        }
+
+        $panel = $panels[$panel_id];
+
+        if (!is_numeric($row) || !is_numeric($col)) {
+            echo "# AUDIT ERROR: row $i $name has non-numeric row/column '$location'\n";
+            $errors++;
+            continue;
+        }
+
+        $row_i = (int)$row;
+        $col_i = (int)$col;
+
+        if ($row_i < 1 || $row_i > (int)$panel['nRows'] ||
+            $col_i < 1 || $col_i > (int)$panel['nCols']) {
+            echo "# AUDIT ERROR: row $i $name location '$location' outside geometry " .
+                 $panel['nRows'] . "x" . $panel['nCols'] . "\n";
+            $errors++;
+            continue;
+        }
+
+        $key = "$panel_id-$row_i-$col_i";
+        if (isset($seen_locations[$key])) {
+            echo "# AUDIT ERROR: collision at $key: " .
+                 $seen_locations[$key] . " and $name\n";
+            $errors++;
+        } else {
+            $seen_locations[$key] = $name;
+        }
+    }
+
+    echo "# AUDIT: Completed with $errors error(s), $warnings warning(s)\n";
+
+    return ($errors == 0) ? 0 : 1;
 }
 
 
-function person_location($person)
+global $minhag;
+$minhag = read_minhag_ini();
+
+yz_main();
+
+
+
+// main function for the "yahrzeitd"
+//    does some date calculations
+//    reads entire yahrzeit database
+//    for each person in database, calls yz_process_person
+
+
+
+// ---------------------------------------------------------------------------
+// Yahrzeit range reports
+// ---------------------------------------------------------------------------
+
+function emit_yahrzeit_report($kind, $base_timestamp)
 {
-    $panel = isset($person['panelId']) ? $person['panelId'] : "";
-    $row   = isset($person['row'])     ? $person['row']     : "";
-    $col   = isset($person['column'])  ? $person['column']  : "";
+    $range = report_date_range($kind, $base_timestamp);
 
-    return "$panel-$row-$col";
+    if ($range === false) {
+        echo "# ERROR: Unknown report kind '$kind'\n";
+        echo "# Valid report kinds: day, week, next-week, month, next-month\n";
+        return 1;
+    }
+
+    list($start_ts, $end_ts, $normalized_kind) = $range;
+
+    $n = yahrzeit_readDB();
+    $rows = array();
+
+    for ($i = 0; $i < $n; $i++) {
+        $person = yahrzeit_getObj($i);
+        $name = person_name($person);
+
+        if ($name == "") {
+            continue;
+        }
+
+        $dates = yahrzeit_candidate_dates_in_range($person, $start_ts, $end_ts);
+
+        foreach ($dates as $ts) {
+            $rows[] = array($ts, $person);
+        }
+    }
+
+    usort($rows, function($a, $b) {
+        if ($a[0] == $b[0]) {
+            return strcmp(person_name($a[1]), person_name($b[1]));
+        }
+        return ($a[0] < $b[0]) ? -1 : 1;
+    });
+
+    echo "# Yahrzeit report: $normalized_kind\n";
+    echo "# Range: " . date("l F j, Y", $start_ts) .
+         " through " . date("l F j, Y", $end_ts) . "\n";
+    echo "# Count: " . count($rows) . "\n\n";
+
+    printf("%-12s  %-32s  %-18s  %-14s  %-12s  %s\n",
+        "Date", "Name", "Hebrew Date", "English Date", "Location", "Options");
+    printf("%'-12s  %'-32s  %'-18s  %'-14s  %'-12s  %s\n",
+        "", "", "", "", "", "");
+
+    foreach ($rows as $row) {
+        $ts = $row[0];
+        $person = $row[1];
+
+        $name = person_name($person);
+
+        $heb = trim(
+            (isset($person['hebYzDD']) ? $person['hebYzDD'] : "") . " " .
+            (isset($person['hebYzMonth']) ? $person['hebYzMonth'] : "") . " " .
+            (isset($person['hebYzYYYY']) ? $person['hebYzYYYY'] : "")
+        );
+
+        $eng = trim(
+            (isset($person['engYzMonth']) ? $person['engYzMonth'] : "") . "/" .
+            (isset($person['engYzDD']) ? $person['engYzDD'] : "") . "/" .
+            (isset($person['engYzYYYY']) ? $person['engYzYYYY'] : ""),
+            "/"
+        );
+
+        printf("%-12s  %-32s  %-18s  %-14s  %-12s  %s\n",
+            date("Y-m-d", $ts),
+            substr($name, 0, 32),
+            substr($heb, 0, 18),
+            substr($eng, 0, 14),
+            person_location($person),
+            person_options_text($person)
+        );
+    }
+
+    return 0;
 }
-
-
-function person_options_text($person)
-{
-    $opts = array();
-
-    if (isset($person['useHeb']) && $person['useHeb']) {
-        $opts[] = "HEB";
-    }
-    if (isset($person['useEng']) && $person['useEng']) {
-        $opts[] = "ENG";
-    }
-    if (isset($person['manual']) && $person['manual']) {
-        $opts[] = "MANUAL";
-    }
-    if (isset($person['reserved']) && $person['reserved']) {
-        $opts[] = "RESERVED";
-    }
-    if (isset($person['yomhashoah']) && $person['yomhashoah']) {
-        $opts[] = "HASHOAH";
-    }
-    if (isset($person['yomhazikaron']) && $person['yomhazikaron']) {
-        $opts[] = "HAZIKARON";
-    }
-
-    return implode(",", $opts);
-}
-
 
 function report_date_range($kind, $base_timestamp)
 {
@@ -236,39 +514,6 @@ function report_date_range($kind, $base_timestamp)
 
     return array($start, $end, $kind);
 }
-
-
-function english_month_number($month)
-{
-    global $english_month_mapping;
-
-    if ($month == "") {
-        return 0;
-    }
-
-    if (is_numeric($month)) {
-        return (int)$month;
-    }
-
-    return isset($english_month_mapping[$month]) ? (int)$english_month_mapping[$month] : 0;
-}
-
-
-function person_uses_hebrew_date($person)
-{
-    global $minhag;
-
-    if (isset($person['useHeb']) && $person['useHeb']) {
-        return true;
-    }
-
-    if (isset($person['useEng']) && $person['useEng']) {
-        return false;
-    }
-
-    return isset($minhag['yahrzeitEngOrHeb']) && $minhag['yahrzeitEngOrHeb'] == "heb";
-}
-
 
 function yahrzeit_candidate_dates_in_range($person, $start_ts, $end_ts)
 {
@@ -358,252 +603,11 @@ function yahrzeit_candidate_dates_in_range($person, $start_ts, $end_ts)
 }
 
 
-function emit_yahrzeit_report($kind, $base_timestamp)
-{
-    $range = report_date_range($kind, $base_timestamp);
 
-    if ($range === false) {
-        echo "# ERROR: Unknown report kind '$kind'\n";
-        echo "# Valid report kinds: day, week, next-week, month, next-month\n";
-        return 1;
-    }
+// ---------------------------------------------------------------------------
+// Normal command-stream processing
+// ---------------------------------------------------------------------------
 
-    list($start_ts, $end_ts, $normalized_kind) = $range;
-
-    $n = yahrzeit_readDB();
-    $rows = array();
-
-    for ($i = 0; $i < $n; $i++) {
-        $person = yahrzeit_getObj($i);
-        $name = person_name($person);
-
-        if ($name == "") {
-            continue;
-        }
-
-        $dates = yahrzeit_candidate_dates_in_range($person, $start_ts, $end_ts);
-
-        foreach ($dates as $ts) {
-            $rows[] = array($ts, $person);
-        }
-    }
-
-    usort($rows, function($a, $b) {
-        if ($a[0] == $b[0]) {
-            return strcmp(person_name($a[1]), person_name($b[1]));
-        }
-        return ($a[0] < $b[0]) ? -1 : 1;
-    });
-
-    echo "# Yahrzeit report: $normalized_kind\n";
-    echo "# Range: " . date("l F j, Y", $start_ts) .
-         " through " . date("l F j, Y", $end_ts) . "\n";
-    echo "# Count: " . count($rows) . "\n\n";
-
-    printf("%-12s  %-32s  %-18s  %-14s  %-12s  %s\n",
-        "Date", "Name", "Hebrew Date", "English Date", "Location", "Options");
-    printf("%'-12s  %'-32s  %'-18s  %'-14s  %'-12s  %s\n",
-        "", "", "", "", "", "");
-
-    foreach ($rows as $row) {
-        $ts = $row[0];
-        $person = $row[1];
-
-        $name = person_name($person);
-
-        $heb = trim(
-            (isset($person['hebYzDD']) ? $person['hebYzDD'] : "") . " " .
-            (isset($person['hebYzMonth']) ? $person['hebYzMonth'] : "") . " " .
-            (isset($person['hebYzYYYY']) ? $person['hebYzYYYY'] : "")
-        );
-
-        $eng = trim(
-            (isset($person['engYzMonth']) ? $person['engYzMonth'] : "") . "/" .
-            (isset($person['engYzDD']) ? $person['engYzDD'] : "") . "/" .
-            (isset($person['engYzYYYY']) ? $person['engYzYYYY'] : ""),
-            "/"
-        );
-
-        printf("%-12s  %-32s  %-18s  %-14s  %-12s  %s\n",
-            date("Y-m-d", $ts),
-            substr($name, 0, 32),
-            substr($heb, 0, 18),
-            substr($eng, 0, 14),
-            person_location($person),
-            person_options_text($person)
-        );
-    }
-
-    return 0;
-}
-
-
-function build_panel_geometry_map()
-{
-    $n = panel_readDB();
-    $panels = array();
-
-    for ($i = 0; $i < $n; $i++) {
-        $panel = panel_getObj($i);
-
-        if (!isset($panel['panelId'])) {
-            continue;
-        }
-
-        $panels[$panel['panelId']] = $panel;
-    }
-
-    return $panels;
-}
-
-
-function emit_audit_report()
-{
-    $panels = build_panel_geometry_map();
-    $n = yahrzeit_readDB();
-
-    $errors = 0;
-    $warnings = 0;
-    $seen_locations = array();
-
-    echo "# AUDIT: Starting yahrzeit database audit\n";
-    echo "# AUDIT: Panels defined: " . count($panels) . "\n";
-    echo "# AUDIT: Memorial records: $n\n";
-
-    for ($i = 0; $i < $n; $i++) {
-        $person = yahrzeit_getObj($i);
-        $name = person_name($person);
-        $location = person_location($person);
-
-        if ($name == "") {
-            echo "# AUDIT WARNING: row $i has no name, location=$location\n";
-            $warnings++;
-            continue;
-        }
-
-        $panel_id = isset($person['panelId']) ? $person['panelId'] : "";
-        $row = isset($person['row']) ? $person['row'] : "";
-        $col = isset($person['column']) ? $person['column'] : "";
-
-        if ($panel_id == "" || $row == "" || $col == "") {
-            echo "# AUDIT ERROR: row $i $name has incomplete location '$location'\n";
-            $errors++;
-            continue;
-        }
-
-        if (!isset($panels[$panel_id])) {
-            echo "# AUDIT ERROR: row $i $name uses unknown panel '$panel_id'\n";
-            $errors++;
-            continue;
-        }
-
-        $panel = $panels[$panel_id];
-
-        if (!is_numeric($row) || !is_numeric($col)) {
-            echo "# AUDIT ERROR: row $i $name has non-numeric row/column '$location'\n";
-            $errors++;
-            continue;
-        }
-
-        $row_i = (int)$row;
-        $col_i = (int)$col;
-
-        if ($row_i < 1 || $row_i > (int)$panel['nRows'] ||
-            $col_i < 1 || $col_i > (int)$panel['nCols']) {
-            echo "# AUDIT ERROR: row $i $name location '$location' outside geometry " .
-                 $panel['nRows'] . "x" . $panel['nCols'] . "\n";
-            $errors++;
-            continue;
-        }
-
-        $key = "$panel_id-$row_i-$col_i";
-        if (isset($seen_locations[$key])) {
-            echo "# AUDIT ERROR: collision at $key: " .
-                 $seen_locations[$key] . " and $name\n";
-            $errors++;
-        } else {
-            $seen_locations[$key] = $name;
-        }
-    }
-
-    echo "# AUDIT: Completed with $errors error(s), $warnings warning(s)\n";
-
-    return ($errors == 0) ? 0 : 1;
-}
-
-
-global $minhag;
-$minhag = read_minhag_ini();
-
-yz_main();
-
-
-
-// main function for the "yahrzeitd"
-//    does some date calculations
-//    reads entire yahrzeit database
-//    for each person in database, calls yz_process_person
-function yz_main()
-{
-    global $today_month;
-    global $today_day;
-    global $today_year;
-
-    global $hebrewDay;
-    global $hebrewMonth;
-    global $hebrewMonthName;
-    global $hebrewYear;
-    global $options;
-
-    $options = getopt("ad:t:", array("report:", "date:"));
-    //var_dump($options);
-
-
-    $selected_ts = selected_timestamp();
-    setup_yahrzeit_date_context($selected_ts);
-
-    if (isset($options['report'])) {
-        emit_yahrzeit_report($options['report'], $selected_ts);
-        return;
-    }
-
-    if (audit_mode()) {
-        emit_audit_report();
-        return;
-    }
-
-    // normal path through the code...
-    echo "\n# Today is ";
-    if (haYomShabbat() ) echo "SHABBAT ";
-    echo "$today_month/$today_day/$today_year ... ";
-    echo "$hebrewDay $hebrewMonthName ($hebrewMonth) $hebrewYear\n";
-
-    led_all( "off" );
-
-    $n1 = panel_readDB();
-    $n2 = yahrzeit_readDB();
-
-    for( $i = 0 ; $i < $n2 ; $i++ ) {
-        $person = yahrzeit_getObj( $i );
-
-        yz_process_person( $person );
-    }
-
-    led_data_refresh();
-    echo "\nsave\n";
-}
-
-
-// Process one memorial record.
-//
-// Normal command-stream mode:
-//   - emit "pixel on ..." only when this person's LED should be lit
-//   - do not emit per-person "pixel off"; yz_main() already emits "all off"
-//
-// Audit mode:
-//   - emit comment-only ON/OFF/SKIP decisions for every person
-//   - useful for validating the database and date logic without sending a
-//     huge stream of controller commands
 function yz_process_person($person)
 {
     global $minhag;
@@ -705,268 +709,7 @@ function yz_process_person($person)
 
 
 // Boolean: does the given MONTH/DAY match between tomorrow and next Erev Shabbat?
-function engWeekMatch($month, $day)
-{
-    global $today_month;
-    global $today_day;
-    global $today_year;
-    global $english_month_mapping;
 
-    $result_code = false;
-
-    if ($month == "" || $day == "") {
-        return false;
-    }
-
-    // Convert month names such as "Feb" or "May" to month numbers.
-    if (!is_numeric($month)) {
-        if (!isset($english_month_mapping[$month])) {
-            return false;
-        }
-        $month = $english_month_mapping[$month];
-    }
-
-    $month = (int)$month;
-    $day   = (int)$day;
-    $year  = (int)$today_year;
-
-    if ($month < 1 || $month > 12 || $day < 1 || $day > 31) {
-        return false;
-    }
-
-    // Special case for Feb 29 in non-leap years.
-    if ($month == 2 && $day == 29 && !isLeapYear($year)) {
-        $day = 28;
-    }
-
-    $yz_date = mktime(0, 0, 0, $month,       $day,       $year);
-    $today   = mktime(0, 0, 0, $today_month, $today_day, $today_year);
-
-    // We assume this daemon is normally run in the late afternoon,
-    // computing yahrzeits for tomorrow / after sunset.
-    //
-    // If today is Erev Shabbat, the window is today through next Friday.
-    // Otherwise, compute the current Friday-to-Friday week window.
-    if (haYomShabbat()) {
-        $first_date  = strtotime("today", $today);
-        $second_date = strtotime("next friday", $today);
-    } else {
-        $second_date = strtotime("next friday", $today);
-        $first_date  = strtotime("-7 days", $second_date);
-    }
-
-    if ($first_date === false || $second_date === false || $yz_date === false) {
-        return false;
-    }
-
-    if (($first_date <= $yz_date) && ($yz_date <= $second_date)) {
-        $result_code = true;
-    }
-
-    if (debug_level() >= 20 && $result_code) {
-        $printable_rc = $result_code ? "TRUE" : "FALSE";
-        debug_log( 20,
-            "yz_date $yz_date today $today first_date $first_date second_date $second_date",
-            __LINE__
-        );
-        debug_log( 20,
-            "engWeekMatch($month $day) returns $printable_rc",
-            __LINE__
-        );
-    }
-
-    return $result_code;
-}
-
-
-// Boolean: does the given MONTH/DAY match today or tomorrow?
-//
-// This function is used after yahrzeit dates have been converted to a
-// Gregorian month/day for the current Hebrew/civil year.  The daemon is
-// normally run late in the day, so "today or tomorrow" is intentional:
-// after sunset, tomorrow's yahrzeit may already be the active observance.
-function engDayMatch($month, $day)
-{
-    global $today_month;
-    global $today_day;
-    global $today_year;
-    global $options;
-    global $english_month_mapping;
-
-    $result_code = false;
-
-    if ($month == "" || $day == "") {
-        return false;
-    }
-
-    // Convert month names such as "Feb" or "May" to month numbers.
-    if (!is_numeric($month)) {
-        if (!isset($english_month_mapping[$month])) {
-            return false;
-        }
-        $month = $english_month_mapping[$month];
-    }
-
-    $month = (int) $month;
-    $day   = (int) $day;
-    $year  = (int) $today_year;
-
-    if ($month < 1 || $month > 12 || $day < 1 || $day > 31) {
-        return false;
-    }
-
-    // Special case for Feb 29 in non-leap years.
-    if ($month == 2 && $day == 29 && !isLeapYear($year)) {
-        $day = 28;
-    }
-
-    $yz_date  = mktime(0, 0, 0, $month,       $day,       $year);
-    $today    = mktime(0, 0, 0, $today_month, $today_day, $today_year);
-    $tomorrow = strtotime("tomorrow", $today);
-
-    if ($yz_date == $tomorrow || $yz_date == $today) {
-        $result_code = true;
-    }
-
-    if (debug_level() >= 20 && $result_code) {
-        $printable_rc = $result_code ? "TRUE" : "FALSE";
-
-        debug_log( 20,
-            "yz_date $yz_date today $today tomorrow $tomorrow",
-            __LINE__
-        );
-
-        debug_log( 20,
-            "engDayMatch($month $day) returns $printable_rc",
-            __LINE__
-        );
-    }
-
-    return $result_code;
-}
-
-
-// Boolean: is this person's yahrzeit sometime this coming week?
-function isYahrzeitThisWeek($person)
-{
-    global $minhag;
-    global $hebrewMonthName;
-    global $hebrewYear;
-    global $hebrew_month_mapping;
-
-    $result_code = false;
-    $heb_or_eng = "";
-    $yz_jd_date = "";
-    $yz_gregorian_date = "";
-    $m = "";
-    $mm = "";
-    $dd = "";
-    $yy = "";
-
-    $use_hebrew =
-        isset($minhag['yahrzeitEngOrHeb']) &&
-        $minhag['yahrzeitEngOrHeb'] == "heb";
-
-    if (isset($person['useHeb']) && $person['useHeb']) {
-        $use_hebrew = true;
-    }
-
-    $use_english =
-        isset($minhag['yahrzeitEngOrHeb']) &&
-        $minhag['yahrzeitEngOrHeb'] == "eng";
-
-    if (isset($person['useEng']) && $person['useEng']) {
-        $use_english = true;
-    }
-
-    if ($use_hebrew) {
-        $heb_or_eng = "heb";
-
-        $heb_month_name = isset($person['hebYzMonth'])
-            ? closest_hebrew_month($person['hebYzMonth'])
-            : "";
-
-        if ($heb_month_name == "" || !isset($hebrew_month_mapping[$heb_month_name])) {
-            return false;
-        }
-
-        $m = $hebrew_month_mapping[$heb_month_name];
-
-        if (!isset($person['hebYzDD']) || !is_numeric($person['hebYzDD'])) {
-            return false;
-        }
-
-        $heb_day = (int)$person['hebYzDD'];
-        $heb_year = (int)$hebrewYear;
-
-        if ($heb_day < 1 || $heb_day > 30 || $heb_year <= 0) {
-            return false;
-        }
-
-        $yz_jd_date = jewishtojd($m, $heb_day, $heb_year);
-
-        // Special case for dates in Tishrei:
-        // if the yahrzeit is in Tishrei, and this is Elul,
-        // then that yahrzeit is in the NEXT Hebrew year.
-        if ($m == 1 && $hebrewMonthName == "Elul") {
-            $yz_jd_date = jewishtojd($m, $heb_day, $heb_year + 1);
-        }
-
-        // Similar special case if this is the first week of Tishrei
-        // and the person's yahrzeit is in Elul.  That Elul was last week,
-        // not the coming Elul.
-        if ($m == 13 && $hebrewMonthName == "Tishri") {
-            $yz_jd_date = jewishtojd($m, $heb_day, $heb_year - 1);
-        }
-
-        if (!$yz_jd_date) {
-            return false;
-        }
-
-        $yz_gregorian_date = JDToGregorian($yz_jd_date);
-        $parts = explode('/', $yz_gregorian_date);
-
-        if (count($parts) < 3) {
-            return false;
-        }
-
-        list($mm, $dd, $yy) = $parts;
-
-        $result_code = engWeekMatch($mm, $dd);
-    }
-    else if ($use_english) {
-        $heb_or_eng = "eng";
-
-        $eng_month = isset($person['engYzMonth']) ? $person['engYzMonth'] : "";
-        $eng_day   = isset($person['engYzDD'])    ? $person['engYzDD']    : "";
-
-        $result_code = engWeekMatch($eng_month, $eng_day);
-    }
-
-    if (debug_level() >= 30 && $result_code) {
-        $printable_rc = $result_code ? "TRUE" : "FALSE";
-
-        $heb_month = isset($person['hebYzMonth']) ? $person['hebYzMonth'] : "";
-        $heb_day   = isset($person['hebYzDD'])    ? $person['hebYzDD']    : "";
-        $first     = isset($person['firstName'])  ? $person['firstName']  : "";
-        $last      = isset($person['lastName'])   ? $person['lastName']   : "";
-
-        debug_log( 30,
-            "isYahrzeitThisWeek($heb_or_eng): yz_jd_date=$yz_jd_date yz_gregorian_date=$yz_gregorian_date m=$m hebMon=$heb_month hebDay=$heb_day mm=$mm dd=$dd yy=$yy",
-            __LINE__
-        );
-
-        debug_log( 30,
-            "isYahrzeitThisWeek($heb_or_eng): $first $last returns $printable_rc",
-            __LINE__
-        );
-    }
-
-    return $result_code;
-}
-
-
-// Boolean: is this person's yahrzeit today?
 function isYahrzeitToday($person)
 {
     global $minhag;
@@ -1087,6 +830,351 @@ function isYahrzeitToday($person)
 
 
 // Boolean: is this year a leap year?
+
+function isYahrzeitThisWeek($person)
+{
+    global $minhag;
+    global $hebrewMonthName;
+    global $hebrewYear;
+    global $hebrew_month_mapping;
+
+    $result_code = false;
+    $heb_or_eng = "";
+    $yz_jd_date = "";
+    $yz_gregorian_date = "";
+    $m = "";
+    $mm = "";
+    $dd = "";
+    $yy = "";
+
+    $use_hebrew =
+        isset($minhag['yahrzeitEngOrHeb']) &&
+        $minhag['yahrzeitEngOrHeb'] == "heb";
+
+    if (isset($person['useHeb']) && $person['useHeb']) {
+        $use_hebrew = true;
+    }
+
+    $use_english =
+        isset($minhag['yahrzeitEngOrHeb']) &&
+        $minhag['yahrzeitEngOrHeb'] == "eng";
+
+    if (isset($person['useEng']) && $person['useEng']) {
+        $use_english = true;
+    }
+
+    if ($use_hebrew) {
+        $heb_or_eng = "heb";
+
+        $heb_month_name = isset($person['hebYzMonth'])
+            ? closest_hebrew_month($person['hebYzMonth'])
+            : "";
+
+        if ($heb_month_name == "" || !isset($hebrew_month_mapping[$heb_month_name])) {
+            return false;
+        }
+
+        $m = $hebrew_month_mapping[$heb_month_name];
+
+        if (!isset($person['hebYzDD']) || !is_numeric($person['hebYzDD'])) {
+            return false;
+        }
+
+        $heb_day = (int)$person['hebYzDD'];
+        $heb_year = (int)$hebrewYear;
+
+        if ($heb_day < 1 || $heb_day > 30 || $heb_year <= 0) {
+            return false;
+        }
+
+        $yz_jd_date = jewishtojd($m, $heb_day, $heb_year);
+
+        // Special case for dates in Tishrei:
+        // if the yahrzeit is in Tishrei, and this is Elul,
+        // then that yahrzeit is in the NEXT Hebrew year.
+        if ($m == 1 && $hebrewMonthName == "Elul") {
+            $yz_jd_date = jewishtojd($m, $heb_day, $heb_year + 1);
+        }
+
+        // Similar special case if this is the first week of Tishrei
+        // and the person's yahrzeit is in Elul.  That Elul was last week,
+        // not the coming Elul.
+        if ($m == 13 && $hebrewMonthName == "Tishri") {
+            $yz_jd_date = jewishtojd($m, $heb_day, $heb_year - 1);
+        }
+
+        if (!$yz_jd_date) {
+            return false;
+        }
+
+        $yz_gregorian_date = JDToGregorian($yz_jd_date);
+        $parts = explode('/', $yz_gregorian_date);
+
+        if (count($parts) < 3) {
+            return false;
+        }
+
+        list($mm, $dd, $yy) = $parts;
+
+        $result_code = engWeekMatch($mm, $dd);
+    }
+    else if ($use_english) {
+        $heb_or_eng = "eng";
+
+        $eng_month = isset($person['engYzMonth']) ? $person['engYzMonth'] : "";
+        $eng_day   = isset($person['engYzDD'])    ? $person['engYzDD']    : "";
+
+        $result_code = engWeekMatch($eng_month, $eng_day);
+    }
+
+    if (debug_level() >= 30 && $result_code) {
+        $printable_rc = $result_code ? "TRUE" : "FALSE";
+
+        $heb_month = isset($person['hebYzMonth']) ? $person['hebYzMonth'] : "";
+        $heb_day   = isset($person['hebYzDD'])    ? $person['hebYzDD']    : "";
+        $first     = isset($person['firstName'])  ? $person['firstName']  : "";
+        $last      = isset($person['lastName'])   ? $person['lastName']   : "";
+
+        debug_log( 30,
+            "isYahrzeitThisWeek($heb_or_eng): yz_jd_date=$yz_jd_date yz_gregorian_date=$yz_gregorian_date m=$m hebMon=$heb_month hebDay=$heb_day mm=$mm dd=$dd yy=$yy",
+            __LINE__
+        );
+
+        debug_log( 30,
+            "isYahrzeitThisWeek($heb_or_eng): $first $last returns $printable_rc",
+            __LINE__
+        );
+    }
+
+    return $result_code;
+}
+
+
+// Boolean: is this person's yahrzeit today?
+
+function engDayMatch($month, $day)
+{
+    global $today_month;
+    global $today_day;
+    global $today_year;
+    global $options;
+    global $english_month_mapping;
+
+    $result_code = false;
+
+    if ($month == "" || $day == "") {
+        return false;
+    }
+
+    // Convert month names such as "Feb" or "May" to month numbers.
+    if (!is_numeric($month)) {
+        if (!isset($english_month_mapping[$month])) {
+            return false;
+        }
+        $month = $english_month_mapping[$month];
+    }
+
+    $month = (int) $month;
+    $day   = (int) $day;
+    $year  = (int) $today_year;
+
+    if ($month < 1 || $month > 12 || $day < 1 || $day > 31) {
+        return false;
+    }
+
+    // Special case for Feb 29 in non-leap years.
+    if ($month == 2 && $day == 29 && !isLeapYear($year)) {
+        $day = 28;
+    }
+
+    $yz_date  = mktime(0, 0, 0, $month,       $day,       $year);
+    $today    = mktime(0, 0, 0, $today_month, $today_day, $today_year);
+    $tomorrow = strtotime("tomorrow", $today);
+
+    if ($yz_date == $tomorrow || $yz_date == $today) {
+        $result_code = true;
+    }
+
+    if (debug_level() >= 20 && $result_code) {
+        $printable_rc = $result_code ? "TRUE" : "FALSE";
+
+        debug_log( 20,
+            "yz_date $yz_date today $today tomorrow $tomorrow",
+            __LINE__
+        );
+
+        debug_log( 20,
+            "engDayMatch($month $day) returns $printable_rc",
+            __LINE__
+        );
+    }
+
+    return $result_code;
+}
+
+
+// Boolean: is this person's yahrzeit sometime this coming week?
+
+function engWeekMatch($month, $day)
+{
+    global $today_month;
+    global $today_day;
+    global $today_year;
+    global $english_month_mapping;
+
+    $result_code = false;
+
+    if ($month == "" || $day == "") {
+        return false;
+    }
+
+    // Convert month names such as "Feb" or "May" to month numbers.
+    if (!is_numeric($month)) {
+        if (!isset($english_month_mapping[$month])) {
+            return false;
+        }
+        $month = $english_month_mapping[$month];
+    }
+
+    $month = (int)$month;
+    $day   = (int)$day;
+    $year  = (int)$today_year;
+
+    if ($month < 1 || $month > 12 || $day < 1 || $day > 31) {
+        return false;
+    }
+
+    // Special case for Feb 29 in non-leap years.
+    if ($month == 2 && $day == 29 && !isLeapYear($year)) {
+        $day = 28;
+    }
+
+    $yz_date = mktime(0, 0, 0, $month,       $day,       $year);
+    $today   = mktime(0, 0, 0, $today_month, $today_day, $today_year);
+
+    // We assume this daemon is normally run in the late afternoon,
+    // computing yahrzeits for tomorrow / after sunset.
+    //
+    // If today is Erev Shabbat, the window is today through next Friday.
+    // Otherwise, compute the current Friday-to-Friday week window.
+    if (haYomShabbat()) {
+        $first_date  = strtotime("today", $today);
+        $second_date = strtotime("next friday", $today);
+    } else {
+        $second_date = strtotime("next friday", $today);
+        $first_date  = strtotime("-7 days", $second_date);
+    }
+
+    if ($first_date === false || $second_date === false || $yz_date === false) {
+        return false;
+    }
+
+    if (($first_date <= $yz_date) && ($yz_date <= $second_date)) {
+        $result_code = true;
+    }
+
+    if (debug_level() >= 20 && $result_code) {
+        $printable_rc = $result_code ? "TRUE" : "FALSE";
+        debug_log( 20,
+            "yz_date $yz_date today $today first_date $first_date second_date $second_date",
+            __LINE__
+        );
+        debug_log( 20,
+            "engWeekMatch($month $day) returns $printable_rc",
+            __LINE__
+        );
+    }
+
+    return $result_code;
+}
+
+
+// Boolean: does the given MONTH/DAY match today or tomorrow?
+//
+// This function is used after yahrzeit dates have been converted to a
+// Gregorian month/day for the current Hebrew/civil year.  The daemon is
+// normally run late in the day, so "today or tomorrow" is intentional:
+// after sunset, tomorrow's yahrzeit may already be the active observance.
+
+
+
+// ---------------------------------------------------------------------------
+// Person and date helper functions
+// ---------------------------------------------------------------------------
+
+function person_name($person)
+{
+    $first = isset($person['firstName']) ? $person['firstName'] : "";
+    $last  = isset($person['lastName'])  ? $person['lastName']  : "";
+
+    return trim($first . " " . $last);
+}
+
+function person_location($person)
+{
+    $panel = isset($person['panelId']) ? $person['panelId'] : "";
+    $row   = isset($person['row'])     ? $person['row']     : "";
+    $col   = isset($person['column'])  ? $person['column']  : "";
+
+    return "$panel-$row-$col";
+}
+
+function person_options_text($person)
+{
+    $opts = array();
+
+    if (isset($person['useHeb']) && $person['useHeb']) {
+        $opts[] = "HEB";
+    }
+    if (isset($person['useEng']) && $person['useEng']) {
+        $opts[] = "ENG";
+    }
+    if (isset($person['manual']) && $person['manual']) {
+        $opts[] = "MANUAL";
+    }
+    if (isset($person['reserved']) && $person['reserved']) {
+        $opts[] = "RESERVED";
+    }
+    if (isset($person['yomhashoah']) && $person['yomhashoah']) {
+        $opts[] = "HASHOAH";
+    }
+    if (isset($person['yomhazikaron']) && $person['yomhazikaron']) {
+        $opts[] = "HAZIKARON";
+    }
+
+    return implode(",", $opts);
+}
+
+function person_uses_hebrew_date($person)
+{
+    global $minhag;
+
+    if (isset($person['useHeb']) && $person['useHeb']) {
+        return true;
+    }
+
+    if (isset($person['useEng']) && $person['useEng']) {
+        return false;
+    }
+
+    return isset($minhag['yahrzeitEngOrHeb']) && $minhag['yahrzeitEngOrHeb'] == "heb";
+}
+
+function english_month_number($month)
+{
+    global $english_month_mapping;
+
+    if ($month == "") {
+        return 0;
+    }
+
+    if (is_numeric($month)) {
+        return (int)$month;
+    }
+
+    return isset($english_month_mapping[$month]) ? (int)$english_month_mapping[$month] : 0;
+}
+
 function isLeapYear($year)
 {
     return (($year % 4) == 0) &&
@@ -1098,6 +1186,7 @@ function isLeapYear($year)
 //
 // This returns true on Friday, because the daemon is normally run in the
 // late afternoon to compute the lights for the coming evening / Shabbat.
+
 function haYomShabbat()
 {
     global $today_month;
@@ -1110,4 +1199,3 @@ function haYomShabbat()
     return ($dateinfo['weekday'] == "Friday");
 }
 
-?>
