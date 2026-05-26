@@ -5,48 +5,58 @@
  *      panels.inc.php
  *
  * DESCRIPTION
- *      Static Congregation Beth Sholom Yahrzeit Wall panel geometry.
+ *      Panel geometry definitions for the CBS Yahrzeit Wall.
+ *
+ *      This file defines the physical wall layout: panel IDs, panel names,
+ *      and the number of LED rows and columns on each panel.  The rest of
+ *      the application uses this information to validate memorial locations,
+ *      draw panel views, and translate a person's stored location into a
+ *      controller command.
+ *
+ *      The original application treated panel data much like the memorial
+ *      name database, with a small procedural object-store API:
+ *
+ *          panel_readDB()
+ *          panel_numrows()
+ *          panel_getObj($i)
+ *          panel_getObj_byId($panelId)
+ *
+ *      In modern terms, this file combines the roles of a Panel record class
+ *      and a PanelGeometry repository.  The panel_ prefix acts as a small
+ *      module namespace.
  *
  * NOTES
- *      This is no longer a writable CSV-backed "database".
+ *      Panel geometry is now static application data, not an editable CSV
+ *      file.  The old panel add/modify/delete workflow was removed because
+ *      the physical wall layout is fixed.
  *
- *      The V3 embedded controller owns physical LED addressing.  The PHP
- *      appliance only needs stable panel geometry and panelId lookup for
- *      display, validation, and legacy GUI support.
+ *      Valid panel IDs are part of the memorial database contract.  The
+ *      audit report uses this file to detect invalid panel IDs, out-of-range
+ *      row/column values, and duplicate LED locations.
  *
- *      Panel IDs are physical wall locations such as col1a, col1b, col1c.
- *      Controller panel numbers are maintained in leds.inc.php.
- * 
+ *      This file should know the wall geometry only.  It should not contain
+ *      Yahrzeit date logic, Minhag policy, name-database parsing, or LED
+ *      command transmission.
+ *
  * HISTORY
- *      version 1 created for Congregation Beth Sholom, 2007-2008
- *      by Allan M. Schwartz, allanschwartz@sbcglobal.net
+ *      Version 1 created for Congregation Beth Sholom, 2007-2008
+ *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
+ *
+ *      Modernized in 2026 by replacing the old editable panel database with
+ *      static geometry for the Arduino V3 controller and yahrzeit_site-v3.
  *
  * COPYRIGHT NOTICE
- *      copyright (c) 2008, by Allan M. Schwartz
+ *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
  *      All rights reserved.
- *
- * BUGS
- *
- *
- * TODO
- *
- *
- *
- * CONTENTS
- *
- *  line    Funtion Declarations
- *  ----    ------------------------------------
- *	  48    function panel_readDB()
- *	  95    function panel_numrows()
- *	 103    function panel_getObj( $row )
- *	 111    function panel_getObj_byId( $panelId )
-
  */
 
 global $num_rows;
 global $panelsDB;
 global $panelHash;
 
+// Static CBS wall geometry.
+// These panel IDs and dimensions must match the physical wall and the
+// locations stored in data/yahrzeits-rev4.csv.
 global $panel_static_geometry;
 $panel_static_geometry = array(
     array('panelId' => 'col1a', 'nRows' => 16, 'nCols' => 5, 'nNames' => 80),
@@ -78,8 +88,8 @@ $panel_static_geometry = array(
     array('panelId' => 'col7c', 'nRows' => 18, 'nCols' => 5, 'nNames' => 90),
 );
 
-// this used to be in a file.  
-// Now processes, and returns #panelsDB and #panelHash from a constant array
+// Load the static CBS panel geometry into memory.
+// Returns the number of panels defined.
 function panel_readDB()
 {
     global $num_rows;
@@ -100,6 +110,7 @@ function panel_readDB()
     return $num_rows;
 }
 
+// Return the number of panels currently loaded by panel_readDB().
 function panel_numrows()
 {
     global $num_rows;
@@ -107,6 +118,7 @@ function panel_numrows()
     return $num_rows;
 }
 
+// Return one panel record by zero-based index.
 function panel_getObj($row)
 {
     global $panelsDB;
@@ -114,6 +126,8 @@ function panel_getObj($row)
     return isset($panelsDB[$row]) ? $panelsDB[$row] : null;
 }
 
+// Return one panel record by panel ID, such as "col3b".
+// Returns false if the panel ID is unknown.
 function panel_getObj_byId($panelId)
 {
     global $panelHash;

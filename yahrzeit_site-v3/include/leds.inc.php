@@ -5,45 +5,30 @@
  *      leds.inc.php
  *
  * DESCRIPTION
- *      Low-level command emitters for the Yahrzeit embedded controller.
+ *      Low-level command emitters for the Yahrzeit embedded LED controller.
  *
- *      This file no longer talks directly to serial hardware. It emits the
- *      line-oriented controller command stream consumed by bin/yahrzeit, which
- *      transmits the stream with nc.
+ *      This file no longer talks directly to serial hardware, sockets, or
+ *      device files.  It emits the line-oriented controller command stream
+ *      consumed by bin/yahrzeit, which is responsible for transmitting the
+ *      stream to the Arduino V3 controller.
  *
+ *      Higher-level code decides what should be lit. This file only translates
+ *      those decisions into controller commands.
+ * 
  * NOTES
- *
+ *      Keep this file deliberately small.  Calendar rules, Minhag policy,
+ *      report generation, and database validation belong elsewhere.
  *
  * HISTORY
- *      version 1 created for Congregation Beth Sholom, 2007-2008
- *      by Allan M. Schwartz, allanschwartz@sbcglobal.net
+ *      Version 1 created for Congregation Beth Sholom, 2007-2008
+ *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
+ *
+ *      Modernized for the Arduino V3 controller and the bin/yahrzeit wrapper
+ *      in 2026.
  *
  * COPYRIGHT NOTICE
- *      copyright (c) 2008, by Allan M. Schwartz
+ *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
  *      All rights reserved.
- *
- * BUGS
- *
- *
- * TODO
- *
- *
- *
- * CONTENTS
- *
- *  line    Funtion Declarations
- *  ----    ------------------------------------
- *	  98    function LED_number( $panelId, $row, $column ) 
- *	 120    function nrows_perpanel( $panelId )
- *	 127    function ncols_perpanel( $panelId )
- *	 134    function led_lighton( $panelId, $row, $column )
- *	 149    function led_lightoff( $panelId, $row, $column )
- *	 162    function led_protocol( $str )
- *	 173    function yz_lighton( $person )
- *	 196    function yz_lightoff( $person )
- *	 229    function led_all( $onoff )
- *	 239    function led_data_refresh()
-
  */
 
 

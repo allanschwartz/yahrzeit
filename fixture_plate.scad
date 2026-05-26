@@ -11,11 +11,11 @@ plate_thickness = 4.0;
 edge_gap = 20;
 row_gap = 20;
 
-platform_h = 1.0;
-standoff_h = 5.0;
+platform_h = 1.0;       // its easy to change filament on mm boundaries
+standoff_h = 7.0;       // the screw sizes I have on hand influence this height
 
 standoff_od = 7;
-insert_hole_d = 4;     // pilot hole for M3 heat-set insert; verify for your insert
+insert_hole_d = 4.2;     // pilot hole for M3 heat-set insert; verify for your insert
 standoff_fn = 48;
 
 legend_h = 0.6;
@@ -134,12 +134,12 @@ module board_platform(x, y, w, h, label, hole_xy)
 
 module yz_test_fixture_platform(x, y)
 {
-    // Yahrzeit Wall TEst Fixture: 100 x 100 mm, holes 3 mm from each corner.
+    // Yahrzeit Wall Test Fixture: 100 x 100 mm, holes 3.5 mm from each corner.
     yz_holes = [
-        [3,        3],
-        [yz_w - 3, 3],
-        [yz_w - 3, yz_h - 3],
-        [3,        yz_h - 3]
+        [3.5,        3.5],
+        [yz_w - 3.5, 3.5],
+        [yz_w - 3.5, yz_h - 3.5],
+        [3.5,        yz_h - 3.5]
     ];
 
     board_platform(x, y, yz_w, yz_h, "YZ TEST FIXTURE", yz_holes);

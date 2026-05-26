@@ -5,55 +5,44 @@
  *      misc.inc.php
  *
  * DESCRIPTION
- *      Collection of misc. yahrzeit functions.
+ *      Shared utility functions for the CBS Yahrzeit Wall web application.
+ *
+ *      This file provides common site helpers used by the screen PHP files
+ *      and command-line tools, including:
+ *
+ *          - site-root and data-file path helpers
+ *          - Minhag configuration file read/write support
+ *          - HTML escaping and page layout helpers
+ *          - top navigation/header/footer rendering
+ *          - small form and option-list helpers used by legacy screens
+ *
+ *      The screen files should include this file before other application
+ *      include files.  Command-line programs under bin/ should include it
+ *      using dirname(__DIR__) so that cron and shell invocations do not
+ *      depend on the current working directory.
  *
  * NOTES
- *
+ *      This file intentionally contains general shared support code only.
+ *      Date calculations, report generation, panel geometry, name-database
+ *      parsing, and LED command generation belong in their more specific
+ *      include files or command-line programs.
  *
  * HISTORY
- *      version 1 created for Congregation Beth Sholom, 2007-2008
- *      by Allan M. Schwartz, allanschwartz@sbcglobal.net
+ *      Version 1 created for Congregation Beth Sholom, 2007-2008
+ *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
+ *
+ *      Modernized for the Arduino V3 controller and PHP 8 in 2026.
  *
  * COPYRIGHT NOTICE
- *      copyright (c) 2008, by Allan M. Schwartz
+ *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
  *      All rights reserved.
- *
- * BUGS
- *
- *
- * TODO
- *
- *
- *
- * CONTENTS
- *
- *  line    Funtion Declarations
- *  ----    ------------------------------------
- *          function closest_hebrew_month( $str )
- *          function read_minhag_ini()
- *          function write_minhag_ini( $assoc_arr) 
- *          function print_option_n1n2($selected, $n1, $n2, $fmt) 
- *          function print_option1($selected, $options) 
- *          function print_option2($selected, $options) 
- *          function myBool( $v ) 
- *          function h($s)
-{
-    return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
-}
-
-
-function emitMessagePage( $message, $click_here_msg, $click_here_url ) 
- *          function emitTopOfScreen( $title, $description ) 
- *          function toptab ( $selected, $fileref, $tabname ) 
- *          function emitHeader( $title, $tab )
- *          function emitFooter()
- *          function emitCopyright()
-
  */
 
 
 global $tab;
 
+// Month names used by the legacy CSV data and form controls.
+// Keep these spellings stable unless the CSV parser/writer is updated too.
 global $english_month_names; 
 $english_month_names = array(
      "Jan", "Feb", "Mar", "Apr", "May", "June", 
@@ -80,6 +69,9 @@ $hebrew_month_mapping = array(
     "Iyar" => 9, "Sivan" => 10, "Tammuz" => 11, "Av" => 12, "Elul" => 13
     );
 
+// Normalize Hebrew month text from older CSV data or user input.
+// This preserves common Adar I / Adar II spellings and uses a small
+// Levenshtein fallback for minor spelling differences.
 function closest_hebrew_month( $str )
 {
     global $hebrew_month_names;
@@ -97,7 +89,6 @@ function closest_hebrew_month( $str )
     if ( $target == "Adar 1" || $target == "Adar1" || $target == "Adar I" || $target == "AdarI" ) {
         return "AdarI";
     }
-
 
     // no shortest distance found, yet
     $shortest = -1;
@@ -131,11 +122,16 @@ function closest_hebrew_month( $str )
     return( $closest );
 }
 
+// Absolute filesystem path to yahrzeit_site-v3.
+// Because this file lives in include/, dirname(__DIR__) is the site root.
 function site_root()
 {
     return dirname(__DIR__);
 }
 
+// Read data/minhag.ini and merge it with defaults.
+// The defaults make the application tolerant of older or partially edited
+// configuration files. Boolean-like values are normalized to "YES" or "NO".
 function read_minhag_ini()
 {
     $filename = site_root() . "/data/minhag.ini";
@@ -233,7 +229,7 @@ function write_minhag_ini( $assoc_arr)
     return 1;
 }
 
-//     like numbers 1..30
+//     this is for numbers 1..30
 function print_option_n1n2($selected, $n1, $n2, $fmt) 
 {
 
@@ -269,7 +265,7 @@ function print_option2($selected, $options)
     }
 } 
 
-
+// normalize PHP bools and texts representing bools into YES or NO
 function myBool($v)
 {
     if (is_bool($v)) {
@@ -289,6 +285,7 @@ function myBool($v)
 // GUI rendering helpers
 // -----------------------------------------------------------------------------
 
+// Escape dynamic text before inserting it into HTML.
 function h($s)
 {
     return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
@@ -391,7 +388,10 @@ function toptab ( $selected, $fileref, $tabname )
     ($selected ? '"tabSelectedEnd"' : '"tabUnselectedEnd"' )."> &nbsp; </td>\n";
 }
 
-
+// Emit the common page shell: HTML head, CBS logo, top tabs, left spacer,
+// and the opening table structure used by the legacy screens.
+// Each screen is responsible for its own main content and then calls
+// emitFooter() to close the structure.
 function emitHeader( $title, $tab )
 {
 
@@ -529,7 +529,7 @@ function emitFooter()
 <?php
 }
 
-
+// Footer row used inside the main screen content tables.
 function emitCopyright()
 {
 ?>
