@@ -1,4 +1,44 @@
-<?php 
+<?php
+/*
+ * NAME
+ *      4viewnames.php
+ *
+ * DESCRIPTION
+ *      Read-only memorial-name browser for the CBS Yahrzeit Wall.
+ *
+ *      This page displays the memorial records stored in the live Yahrzeit
+ *      CSV database. It provides a simple search box for finding names and
+ *      shows the dates, options, and physical LED location associated with
+ *      each matching record.
+ *
+ *      The live memorial database is:
+ *
+ *          data/yahrzeits-rev4.csv
+ *
+ *      Memorial records are read through include/names.inc.php so that this
+ *      page does not depend directly on the CSV column order.
+ *
+ * BLUF
+ *      This page is for finding and reviewing memorial records.
+ *
+ *      It should not edit names, calculate lighting schedules, or generate
+ *      controller commands.
+ *
+ * NOTES
+ *      This page is intentionally read-only. Database editing, CSV upload,
+ *      reports, and audit checks belong on the Reports screen.
+ *
+ * HISTORY
+ *      Version 1 created for Congregation Beth Sholom, 2007-2008
+ *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
+ *
+ *      Modernized as a read-only searchable browser in 2026.
+ *
+ * COPYRIGHT NOTICE
+ *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
+ *      All rights reserved.
+ */
+
     require_once "include/misc.inc.php";
     require_once "include/panels.inc.php";
     require_once "include/names.inc.php";
@@ -7,6 +47,7 @@
     $title = "Yahrzeit Names";
     $description = "List observed Yahrzeits.  Click on a name to view that individual record.";
     $tab = 3;         // Names
+    $helpfile = "help/4viewnames.php";
 
   
 
@@ -59,7 +100,7 @@
 <body class="bgNone">
 
 <?php   
-    emitTopOfScreen( $title, $description );
+    emitTopOfScreen( $title, $description, $helpfile );
 ?>
 
     <table cellSpacing=0 cellPadding=4 width=90% border=0 class="botBorder">

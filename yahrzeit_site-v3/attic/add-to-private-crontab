@@ -1,4 +1,4 @@
 # Vixie style crontab lines
 45 10 10 June * sh $HOME/Sites/yahrzeit/bin/yizkor   2>&1 | mail -s "begin shavuot yizkor" allan
 30 11 10 June * sh $HOME/Sites/yahrzeit/bin/yahrzeit 2>&1 | mail -s "end shavuot yizkor" allan
-01 12 * * *     sh $HOME/Sites/yahrzeit/bin/yahrzeit 2>&1 | mail -s "daily yahrzeitd" allan
+01 12 * * *     sh $HOME/Sites/yahrzeit/bin/yahrzeit 2>&1 | mail -s "daily yahrzeit_engine" allan

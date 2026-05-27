@@ -338,7 +338,7 @@ ENDOFTEXT;
 }
 
 
-function emitTopOfScreen( $title, $description ) 
+function emitTopOfScreen( $title, $description, $helpfile ) 
 {
 
 $text = <<< ENDOFTEXT
@@ -365,7 +365,7 @@ $text = <<< ENDOFTEXT
         <tr>
             <td></td>
             <td align="right">
-                <a href="/help/index.htm?context=user_guide&topic=______" 
+                <a href="$helpfile" 
                    target="WWHFrame" class="textSmallUnderBlue">Page Help</a>
             </td>
         </tr>

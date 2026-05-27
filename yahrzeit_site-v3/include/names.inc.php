@@ -5,42 +5,50 @@
  *      names.inc.php
  *
  * DESCRIPTION
- *      Yahrzeit Name Database
- *      class and functions.
+ *      Memorial-name database access functions for the CBS Yahrzeit Wall.
+ *
+ *      This file reads and maps the Yahrzeit CSV database into associative
+ *      PHP records used by the web screens, reports, scheduler, and lighting
+ *      engine.  Each record represents one memorialized person and includes
+ *      name, English yahrzeit date, Hebrew yahrzeit date, per-person options,
+ *      and physical LED location.
+ *
+ *      The original design used a small procedural "object" layer:
+ *
+ *          yahrzeit_readDB()
+ *          yahrzeit_getObj($i)
+ *          yahrzeit_putObj($i, $person)
+ * 
+ *      This file uses a procedural object-store style rather than PHP classes.
+ *
+ *      This was intentionally used to keep the CSV file format and schema 
+ *      isolated from the rest of the application.  Most code should ask this 
+ *      file for a mapped record rather than parsing CSV columns directly.
  *
  * NOTES
+ *      The live database is:
+ *
+ *          data/yahrzeits-rev4.csv
+ *
+ *      The CSV column order is part of the long-lived data format.  Be careful
+ *      when changing read/write behavior: reports, the names browser, audit
+ *      checks, and controller command generation all depend on the mapped
+ *      fields produced here.
+ *
+ *      This file should know how to read, validate, map, and write memorial
+ *      records.  It should not contain calendar policy, Minhag rules, panel
+ *      geometry, or LED command generation.
  *
  * HISTORY
- *      version 1 created for Congregation Beth Sholom, 2007-2008
- *      by Allan M. Schwartz, allanschwartz@sbcglobal.net
+ *      Version 1 created for Congregation Beth Sholom, 2007-2008
+ *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
+ *
+ *      Modernized for PHP 8 and the yahrzeit_site-v3 directory layout in 2026.
  *
  * COPYRIGHT NOTICE
- *      copyright (c) 2008, by Allan M. Schwartz
+ *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
  *      All rights reserved.
- *
- * BUGS
- *
- *
- * TODO
- *
- *
- *
- * CONTENTS
- *
- *  line    Funtion Declarations
- *  ----    ------------------------------------
- *	  53    function yahrzeit_map_internal( $rawrecord )
- *	 126    function yahrzeit_map_external( $person )
- *	 159    function yahrzeit_readDB()
- *	 184    function yahrzeit_writeDB()
- *	 200    function yahrzeit_numrows()
- *	 208    function yahrzeit_getObj( $row )
- *	 216    function yahrzeit_putObj( $row, $person )
- *	 224    function yahrzeit_delObj( $row )
-
  */
-
-// require_once __DIR__ . "/misc.inc.php";
 
 global $num_rows;
 global $yahrzeitDB;
@@ -418,7 +426,7 @@ function yahrzeit_writeDB()
     fclose($fp);
 }
 
-
+// Return the number of memorial records currently loaded by yahrzeit_readDB().
 function yahrzeit_numrows()
 {
     global $num_rows;
@@ -426,7 +434,8 @@ function yahrzeit_numrows()
     return ( $num_rows );
 }
 
-
+// Return one memorial record as an associative array.
+// This is the procedural equivalent of fetching a Name object.
 function yahrzeit_getObj( $row )
 {
     global $yahrzeitDB;
@@ -435,6 +444,10 @@ function yahrzeit_getObj( $row )
 }
 
 
+// Store one mapped memorial record in memory.
+// Used by the legacy 5singlename.php edit/save path.
+// If 5singlename.php becomes read-only, this function and the CSV write-back
+// path can probably be removed.
 function yahrzeit_putObj( $row, $person )
 {
     global $yahrzeitDB;
@@ -442,12 +455,5 @@ function yahrzeit_putObj( $row, $person )
     $yahrzeitDB[$row] = $person;
 }
 
-
-function yahrzeit_delObj( $row )
-{
-    global $yahrzeitDB;
-
-    unset( $yahrzeitDB[$row] );
-}
 
 ?>

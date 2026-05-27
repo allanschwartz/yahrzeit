@@ -1,12 +1,70 @@
 <?php
+/*
+ * NAME
+ *      7minhag.php
+ *
+ * DESCRIPTION
+ *      Minhag configuration screen for the CBS Yahrzeit Wall.
+ *
+ *      This page lets an authorized maintainer review and update the local
+ *      synagogue customs that affect Yahrzeit and Yizkor lighting.
+ *
+ *      The settings include:
+ *
+ *          - whether yahrzeits follow the English or Hebrew date
+ *          - whether English-date yahrzeits begin at nightfall
+ *          - whether lights remain on through Shabbat or through the week
+ *          - Yizkor start/end times
+ *          - which Yizkor holidays are observed
+ *          - whether Pesach and Shavuot Yizkor are observed on day 1/2/7/8
+ *          - optional Yizkor-style lighting for another Hebrew date
+ *
+ *      Settings are stored in:
+ *
+ *          data/minhag.ini
+ *
+ *      These settings are read by bin/yahrzeit_engine.php when deciding what
+ *      should be lit, and by bin/yahrzeit_scheduler when deciding when
+ *      scheduled lighting actions are due.
+ *
+ * BLUF
+ *      This page edits synagogue policy, not individual memorial records.
+ *
+ *      yahrzeit_engine.php decides WHAT should be lit using these settings.
+ *      yahrzeit_scheduler decides WHEN scheduled lighting actions are due
+ *      using these settings.
+ *
+ * NOTES
+ *      This page writes only known configuration keys. Unknown POST fields
+ *      are ignored intentionally.
+ *
+ *      Checkbox values are saved explicitly as YES or NO so that unchecked
+ *      boxes do not leave stale enabled settings behind.
+ *
+ * HISTORY
+ *      Version 1 created for Congregation Beth Sholom, 2007-2008
+ *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
+ *
+ *      Modernized for PHP 8 and the Arduino V3 controller in 2026.
+ *
+ * COPYRIGHT NOTICE
+ *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
+ *      All rights reserved.
+ */
+
     require_once "include/misc.inc.php";
+
     $minhag = read_minhag_ini();
 
+    /*
+    * Page metadata used by emitTopOfScreen().
+    */
     $title = "Yahrzeit Minhag";
-    $description = "Special <i>minhag</i> or customs used for Yahrzeit panels " .
-                   "specific to " . h($minhag['synagogueName']) . ". " .
-                   "<br>These observances apply uniformly to all individuals. ";
-    $tab = 5;         // Minhag
+    $description = "Special <i>minhag</i> or customs used for Yahrzeit Wall " .
+                "specific to " . h($minhag['synagogueName']) . ". " .
+                "<br>These observances apply uniformly to all individuals.";
+    $tab = 5;                    // Minhag tab
+    $helpfile = "help/7minhag.php";
 
     function post_value($key, $default = "")
     {
@@ -61,8 +119,9 @@
     {
         global $english_month_names;
         global $hebrew_month_names;
+        global $helpfile;
 
-        emitTopOfScreen($title, $description);
+        emitTopOfScreen($title, $description, $helpfile);
 ?>
 
 <form name="minhagForm" action="7minhag.php" method="POST">

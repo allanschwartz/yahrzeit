@@ -1,16 +1,67 @@
 <?php
+/*
+ * NAME
+ *      1viewpanels.php
+ *
+ * DESCRIPTION
+ *      Panel overview and manual wall-control screen for the CBS Yahrzeit Wall.
+ *
+ *      This page displays the static panel geometry for the physical wall and
+ *      provides a clickable wall overview for browsing individual panels.
+ *
+ *      It also provides limited manual lighting operations, such as:
+ *
+ *          - turn all LEDs off
+ *          - turn all LEDs on
+ *          - turn on Yizkor lighting
+ *
+ *      Panel geometry is read from include/panels.inc.php. Manual lighting
+ *      operations are performed by calling bin/yahrzeit so that the web page
+ *      uses the same controller path as the scheduler and command-line tools.
+ *
+ * BLUF
+ *      This page is for viewing the physical wall layout and performing
+ *      limited manual wall-wide lighting operations.
+ *
+ *      It should not define panel geometry, calculate yahrzeit dates, or
+ *      generate controller command streams directly.
+ *
+ * NOTES
+ *      Manual lighting operations send commands to the controller immediately.
+ *
+ *      The physical wall geometry is static application data. The old
+ *      add/modify/delete panel workflow has intentionally been removed.
+ *
+ * HISTORY
+ *      Version 1 created for Congregation Beth Sholom, 2007-2008
+ *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
+ *
+ *      Modernized as a read-only panel overview and manual-control screen
+ *      in 2026.
+ *
+ * COPYRIGHT NOTICE
+ *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
+ *      All rights reserved.
+ */
+
     require_once "include/misc.inc.php";
     require_once "include/panels.inc.php";
 
     $minhag = read_minhag_ini();
 
+    /*
+     * Page metadata used by emitTopOfScreen().
+     */
     $title = "View Yahrzeit Panels";
-    $description =  "View the fixed Yahrzeit panel geometry installed at " .
-                    $minhag['synagogueName'] . ". " .
-                    "Click a panel in the photo, or click a panel ID in the table, " .
-                    "to view the names etched on that panel. " .
-                    "Below are manual lighting operations for Yizkor.";
+    $description =  "View the physical Yahrzeit panel geometry installed at " .
+                h($minhag['synagogueName']) . ". " .
+                "Click a panel in the photo, or click a panel ID in the table, " .
+                "to view the names assigned to that panel. " .
+                "<p>Below are manual wall-wide lighting operations: all on, all off, and Yizkor. " .
+                "These operations send commands to the wall immediately.";
     $tab = 2;         // Panels
+    $helpfile = "help/1viewpanels.php";
+
 
     function run_yahrzeit_operation($operation)
     {
@@ -127,10 +178,10 @@
     }
 
 
-    function emit_panels_page($title, $description, $tab)
+    function emit_panels_page($title, $description, $tab, $helpfile)
     {
         emitHeader($title, $tab);
-        emitTopOfScreen($title, $description);
+        emitTopOfScreen($title, $description, $helpfile);
 ?>
 
     <form name="viewpanels" action="<?php echo h($_SERVER['PHP_SELF']); ?>" method="POST">
@@ -166,8 +217,8 @@
 
         <tr>
             <td colspan="3" class="header2Bg" align="left" height="25">
-                <span class="boldText">Manual / Special Lighting Operations for Yizkor</span><br>
-                <span class="textSmall">Use these controls if automatic scheduling is unavailable or incorrect.</span>
+                <span class="boldText">Manual / Special Wall-Wide Lighting Operations</span><br>
+                <span class="textSmall">These controls send commands to the wall immediately. Use them only for testing, maintenance, or special operator action.</span>
             </td>
         </tr>
 
@@ -203,12 +254,13 @@
     }
 
 
-    function emit_operation_result_page($title, $tab, $operation, $ok, $message)
+    function emit_operation_result_page($title, $tab, $operation, $ok, $message, $helpfile)
     {
         $titleText = $ok ? "Lighting operation completed" : "Lighting operation failed";
 
         emitHeader($title, $tab);
-        emitTopOfScreen($titleText, "Result from manual lighting operation: " . $operation);
+        emitTopOfScreen($titleText, 
+                "Result from manual lighting operation: " . $operation, $helpfile);
 ?>
 
     <table cellspacing="0" cellpadding="4" width="90%" border="0" class="botBorder">
@@ -235,14 +287,14 @@
 
 
     if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-        emit_panels_page($title, $description, $tab);
+        emit_panels_page($title, $description, $tab, $helpfile);
     }
     elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $operation = isset($_POST['lighting_operation']) ? $_POST['lighting_operation'] : "";
 
         list($ok, $message) = run_yahrzeit_operation($operation);
 
-        emit_operation_result_page($title, $tab, $operation, $ok, $message);
+        emit_operation_result_page($title, $tab, $operation, $ok, $message, $helpfile);
     }
     else {
         die("This script only works with GET and POST requests.");

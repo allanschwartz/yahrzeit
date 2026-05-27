@@ -1,12 +1,59 @@
-<?php 
+<?php
+/*
+ * NAME
+ *      5singlename.php
+ *
+ * DESCRIPTION
+ *      Single memorial-record detail screen for the CBS Yahrzeit Wall.
+ *
+ *      This page displays one memorial record from the live Yahrzeit CSV
+ *      database, including name, stored English/Gregorian date, stored Hebrew
+ *      date, options, and physical LED location.
+ *
+ *      The live memorial database is:
+ *
+ *          data/yahrzeits-rev4.csv
+ *
+ *      Memorial records are read through include/names.inc.php so that this
+ *      page does not depend directly on the CSV column order.
+ *
+ * BLUF
+ *      This page is for reviewing one memorial record in detail.
+ *
+ *      Editing from this page is legacy behavior and should be treated with
+ *      caution. Normal CSV maintenance belongs on the Reports screen.
+ *
+ * NOTES
+ *      This screen currently preserves some older edit/save behavior. Any
+ *      future cleanup should either make this page read-only or replace broad
+ *      editing with narrow, safe operations.
+ *
+ *      This page should not calculate scheduled lighting, generate controller
+ *      commands, or define panel geometry.
+ *
+ * HISTORY
+ *      Version 1 created for Congregation Beth Sholom, 2007-2008
+ *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
+ *
+ *      Reviewed during the PHP 8 / Arduino V3 modernization in 2026.
+ *
+ * COPYRIGHT NOTICE
+ *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
+ *      All rights reserved.
+ */
+
     require_once "include/misc.inc.php";
     require_once "include/names.inc.php";
 
     $minhag = read_minhag_ini();
 
+    /*
+     * Page metadata used by emitTopOfScreen().
+     */
     $title = "Single Yahrzeit Name";
     $description = "View or modify this individual's Yahrzeit observance.";
     $tab = 3;         // Names
+    $helpfile = "help/5singlename.php";
 
    
 
@@ -74,7 +121,7 @@
 <form name="singleNameForm" action="<?php echo h($_SERVER['PHP_SELF']) ?>" method="POST">
 
 <?php
-    emitTopOfScreen($title, $description);
+    emitTopOfScreen($title, $description, $helpfile);
 ?>
 
     <table cellSpacing=0 cellPadding=4 width=90% border=0 class="botBorder">

@@ -1,9 +1,61 @@
 <?php
-require_once "include/misc.inc.php";
+/*
+ * NAME
+ *      6reports.php
+ *
+ * DESCRIPTION
+ *      Reports, audit, preview, and CSV maintenance screen for the CBS
+ *      Yahrzeit Wall.
+ *
+ *      This page provides administrative tools for reviewing memorial data
+ *      and checking what the wall would display. It is a web front-end to
+ *      bin/yahrzeit and bin/yahrzeit_engine.php.
+ *
+ *      Supported operations include:
+ *
+ *          - report yahrzeits for a selected day
+ *          - report yahrzeits for this week or next week
+ *          - report yahrzeits for this month or next month
+ *          - audit the memorial database and panel geometry
+ *          - preview the generated controller command stream
+ *          - download the live CSV memorial database
+ *          - upload a replacement CSV memorial database
+ *
+ * BLUF
+ *      This page is for review, audit, preview, and CSV maintenance.
+ *
+ *      It should not contain yahrzeit date logic, panel geometry rules, or
+ *      controller command-generation logic. Those belong in
+ *      bin/yahrzeit_engine.php and the include files.
+ *
+ * NOTES
+ *      CSV upload replaces data/yahrzeits-rev4.csv after first making a
+ *      timestamped backup under data/backups/.
+ *
+ *      After upload, the page runs an audit so the maintainer can immediately
+ *      see whether the replacement CSV is usable.
+ *
+ * HISTORY
+ *      Version 1 created for Congregation Beth Sholom, 2007-2008
+ *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
+ *
+ *      Modernized for PHP 8 and the Arduino V3 controller in 2026.
+ *
+ * COPYRIGHT NOTICE
+ *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
+ *      All rights reserved.
+ */
 
-$title = "Yahrzeit Reports";
-$description = "Generate Yahrzeit reports, preview controller commands, and export or import the Yahrzeit database.";
-$tab = 4;         // Names / Reports
+    require_once "include/misc.inc.php";
+
+    /*
+    * Page metadata used by emitTopOfScreen().
+    */
+
+    $title = "Yahrzeit Reports";
+    $description = "Generate Yahrzeit reports, preview controller commands, and export or import the Yahrzeit database.";
+    $tab = 4;         // Reports
+    $helpfile = "help/6reports.php";
 
 function reports_site_root()
 {
@@ -78,10 +130,10 @@ function reports_run_yahrzeit($args)
     return array($status, implode("\n", $output) . "\n");
 }
 
-function reports_render_output_page($title, $tab, $heading, $message, $output = "")
+function reports_render_output_page($title, $tab, $heading, $helpfile, $message, $output = "")
 {
     emitHeader($title, $tab);
-    emitTopOfScreen($title, $heading);
+    emitTopOfScreen($title, $heading, $helpfile);
 ?>
 
 <table cellspacing="0" cellpadding="4" width="90%" border="0" class="botBorder">
@@ -180,29 +232,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $date = isset($_POST['report_date']) ? $_POST['report_date'] : reports_today();
 
         if (!reports_valid_kind($kind)) {
-            reports_render_output_page($title, $tab, $description, "Invalid report kind", "Unknown report kind: " . $kind . "\n");
+            reports_render_output_page($title, $tab, $description, $helpfile,
+                    "Invalid report kind", "Unknown report kind: " . $kind . "\n");
             exit;
         }
 
         if (!reports_valid_date($date)) {
-            reports_render_output_page($title, $tab, $description, "Invalid report date", "Date must be YYYY-MM-DD.\n");
+            reports_render_output_page($title, $tab, $description, $helpfile,
+                    "Invalid report date", "Date must be YYYY-MM-DD.\n");
             exit;
         }
 
         list($status, $output) = reports_run_yahrzeit(array('--report', $kind, '--date', $date));
-        reports_render_output_page($title, $tab, $description, "Report: " . $kind . " for " . $date . " (exit " . $status . ")", $output);
+        reports_render_output_page($title, $tab, $description, $helpfile,
+                    "Report: " . $kind . " for " . $date . " (exit " . $status . ")", $output);
         exit;
     }
 
     if ($action == 'audit') {
         list($status, $output) = reports_run_yahrzeit(array('--audit'));
-        reports_render_output_page($title, $tab, $description, "Database audit (exit " . $status . ")", $output);
+        reports_render_output_page($title, $tab, $description, $helpfile,
+                    "Database audit (exit " . $status . ")", $output);
         exit;
     }
 
     if ($action == 'preview') {
         list($status, $output) = reports_run_yahrzeit(array('--notransmit'));
-        reports_render_output_page($title, $tab, $description, "Controller command preview (exit " . $status . ")", $output);
+        reports_render_output_page($title, $tab, $description, $helpfile,
+                    "Controller command preview (exit " . $status . ")", $output);
         exit;
     }
 
@@ -212,7 +269,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
-    reports_render_output_page($title, $tab, $description, "Unknown request", "Unknown reports action.\n");
+    reports_render_output_page($title, $tab, $description, $helpfile,
+                "Unknown request", "Unknown reports action.\n");
     exit;
 }
 
@@ -223,7 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] != 'GET') {
 $today = reports_today();
 
 emitHeader($title, $tab);
-emitTopOfScreen($title, $description);
+emitTopOfScreen($title, $description, $helpfile);
 ?>
 
 <form name="reports" action="<?php echo h($_SERVER['PHP_SELF']); ?>" method="POST" enctype="multipart/form-data">
@@ -260,7 +318,7 @@ emitTopOfScreen($title, $description);
             <input type="date" name="report_date" value="<?php echo h($today); ?>" class="formStyle">
             <br>
             <span class="textsmall">
-                The week and month reports are computed by bin/yahrzeit and yahrzeitd.php.
+                The week and month reports are computed by bin/yahrzeit and yahrzeit_engine.php.
             </span>
         </td>
     </tr>

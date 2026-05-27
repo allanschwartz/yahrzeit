@@ -5,7 +5,7 @@
  *      yahrzeit_scheduler
  *
  * DESCRIPTION
- *      Scheduled runner for the CBS Yahrzeit wall.
+ *      Scheduled runner for the CBS Yahrzeit Wall.
  *
  *      This script is intended to be run from cron every 15 minutes.  At
  *      each run it does at most one thing:
@@ -15,10 +15,45 @@
  *          - restore normal yahrzeit lighting after Yizkor
  *          - do nothing
  *
- *      The scheduler deliberately uses a loose time window.  If cron runs
- *      every 15 minutes, a scheduled action may be handled a few minutes
- *      early or late.  A small state file prevents repeated execution
- *      during the same scheduled window.
+ *      The normal scheduled-control path is:
+ *
+ *          cron
+ *              -> bin/yahrzeit_scheduler
+ *                  -> bin/yahrzeit
+ *                      -> bin/yahrzeit_engine.php
+ *                          -> controller command stream
+ *                      -> nc
+ *                          -> Arduino V3 controller
+ *
+ *      yahrzeit_scheduler decides whether anything is due now. It does not
+ *      calculate individual yahrzeits, generate LED commands, or talk to the
+ *      controller directly. Those jobs belong to bin/yahrzeit_engine.php and
+ *      bin/yahrzeit.
+ *
+ *      The scheduler uses a small time window so cron does not have to run
+ *      at the exact second of a scheduled event. Scheduled actions are not
+ *      run early; they run only at or shortly after the configured time,
+ *      within the scheduler window. A state file prevents repeated execution
+ *      of the same scheduled action.
+ *
+ * BLUF
+ *      yahrzeit_scheduler decides WHEN a scheduled action is due.
+ *      yahrzeit decides HOW to run the action and, when appropriate, transmit it.
+ *      yahrzeit_engine.php decides WHAT names should be lit, audited, or reported.
+ *
+ *      Manual operator actions and web-page actions should normally call
+ *      bin/yahrzeit directly, not this scheduler.
+ * 
+ * HISTORY
+ *      Version 1 created for Congregation Beth Sholom, 2007-2008
+ *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
+ *
+ *      Version 2 was entirely in crontab
+ *      Version 3 modernized for PHP 8 in 2026.
+ *
+ * COPYRIGHT NOTICE
+ *      Copyright (c) 2026, by Allan M. Schwartz.
+ *      All rights reserved.
  */
 
 require_once dirname(__DIR__) . "/include/misc.inc.php";
@@ -349,14 +384,20 @@ function yizkor_reasons_today($minhag, $now)
     $h = hebrew_date_parts($now);
 
     if ($h !== false) {
+        // Yom Kippur: 10 Tishrei.
+        // Yizkor is recited during the Yom Kippur service.
         if (bool_yes($minhag['yizkorYomKippur']) && $h['month'] == 1 && $h['day'] == 10) {
             $reasons[] = "Yom Kippur";
         }
 
+        // Shemini Atzeret: 22 Tishrei.
+        // Yizkor is recited during the Shemini Atzeret service.
         if (bool_yes($minhag['yizkorShmini']) && $h['month'] == 1 && $h['day'] == 22) {
             $reasons[] = "Shemini Atzeret";
         }
 
+        // Pesach day 7 is 21 Nisan; day 8 is 22 Nisan.
+        // The Minhag page allows only day 7 or day 8.
         if (bool_yes($minhag['yizkorPesach'])) {
             $pesach_day = isset($minhag['yizkorPesachDay']) ? (int)$minhag['yizkorPesachDay'] : 8;
             $nisan_day = ($pesach_day == 7) ? 21 : 22;
@@ -366,6 +407,8 @@ function yizkor_reasons_today($minhag, $now)
             }
         }
 
+        // Shavuot day 1 is 6 Sivan; day 2 is 7 Sivan.
+        // The Minhag page allows only day 1 or day 2.
         if (bool_yes($minhag['yizkorShavuot'])) {
             $shavuot_day = isset($minhag['yizkorShavuotDay']) ? (int)$minhag['yizkorShavuotDay'] : 2;
             $sivan_day = ($shavuot_day == 1) ? 6 : 7;
@@ -375,6 +418,8 @@ function yizkor_reasons_today($minhag, $now)
             }
         }
 
+        // we allow for other yikzor-like services, 
+        // for example Yom HaZikaron on 4 Iyar.
         if (bool_yes($minhag['yizkorOther']) && isset($minhag['otherEngOrHeb']) && $minhag['otherEngOrHeb'] == 'heb') {
             $other_month_name = closest_hebrew_month(isset($minhag['otherHebMM']) ? $minhag['otherHebMM'] : "");
             $other_day = isset($minhag['otherHebDD']) ? (int)$minhag['otherHebDD'] : 0;

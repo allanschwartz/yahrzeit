@@ -1,13 +1,12 @@
 #!/usr/bin/env php
 <?php
-
 /*
  * NAME
- *      yahrzeitd.php
+ *      yahrzeit_engine.php
  *
  * SYNOPSIS
- *      php bin/yahrzeitd.php [options]
- *      bin/yahrzeitd.php [options]
+ *      php bin/yahrzeit_engine.php [options]
+ *      bin/yahrzeit_engine.php [options]
  *
  * OPTIONS
  *      -a, --audit
@@ -27,7 +26,7 @@
  *          Display usage.
  *
  * DESCRIPTION
- *      Date/name engine for the CBS Yahrzeit wall.
+ *      Date, name, report, and audit engine for the CBS Yahrzeit Wall.
  *
  *      In normal mode, this script emits the controller command stream that
  *      clears the wall, lights the currently active memorial LEDs, refreshes
@@ -37,6 +36,23 @@
  *      geometry and reports malformed locations and duplicate LED positions.
  *
  *      In report mode, it lists yahrzeit names for a selected date range.
+ * 
+ *      The normal scheduled-control path is:
+ *
+ *          cron
+ *              -> bin/yahrzeit_scheduler
+ *                  -> bin/yahrzeit
+ *                      -> bin/yahrzeit_engine.php
+ *                          -> controller command stream
+ *                      -> nc
+ *                          -> Arduino V3 controller
+ * 
+ * BLUF
+ *      yahrzeit_scheduler decides WHEN a scheduled action is due.
+ *      yahrzeit decides HOW to run the action and, when appropriate, transmit it.
+ *      yahrzeit_engine.php decides WHAT names should be lit, audited, or reported.
+ *
+ *      This file should not know about cron timing or TCP transport.
  *
  * NOTES
  *      "English date" means Gregorian calendar date.
@@ -45,7 +61,7 @@
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
- *      Modernized for the Arduino V3 controller and PHP 8 in 2026.
+ *      renamed and modernized for PHP 8 in 2026.
  *
  * COPYRIGHT NOTICE
  *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
@@ -57,7 +73,7 @@ require_once site_root() . "/include/panels.inc.php";
 require_once site_root() . "/include/names.inc.php";
 require_once site_root() . "/include/leds.inc.php";
 
-// Debug levels for yahrzeitd.php
+// Debug levels for yahrzeit_engine.php
 //
 //   -d 0    quiet; command stream only
 //   -d 1    high-level execution summary
@@ -84,8 +100,8 @@ function usage($exit_status = 0)
 {
     $message = <<<USAGE
 Usage:
-    php bin/yahrzeitd.php [options]
-    bin/yahrzeitd.php [options]
+    php bin/yahrzeit_engine.php [options]
+    bin/yahrzeit_engine.php [options]
 
 Options:
     -a, --audit
@@ -105,9 +121,9 @@ Options:
         Show this help.
 
 Examples:
-    php bin/yahrzeitd.php
-    php bin/yahrzeitd.php --audit
-    php bin/yahrzeitd.php --report week --date 2026-05-26
+    php bin/yahrzeit_engine.php
+    php bin/yahrzeit_engine.php --audit
+    php bin/yahrzeit_engine.php --report week --date 2026-05-26
 
 USAGE;
 
@@ -138,7 +154,7 @@ function parse_options()
 }
 
 
-// Main function for yahrzeitd.php.
+// Main function for yahrzeit_engine.php.
 //
 // Normal mode:
 //   - compute today's Gregorian/Hebrew context
@@ -384,7 +400,7 @@ yz_main();
 
 
 
-// main function for the "yahrzeitd"
+// main function for the "yahrzeit_engine.php"
 //    does some date calculations
 //    reads entire yahrzeit database
 //    for each person in database, calls yz_process_person

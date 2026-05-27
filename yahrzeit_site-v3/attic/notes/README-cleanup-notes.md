@@ -44,7 +44,7 @@ The appliance decides *what* should be lit. The embedded controller decides
 
 ## Runtime command model
 
-The legacy PHP daemon (`yahrzeitd.php`) is not a persistent daemon in normal
+The legacy PHP daemon (`yahrzeit_engine.php`) is not a persistent daemon in normal
 use. It is a one-shot command generator.
 
 The shell wrapper runs PHP, captures the generated command stream, and pipes it
@@ -154,13 +154,13 @@ The first implementation may still use cron, but cron should call only the watch
 ## TODO: Share yahrzeit business logic with GUI screens
 
 Some of the important yahrzeit decision logic currently lives inside
-`yahrzeitd.php`, including English-date matching, Hebrew-date matching,
+`yahrzeit_engine.php`, including English-date matching, Hebrew-date matching,
 Friday/Shabbat observance behavior, manual/reserved handling, and the final
 “should this person be lit?” decision.
 
 This logic should eventually be factored into a shared include file, so that:
 
-- `yahrzeitd.php` uses it to generate controller commands
+- `yahrzeit_engine.php` uses it to generate controller commands
 - `3singlepanel.php` can use it to show `ledon.gif` / `ledoff.gif`
 - future GUI/status pages can report why a name is expected to be lit
 

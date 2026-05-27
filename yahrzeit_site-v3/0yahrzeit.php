@@ -1,4 +1,52 @@
 <?php
+/*
+ * NAME
+ *      0yahrzeit.php
+ *
+ * DESCRIPTION
+ *      Home and status screen for the CBS Yahrzeit Wall.
+ *
+ *      This page is the main landing page for the web application. It shows
+ *      basic current-date information, including the Gregorian date, Hebrew
+ *      date, sunset-related times, and summary counts for the configured wall
+ *      panels and memorial records.
+ *
+ *      This page is informational. It does not control the wall, edit memorial
+ *      records, update Minhag settings, or generate controller commands.
+ *
+ *      Most maintenance tasks are reached through the navigation tabs:
+ *
+ *          - Panels: view panel geometry and manual wall-wide operations
+ *          - Names: browse memorial records
+ *          - Reports: run reports, audit the database, preview commands,
+ *            and maintain the CSV database
+ *          - Minhag: edit synagogue lighting policy
+ *
+ * BLUF
+ *      This is the application home/status page.
+ *
+ *      It should summarize the current Yahrzeit Wall environment, not perform
+ *      maintenance actions or contain core lighting logic.
+ *
+ * NOTES
+ *      Sunset and Hebrew-date information is displayed to help maintainers
+ *      understand the current scheduling context.
+ *
+ *      The actual lighting decisions are made by bin/yahrzeit_engine.php.
+ *      Scheduled timing decisions are made by bin/yahrzeit_scheduler.
+ *
+ * HISTORY
+ *      Version 1 created for Congregation Beth Sholom, 2007-2008
+ *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
+ *
+ *      Modernized as the home/status page for the PHP 8 / Arduino V3 version
+ *      in 2026.
+ *
+ * COPYRIGHT NOTICE
+ *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
+ *      All rights reserved.
+ */
+
     require_once "include/misc.inc.php";
     require_once "include/panels.inc.php";
     require_once "include/names.inc.php";
@@ -7,10 +55,15 @@
 
     $minhag = read_minhag_ini();
 
+    /*
+     * Page metadata used by emitTopOfScreen().
+     */
     $title = "Yahrzeit Controller";
-    $description = "These screens control the Yahrzeit panels at " .
+    $description = "Home and status page for the Yahrzeit panels at " .
                    h($minhag['synagogueName']) . ".";
     $tab = 1;         // Yahrzeit
+    $helpfile = "help/0yahrzeit.php";
+
 
     function cbs_sunset_timestamp($timestamp)
     {
@@ -87,7 +140,7 @@
 ?>
 
 <?php
-    emitTopOfScreen($title, $description);
+    emitTopOfScreen($title, $description, $helpfile);
 ?>
 
     <table cellSpacing=0 cellPadding=4 width=90% border=0 class="botBorder">

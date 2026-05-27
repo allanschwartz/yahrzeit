@@ -1,34 +1,76 @@
 #!/usr/bin/env bash
 #
-# bin/yahrzeit
+# NAME
+#      bin/yahrzeit
 #
-# Unified command-stream generator/transmitter for the Yahrzeit wall.
+# DESCRIPTION
+#      Main command-line wrapper for the CBS Yahrzeit Wall.
 #
-# Default behavior preserves the old wrapper:
-#   - run yahrzeitd.php
-#   - transmit its command stream to the embedded controller
+#      This is the middle piece in the normal scheduled-control path:
 #
-# Additional modes replace the old yizkor/alloff wrappers and much of
-# the old paneltest/conduit functionality.
+#          cron
+#              -> bin/yahrzeit_scheduler
+#                  -> bin/yahrzeit
+#                      -> bin/yahrzeit_engine.php
+#                          -> controller command stream
+#                      -> nc
+#                          -> Arduino V3 controller
 #
-# Examples:
-#   bin/yahrzeit
-#   bin/yahrzeit --notransmit
-#   bin/yahrzeit --yizkor
-#   bin/yahrzeit --all-on
-#   bin/yahrzeit --all-off
-#   bin/yahrzeit --test 3
-#   bin/yahrzeit --file commands.txt
-#   bin/yahrzeit --host 192.168.86.240 --status
-#   bin/yahrzeit --audit
-#   bin/yahrzeit --report week
-#   bin/yahrzeit --report month --date 2026-05-25
+#      bin/yahrzeit is also the command a technical operator may run manually.
+#      It provides one safe, common path for:
 #
-# Notes:
-#   - State-changing operations emit "save".
-#   - "load" is intentionally not sent; the Arduino controller loads
-#     saved state autonomously on power-up.
-#   - Uses nc by default. yahr_conduit is obsolete.
+#          - normal yahrzeit lighting
+#          - Yizkor lighting
+#          - all-on / all-off operations
+#          - controller status and diagnostic commands
+#          - command-stream preview
+#          - audit and report modes
+#
+#      For normal lighting, this script runs bin/yahrzeit_engine.php to generate the
+#      line-oriented controller command stream, then transmits that stream to
+#      the Arduino V3 controller using nc.
+#
+#      Report and audit modes also use bin/yahrzeit_engine.php, but do not transmit
+#      anything to the controller.
+#
+#      Direct controller operations such as --all-on, --all-off, --status, and
+#      --test generate their command streams here and transmit directly.
+#
+# BLUF
+#      yahrzeit_scheduler decides WHEN a scheduled action is due.
+#      yahrzeit decides HOW to run the action and, when appropriate, transmit it.
+#      yahrzeit_engine.php decides WHAT names should be lit, audited, or reported.
+#
+#      This file should not contain calendar or Minhag rules.
+#
+# EXAMPLES
+#      bin/yahrzeit
+#      bin/yahrzeit --notransmit
+#      bin/yahrzeit --yizkor
+#      bin/yahrzeit --all-on
+#      bin/yahrzeit --all-off
+#      bin/yahrzeit --test 3
+#      bin/yahrzeit --file commands.txt
+#      bin/yahrzeit --host 192.168.86.240 --status
+#      bin/yahrzeit --audit
+#      bin/yahrzeit --report week
+#      bin/yahrzeit --report month --date 2026-05-25
+#
+# NOTES
+#      State-changing controller operations emit "save".
+#
+#      "load" is intentionally not sent. The Arduino controller loads saved
+#      state autonomously on power-up.
+#
+#      This script uses nc for transport. 
+#
+# HISTORY
+#      Version 3 created for Congregation Beth Sholom, 2007-2008
+#      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
+#
+# COPYRIGHT NOTICE
+#      Copyright (c) 2008, 2026, by Allan M. Schwartz.
+#      All rights reserved.
 
 set -euo pipefail
 
@@ -57,7 +99,7 @@ Usage:
 
 Default:
   yahrzeit
-      Run yahrzeitd.php, then transmit generated commands.
+      Run yahrzeit_engine.php, then transmit generated commands.
 
 Modes:
   --yizkor
@@ -89,7 +131,7 @@ Modes:
 
 Reports / dry-run modes:
   --audit
-      Run yahrzeitd.php audit mode.  Output is printed; nothing is sent to the controller.
+      Run yahrzeit_engine.php audit mode.  Output is printed; nothing is sent to the controller.
 
   --report KIND
       Run a yahrzeit report.  Output is printed; nothing is sent to the controller.
@@ -99,7 +141,7 @@ Reports / dry-run modes:
       Optional report date.  Used by report modes; ignored by controller-only modes.
 
   --debug N
-      Pass debug level N to yahrzeitd.php for yahrzeit/audit/report modes.
+      Pass debug level N to yahrzeit_engine.php for yahrzeit/audit/report modes.
 
 Transmit/control options:
   --notransmit, --dry-run
@@ -135,7 +177,7 @@ php_assistance1() {
     cat >&2 <<EOF
 yahrzeit: no usable PHP executable was found.
 
-This command runs yahrzeitd.php, which uses PHP Calendar-extension functions
+This command runs yahrzeit_engine.php, which uses PHP Calendar-extension functions
 such as gregoriantojd(), jdtojewish(), jewishtojd(), and jdmonthname().
 
 A historical PHP binary exists in this project at:
@@ -169,7 +211,7 @@ PHP executable:
 
     $php_cmd
 
-yahrzeitd.php requires PHP Calendar-extension functions such as:
+yahrzeit_engine.php requires PHP Calendar-extension functions such as:
 
     gregoriantojd()
     jdtojewish()
@@ -359,8 +401,8 @@ php_has_hebrew_calendar() {
 find_yahrzeit_php() {
     local php_cmd
 
-    [[ -f "$SCRIPT_DIR/yahrzeitd.php" ]] || \
-        die "missing $SCRIPT_DIR/yahrzeitd.php"
+    [[ -f "$SCRIPT_DIR/yahrzeit_engine.php" ]] || \
+        die "missing $SCRIPT_DIR/yahrzeit_engine.php"
 
     if ! php_cmd="$(find_php)"; then
         php_assistance1
@@ -381,13 +423,13 @@ run_yahrzeitd() {
     php_cmd="$(find_yahrzeit_php)"
 
     if [ -n "${REPORT_DATE:-}" ] && [ -n "${DEBUG_LEVEL:-}" ]; then
-        "$php_cmd" "$SCRIPT_DIR/yahrzeitd.php" "$@" --date "$REPORT_DATE" -d "$DEBUG_LEVEL"
+        "$php_cmd" "$SCRIPT_DIR/yahrzeit_engine.php" "$@" --date "$REPORT_DATE" -d "$DEBUG_LEVEL"
     elif [ -n "${REPORT_DATE:-}" ]; then
-        "$php_cmd" "$SCRIPT_DIR/yahrzeitd.php" "$@" --date "$REPORT_DATE"
+        "$php_cmd" "$SCRIPT_DIR/yahrzeit_engine.php" "$@" --date "$REPORT_DATE"
     elif [ -n "${DEBUG_LEVEL:-}" ]; then
-        "$php_cmd" "$SCRIPT_DIR/yahrzeitd.php" "$@" -d "$DEBUG_LEVEL"
+        "$php_cmd" "$SCRIPT_DIR/yahrzeit_engine.php" "$@" -d "$DEBUG_LEVEL"
     else
-        "$php_cmd" "$SCRIPT_DIR/yahrzeitd.php" "$@"
+        "$php_cmd" "$SCRIPT_DIR/yahrzeit_engine.php" "$@"
     fi
 }
 
