@@ -6,6 +6,9 @@
  *              This class owns the packed pixel framebuffer and knows how to
  *              shift that framebuffer into a chain of YYZ_PIXEL boards built
  *              from 74HC595-style serial-in / parallel-out registers.
+ *
+ * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
+ *              All rights reserved.
  */
 
 #pragma once

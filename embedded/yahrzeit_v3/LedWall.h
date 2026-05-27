@@ -6,11 +6,22 @@
 /**
  * @file        LedWall.h
  *
- * @brief       Interface for the logical LED wall abstraction.
+ * @brief       Logical LED wall abstraction.
  *
- *              LedWall presents the display as rows, columns, and panels.
- *              It maps logical coordinates onto the underlying YYZ_PIXEL
- *              hardware driver.
+ *              LedWall presents the Yahrzeit display as rows, columns, and
+ *              panels. It translates those logical coordinates into operations
+ *              on the underlying YYZ_PIXEL hardware driver.
+ *
+ *              Higher-level command code should use this interface rather
+ *              than addressing the hardware driver directly. This keeps the
+ *              controller command language expressed in wall terms: all,
+ *              panel, row, column, pixel, refresh, save, and load.
+ *
+ *              LedWall owns the logical framebuffer behavior, EEPROM
+ *              save/load operations, brightness control, and refresh path.
+ *
+ * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
+ *              All rights reserved.
  */
 
 class LedWall

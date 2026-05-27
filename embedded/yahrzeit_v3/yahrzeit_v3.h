@@ -3,6 +3,14 @@
  *
  * @brief       Overall project header for the Yahrzeit Embedded Controller
  *
+ * @details
+ *              BLUF:
+ *                  yahrzeit_v3.ino owns controller setup and the main loop.
+ *                  socket_thread and serial_thread collect command lines.
+ *                  CmdProc parses and dispatches commands.
+ *                  LedWall owns logical wall operations.
+ *                  YyzPixel owns low-level pixel hardware access.
+ *
  * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
  *              version 2.0 revised in July 2015
  *              version 3.0 revised in April 2026
@@ -12,36 +20,35 @@
  * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
  *              All rights reserved.
  *
- * @notes       see project notes in file yahrzeit_v3.h
+ * @notes       This file defines project-wide constants, configuration
+ *              structures, global externs, and shared utility declarations.
  */
 
 /**
- * ARCHITECTURE
- *      Yahrzeit Wall - The LED array representing the many souls to
- *          be remembered, by illuminating LEDs at the appropriate time.
+ * SYSTEM ARCHITECTURE
+ *      Yahrzeit Wall 
+ *          The physical memorial wall and LED array.
  *
- *      Yahrzeit Appliance - LAMP (or equiv.) machine which presents
- *          a browsable GUI to the end-user.
+ *      Yahrzeit Appliance
+ *          The PHP/Linux system that maintains the memorial database,
+ *          computes what should be lit, and sends command streams to the
+ *          embedded controller.
  *
- *      Yahrzeit Embedded Controller - The Arduino-based microcontroller 
- *          which sits behind the Yahrzeit wall and controls the LED array.
- *          The V2 implementation was an Arduino Mega.  
+ *      Yahrzeit Embedded Controller
+ *          This Arduino-based controller. It receives line-oriented commands
+ *          over USB serial or TCP socket and drives the LED wall.
  *        
- *      Yahrzeit Pixel board (YPX) - the YPX board is a small
- *          number of LEDs on a single narrow board.  We have implemented
- *          6-pixel, 8-pixel and 10-pixel YPX boards.  A string of 7 YPX
- *          boards comprise each column, and 40 columns (a total 280 YPX
- *          boards) are connected to comprise the entire LED array and the
- *          Yahrzeit Wall.  The YPX is referred to in this code as the
- *          "YyzPixel" board.
+ *      Yahrzeit Pixel board / YyzPixel
+ *          The small LED driver boards behind the wall. In this code, the
+ *          low-level pixel driver is named YyzPixel. 
+ *          A string of 7 YPX boards comprise each column, a total 280 YPX
+ *          boards comprise the entire LED array
  *        
- *      Arduino Ethernet Shield -- The Ethernet communications device
- *          which provides a TCP/IP connection between the Embedded
- *          Controller and the Yahrzeit Appliance.  With this device, the
- *          Yahrzeit Wall (the Yahrzeit Embedded Controller) is reachable with
- *          "telnet" or "nc", at a particular IP address and port number.
+ *      Arduino Ethernet Shield
+ *          The Ethernet board which provides a TCP/IP connection between 
+ *          the Embedded Controller and the Yahrzeit Appliance..
  *          
- * FURTHER DETAILS
+ * IMPLEMENTATION HISTORY
  *
  *      Version 1 of the Yahrzeit Embedded Controller was implemented
  *      using a custom board based on the Atmel AT89C51ED2.
@@ -71,8 +78,8 @@
  *      and the well supported libraries.
  *
  * CLI
- *      The LED CONTROLLER implements the following console commands,
- *      to facilitate the yahrzeit appliance controlling the LED array.
+ *      The embedded controller accepts simple line-oriented ASCII commands
+ *      over either USB serial or TCP socket.
  *
 	        All  on|off [<panel>]
 	        BRightness <n> (1:bright, 254:dim)
@@ -111,28 +118,31 @@
 //            L E D   M A T R I X   S I Z E
 // ----------------------------------------------------------------------------
 
-        // one of the following two lines must be uncommented
-        // this declares the size of Pixel matrix
+// Select exactly one display geometry.
+// CBS_56x40_WALL is the installed Congregation Beth Sholom wall.
+// TEST_FIXTURE is the bench/test fixture.
+
 // #define CBS_56x40_WALL    1
-#define TEST_3x24_HARNESS    1
+#define TEST_FIXTURE    1
+
+#if defined(CBS_56x40_WALL) == defined(TEST_FIXTURE)
+#error "Select exactly one display geometry"
+#endif
 
 
 #if CBS_56x40_WALL
 
-constexpr byte NPANELS = 21;                  // At Beth Shalom, we have 3 * 7 panels
+constexpr byte NPANELS = 21;                  // At Beth Sholom, we have 3 * 7 panels
 constexpr byte NROWS   = 56;                  // number of rows
 constexpr byte NCOLS   = 40;                  // a column is 56 rows of consecutive pixel data
 
 #endif
 
-#if TEST_3x24_HARNESS
+#if TEST_FIXTURE
 
-// constexpr byte NPANELS = 1;                 // In this test-harness we have 1 panel
-// constexpr byte NROWS   = 24;                // three 8-pixel YyzPixel boards is 24 rows
-// constexpr byte NCOLS   = 3;                 // and we only have three columns
-constexpr byte NPANELS = 2;                  // At Beth Shalom, we have 3 * 7 panels
-constexpr byte NROWS   = 24;                  // number of rows
-constexpr byte NCOLS   = 6;                  // a column is 56 rows of consecutive pixel data
+constexpr byte NPANELS = 2;    // bench/test fixture panels
+constexpr byte NROWS   = 24;   // rows in the test fixture
+constexpr byte NCOLS   = 6;    // columns in the test fixture
 
 #endif
 

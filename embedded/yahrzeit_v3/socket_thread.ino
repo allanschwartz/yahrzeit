@@ -1,18 +1,27 @@
 /**
  * @file        socket_thread.ino
  *
- * @brief       Socket main line code for the Yahrzeit Project
+ * @brief       TCP socket command input loop.
  *
- * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
- *              version 2.0 revised in July 2015
- *              version 3.0 revised in April 2026
+ *              The socket thread accepts line-oriented commands over Ethernet
+ *              and passes complete command lines to the shared CmdProc command
+ *              processor.
  *
- * @author      Allan M. Schwartz, allanschwartz@sbcglobal.net
+ *              This is the normal control path used by the PHP Yahrzeit site:
+ *
+ *                  bin/yahrzeit
+ *                      -> nc
+ *                          -> Arduino TCP socket
+ *                              -> socket_thread
+ *                                  -> CmdProc
+ *                                      -> LedWall
+ *
+ *              The socket code owns network readiness, connection handling,
+ *              and incremental line input. It should not parse Yahrzeit
+ *              command semantics or manipulate wall geometry directly.
  *
  * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
  *              All rights reserved.
- *
- * @notes       see project notes in file yahrzeit_v3.h
  */
 
 #include "yahrzeit_v3.h"
@@ -24,7 +33,7 @@
 constexpr byte Ethernet_CS_pin = 10;   // W5500 CS pin on Ethernet Shield 2
 
 /**
- * ethernet_is_ready .. is the Ethernet ready for a socket connection?
+ * @brief   is the Ethernet ready for a socket connection?
  */
 bool ethernet_is_ready()
 {
@@ -33,7 +42,7 @@ bool ethernet_is_ready()
 }
 
 /**
- * v .. intialize the Ethernet instance, setting the IP Address
+ * @brief   intialize the Ethernet instance, setting the IP Address
  */
 void ethernet_init()
 {
@@ -75,7 +84,7 @@ void ethernet_init()
 }
 
 /**
- * socket_init ... begin listening on a specific socket
+ * @brief   begin listening on a specific socket
  */
 void socket_init()
 {
@@ -90,7 +99,7 @@ void socket_init()
 
 
 /**
- * socket_thread .. implement the socket stream I/O gets(), puts() loop.
+ * @brief   implement the socket stream I/O gets(), puts() loop.
  *    in each call to socket_thread, we read one line, and execute one command.
  *
  * @returns
@@ -149,8 +158,8 @@ void  socket_thread()
 
 
 /**
- * socket_gets ... this is our fgets() routine which reads a single line from
- *       the network socket
+ * @brief   this is our fgets() routine which reads a single line from
+ *          the network socket
  *
  *    console_gets() reads in at most one less than size characters from the
  *    serial UART stream and and stores them into the buffer pointed to by str.

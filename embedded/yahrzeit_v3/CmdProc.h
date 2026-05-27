@@ -6,11 +6,18 @@
 /**
  * @file        CmdProc.h
  *
- * @brief       Command processor for console and socket interfaces.
+ * @brief       ASCII command processor for serial and socket control paths.
  *
- *              Parses ASCII command lines, maps command verbs to internal
- *              command identifiers, validates arguments, and dispatches
- *              operations to LedWall and related subsystems.
+ *              CmdProc parses one text command line, maps the command verb
+ *              to an internal command ID, validates arguments, and dispatches
+ *              the requested operation to LedWall or related diagnostics.
+ *
+ *              This module is intentionally independent of the input source.
+ *              The same command processor is used for both USB serial input
+ *              and TCP socket input.
+ *
+ * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
+ *              All rights reserved.
  */
 
 enum CommandIds : byte {

@@ -5,8 +5,27 @@
 /**
  * @file        socket_thread.h
  *
- * @brief       Socket-based input main loop
+ * @brief       TCP socket command input loop.
  *
+ *              The socket thread accepts line-oriented commands over Ethernet
+ *              and passes complete command lines to the shared CmdProc command
+ *              processor.
+ *
+ *              This is the normal control path used by the PHP Yahrzeit site:
+ *
+ *                  bin/yahrzeit
+ *                      -> nc
+ *                          -> Arduino TCP socket
+ *                              -> socket_thread
+ *                                  -> CmdProc
+ *                                      -> LedWall
+ *
+ *              The socket code owns network readiness, connection handling,
+ *              and incremental line input. It should not parse Yahrzeit
+ *              command semantics or manipulate wall geometry directly.
+ *
+ * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
+ *              All rights reserved.
  */
 
 /**
