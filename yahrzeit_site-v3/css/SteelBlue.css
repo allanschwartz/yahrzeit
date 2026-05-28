@@ -703,3 +703,10 @@ TABLE.rowBorder TD {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 13px;
 }
+
+.pageCopyright {
+    margin-top: 18px;
+    padding: 8px 0;
+    text-align: center;
+    color: #555555;
+}

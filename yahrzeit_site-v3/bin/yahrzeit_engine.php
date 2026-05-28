@@ -10,17 +10,27 @@
  *
  * OPTIONS
  *      -a, --audit
- *          Validate the Yahrzeit database and panel geometry.
+ *          Validate the Yahrzeit memorial database against the static panel
+ *          geometry.  Reports malformed locations, unknown panels, row/column
+ *          values outside the physical panel size, and duplicate LED positions.
  *
  *      --report KIND
  *          Emit a human-readable report.  KIND may be:
- *          day, daily, week, weekly, next-week, month, this-month, next-month.
+ *
+ *              day, daily
+ *              week, weekly
+ *              next-week
+ *              month, this-month
+ *              next-month
  *
  *      --date YYYY-MM-DD
  *          Use this Gregorian date as the report or command-generation base.
+ *          If omitted, today is used.
  *
  *      -d N
- *          Set debug verbosity.  Debug lines are emitted as comments.
+ *          Set debug verbosity.  Debug lines are emitted as comments beginning
+ *          with "#", so they remain harmless if mixed into a controller command
+ *          stream.
  *
  *      -h, --help
  *          Display usage.
@@ -28,68 +38,70 @@
  * DESCRIPTION
  *      Date, name, report, and audit engine for the CBS Yahrzeit Wall.
  *
- *      In normal mode, this script emits the controller command stream that
- *      clears the wall, lights the currently active memorial LEDs, refreshes
- *      the display, and saves the controller state.
+ *      In normal mode, this script emits the line-oriented controller command
+ *      stream that clears the wall, lights the currently active memorial LEDs,
+ *      refreshes the display, and saves the controller state.
  *
  *      In audit mode, it validates memorial records against the static panel
- *      geometry and reports malformed locations and duplicate LED positions.
+ *      geometry.
  *
  *      In report mode, it lists yahrzeit names for a selected date range.
- * 
- *      The normal scheduled-control path is:
  *
- *          cron
- *              -> bin/yahrzeit_scheduler
- *                  -> bin/yahrzeit
- *                      -> bin/yahrzeit_engine.php
- *                          -> controller command stream
- *                      -> nc
- *                          -> Arduino V3 controller
- * 
  * BLUF
- *      yahrzeit_scheduler decides WHEN a scheduled action is due.
- *      yahrzeit decides HOW to run the action and, when appropriate, transmit it.
- *      yahrzeit_engine.php decides WHAT names should be lit, audited, or reported.
+ *      cron decides WHEN scheduled phases run.
+ *      yahrzeit_scheduler decides WHETHER the requested phase applies today.
+ *      bin/yahrzeit decides HOW to run and, when appropriate, transmit.
+ *      yahrzeit_engine.php decides WHAT names should be lit, audited, or
+ *      reported.
  *
- *      This file should not know about cron timing or TCP transport.
+ *      This file should not know about cron timing, socket transport, nc,
+ *      web-page layout, or manual operator buttons.
  *
  * NOTES
  *      "English date" means Gregorian calendar date.
+ *
+ *      Debug output is emitted as comment lines beginning with "#".  This
+ *      keeps diagnostic output safe if it appears in a command-stream preview.
+ *
+ *      The normal command stream is consumed by bin/yahrzeit.  This engine
+ *      does not talk directly to the embedded controller.
  *
  * HISTORY
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
- *      renamed and modernized for PHP 8 in 2026.
+ *      Modernized for the Arduino V3 controller and PHP 8 in 2026.
  *
  * COPYRIGHT NOTICE
  *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
  *      All rights reserved.
  */
 
+/*
+ * TODO
+ *      This file is now the central engine and has grown large.  A future
+ *      refactor should split helper logic into smaller include files:
+ *
+ *          include/date_support.inc.php
+ *              Gregorian/Hebrew date conversion, date-range matching,
+ *              leap-year handling, Shabbat/week calculations.
+ *
+ *          include/name_support.inc.php or expanded names.inc.php
+ *              person_name(), person_location(), person_options_text(),
+ *              person date-field formatting, and other per-record helpers.
+ *
+ *          include/audit_support.inc.php
+ *              panel/name validation and duplicate-location checks.
+ *
+ *      Keep yahrzeit_engine.php as the orchestration layer: parse options,
+ *      select mode, read data, and call the appropriate engine/report/audit
+ *      functions.
+ */
+
 require_once dirname(__DIR__) . "/include/misc.inc.php";
 require_once site_root() . "/include/panels.inc.php";
 require_once site_root() . "/include/names.inc.php";
 require_once site_root() . "/include/leds.inc.php";
-
-// Debug levels for yahrzeit_engine.php
-//
-//   -d 0    quiet; command stream only
-//   -d 1    high-level execution summary
-//   -d 5    database/person processing summary
-//   -d 10   date-matching decisions
-//   -d 20   English-date matching details
-//   -d 30   Hebrew-date conversion details
-//   -d 40   verbose per-person diagnostics
-//
-// Debug output is emitted as comment lines beginning with "#", so it remains
-// harmless if accidentally included in a controller command stream.
-
-$options = parse_options();
-$minhag = read_minhag_ini();
-
-exit(yz_main());
 
 
 // ---------------------------------------------------------------------------
@@ -215,6 +227,18 @@ function yz_main()
 // Logging and date context helpers
 // ---------------------------------------------------------------------------
 
+// Debug levels for yahrzeit_engine.php
+//
+//   -d 0    quiet; command stream only
+//   -d 1    high-level execution summary
+//   -d 5    database/person processing summary
+//   -d 10   date-matching decisions
+//   -d 20   English-date matching details
+//   -d 30   Hebrew-date conversion details
+//   -d 40   verbose per-person diagnostics
+//
+// Debug output is emitted as comment lines beginning with "#", so it remains
+// harmless if accidentally included in a controller command stream.
 function debug_level()
 {
     global $options;
@@ -391,13 +415,6 @@ function emit_audit_report()
 
     return ($errors == 0) ? 0 : 1;
 }
-
-
-global $minhag;
-$minhag = read_minhag_ini();
-
-yz_main();
-
 
 
 // main function for the "yahrzeit_engine.php"
@@ -1215,3 +1232,11 @@ function haYomShabbat()
     return ($dateinfo['weekday'] == "Friday");
 }
 
+// -----------------------------------------------------------------------------
+// Program entry point
+// -----------------------------------------------------------------------------
+
+$options = parse_options();
+$minhag = read_minhag_ini();
+
+exit(yz_main());

@@ -77,3 +77,8 @@ again before relying on scheduled lighting.
 
     </div>
 </div>
+
+<?php
+emitPageCopyright2();
+emitFooter();
+?>

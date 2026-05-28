@@ -60,15 +60,27 @@ through a longer weekly observance window.
 <h3>Yizkor Lighting</h3>
 
 <p>
-The Yizkor section controls which holidays receive full-wall Yizkor lighting
-and what time that lighting begins and ends. Common Yizkor observances include
-Yom Kippur, Shemini Atzeret, Pesach, and Shavuot.
+The Yizkor section controls which holidays and observances are treated as
+full-wall Yizkor lighting days. Common Yizkor observances include Yom Kippur,
+Shemini Atzeret, Pesach, and Shavuot.
 </p>
 
 <p>
 Pesach and Shavuot have day-number choices because communities differ about
 which day Yizkor is observed. Use the setting that matches Congregation Beth
 Sholom practice — that is, the day on which Yizkor services are held.
+</p>
+
+<p>
+The Minhag page determines which holidays and observances are treated as
+Yizkor days. It does not directly edit the appliance cron table or install
+scheduled jobs.
+</p>
+
+<p>
+The actual scheduled run times, such as when Yizkor lighting begins or when
+normal yahrzeit lighting is restored, are maintained separately in the
+appliance cron configuration by a technical maintainer.
 </p>
 
 <h3>Other Yizkor Date</h3>
@@ -86,3 +98,40 @@ Press Save to write the updated settings to <code>data/minhag.ini</code>.
 After changing Yizkor or timing settings, run the report or audit screen if
 you want to confirm the current configuration.
 </p>
+
+<p>
+After saving, the application may display suggested cron entries for the
+technical maintainer to review and copy manually. These entries are advisory;
+the web page does not install them automatically.
+</p>
+
+<h3>Suggested Cron Entries</h3>
+
+<p>
+The suggested cron entries show the command lines that a technical maintainer
+may copy into the appliance crontab. In the simplified scheduler model, cron
+runs named phases at fixed times. The scheduler decides whether the requested
+phase applies on that date.
+</p>
+
+<pre>
+# CBS Yahrzeit Wall scheduled lighting
+# Review path and times before installing with crontab -e.
+
+0 11 * * * cd /home/pi/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yizkor-on  >> data/scheduler.log 2>&1
+0 13 * * * cd /home/pi/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yizkor-off >> data/scheduler.log 2>&1
+0 16 * * * cd /home/pi/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yahrzeit   >> data/scheduler.log 2>&1
+</pre>
+
+<p>
+The times above are examples. Adjust them to match Congregation Beth Sholom
+practice before installing them.
+</p>
+
+    </div>  <!-- end of helpbody div -->
+</div>  <!-- end of helpbox div -->
+
+<?php
+emitPageCopyright2();
+emitFooter();
+?>

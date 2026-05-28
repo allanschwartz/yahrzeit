@@ -581,5 +581,17 @@ function emitCopyright()
 <?php
 }
 
+function emitPageCopyright2()
+{
+?>
+
+<div class="pageCopyright">
+    <span class="textSmall">Yahrzeit Controller V3</span><br>
+    <span class="textSmall">copyright &copy; 2007, 2015, 2026 AMS Consulting</span>
+</div>
+
+<?php
+}
+
 
 ?>

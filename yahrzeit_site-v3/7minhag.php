@@ -389,9 +389,15 @@
                             "click here to return to Minhag",
                             "7minhag.php");
         } else {
-            emitMessagePage("Configuration Saved",
-                            "click here to continue",
-                            "0yahrzeit.php");
+            emitMessagePage(
+        "Configuration Saved<br><br>" .
+        "If you changed Yizkor service times or other scheduled-lighting times, " .
+        "review the Minhag page help for the corresponding crontab entries. " .
+        "This page saves <code>data/minhag.ini</code>, but it does not install " .
+        "or modify cron jobs.",
+        "click here to continue",
+        "0yahrzeit.php"
+    );
         }
 
         emitFooter();

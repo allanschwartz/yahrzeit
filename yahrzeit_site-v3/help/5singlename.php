@@ -64,3 +64,11 @@ download, edit, upload, and audit the CSV memorial database.
 After changing memorial data, run the audit from the Reports page before
 relying on scheduled lighting.
 </p>
+
+   </div>
+</div>
+
+<?php
+emitPageCopyright2();
+emitFooter();
+?>

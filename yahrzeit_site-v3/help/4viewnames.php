@@ -65,3 +65,11 @@ The location column identifies the panel, row, and column for the LED assigned
 to the memorial record. If a location looks wrong, run the database audit from
 the Reports page.
 </p>
+
+   </div>
+</div>
+
+<?php
+emitPageCopyright2();
+emitFooter();
+?>

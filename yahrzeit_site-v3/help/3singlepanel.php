@@ -71,3 +71,10 @@ CSV memorial database and audit again before relying on scheduled lighting.
 This page is read-only. Panel geometry is fixed application data, and normal
 memorial database maintenance is handled through the Reports page.
 </p>
+
+   </div>
+</div>
+
+<?php
+emitFooter();
+?>

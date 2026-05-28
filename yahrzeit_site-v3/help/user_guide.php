@@ -77,19 +77,35 @@ cron
 </pre>
 
 <p>
-In practical terms: <code>yahrzeit_scheduler</code> decides when a scheduled
-action is due, <code>yahrzeit</code> decides how to run and transmit the action,
-and <code>yahrzeit_engine.php</code> decides what names should be lit, audited,
-or reported.
+In practical terms: cron decides when scheduled phases run,
+<code>yahrzeit_scheduler</code> decides whether the requested phase applies
+today, <code>yahrzeit</code> decides how to run and transmit the action, and
+<code>yahrzeit_engine.php</code> decides what names should be lit, audited, or
+reported.
 </p>
 
 <h3>Normal Operation</h3>
 
 <p>
-Normal yahrzeit and Yizkor lighting is automatic. The scheduler is expected
-to run periodically from cron. When a scheduled action is due, it calls the
-standard command wrapper, which generates and transmits the appropriate wall
-commands.
+Normal yahrzeit and Yizkor lighting is automatic. Cron runs a small number of
+named scheduler phases at fixed times. Each scheduler phase either performs
+one action or does nothing.
+</p>
+
+<pre>
+11:00 AM   yahrzeit_scheduler --phase yizkor-on
+           If today is a configured Yizkor day, turn on Yizkor lighting.
+
+1:00 PM    yahrzeit_scheduler --phase yizkor-off
+           If today is a configured Yizkor day, restore normal yahrzeit lighting.
+
+4:00 PM    yahrzeit_scheduler --phase yahrzeit
+           Run normal yahrzeit lighting.
+</pre>
+
+<p>
+The exact times may be adjusted in the appliance cron table to match
+Congregation Beth Sholom practice.
 </p>
 
 <p>
@@ -267,5 +283,6 @@ checks afterward.
 </div>
 
 <?php
+emitPageCopyright2();
 emitFooter();
 ?>

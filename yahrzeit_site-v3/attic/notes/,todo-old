@@ -1,0 +1,72 @@
+----------------------------------------------------------------
+DAEMONS:
+----------------------------------------------------------------
+yahrzeit (front end bash script)
+   - done
+
+yahrzeit_engine.php
+   - done  
+   - [B] future yahrzeit_engine.php refactor:
+      * include/date_support.inc.php
+      * expanded include/names.inc.php
+      * possible include/audit_support.inc.php
+
+yahrzeit_scheduler
+   - mostly done for now
+   * [B] (at CBS) Confirm CBS Yizkor service timing and decide whether the scheduler remains three-phase or simplifies to two-phase.
+
+build a crontab modifier scrip
+   - [A] update add-private-crontab
+   -  codify as, an installation task)
+
+----------------------------------------------------------------
+GUI
+----------------------------------------------------------------
+0yahrzeit.php
+   - "next yizkor" library call
+   - need to jazz this screen up.
+   - implement n-names lit library call
+    
+1viewpanels.php
+    ok
+
+3singlepanel.php
+    ok
+
+4viewnames.php
+    ok
+
+5singlename.php
+   - [A] test add/modify feature  (alternatively, make this screen READ/ONLY)
+
+6reports.php
+   - [A] test upload/download file
+
+7minhag.php
+    ok
+
+
+----------------------------------------------------------------
+LIBRARIES
+----------------------------------------------------------------
+
+misc.inc
+   * [B] split into two files
+   * [A] refactor `emitMessagePage()` to use css (and not tables)
+   * [A] refactor `emitTopOfPage(I` to use css (and not tables)
+
+names.inc
+    ok
+
+panels.inc
+    ok
+
+leds.inc.php
+    ok
+
+----------------------------------------------------------------
+
+misc:
+   *  [B]    - Login / security support
+   * (at CBS) Fix known audit defect: Emile Kingsley uses unknown panel col58.
+   

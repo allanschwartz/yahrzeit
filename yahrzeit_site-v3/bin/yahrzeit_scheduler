@@ -5,15 +5,27 @@
  *      yahrzeit_scheduler
  *
  * DESCRIPTION
- *      Scheduled runner for the CBS Yahrzeit Wall.
+ *      Scheduled phase runner for the CBS Yahrzeit Wall.
  *
- *      This script is intended to be run from cron every 15 minutes.  At
- *      each run it does at most one thing:
+ *      This script is intended to be run from cron at a few fixed times each
+ *      day.  Cron decides when each phase runs; this script decides whether
+ *      the requested phase applies today.
  *
- *          - run normal yahrzeit lighting
- *          - run Yizkor lighting
- *          - restore normal yahrzeit lighting after Yizkor
- *          - do nothing
+ *      Supported phases:
+ *
+ *          --phase yizkor-on
+ *              If today is a configured Yizkor day, run:
+ *                  bin/yahrzeit --yizkor
+ *              Otherwise do nothing.
+ *
+ *          --phase yizkor-off
+ *              If today is a configured Yizkor day, restore normal lighting:
+ *                  bin/yahrzeit
+ *              Otherwise do nothing.
+ *
+ *          --phase yahrzeit
+ *              Run normal yahrzeit lighting:
+ *                  bin/yahrzeit
  *
  *      The normal scheduled-control path is:
  *
@@ -25,30 +37,20 @@
  *                      -> nc
  *                          -> Arduino V3 controller
  *
- *      yahrzeit_scheduler decides whether anything is due now. It does not
- *      calculate individual yahrzeits, generate LED commands, or talk to the
- *      controller directly. Those jobs belong to bin/yahrzeit_engine.php and
- *      bin/yahrzeit.
- *
- *      The scheduler uses a small time window so cron does not have to run
- *      at the exact second of a scheduled event. Scheduled actions are not
- *      run early; they run only at or shortly after the configured time,
- *      within the scheduler window. A state file prevents repeated execution
- *      of the same scheduled action.
- *
  * BLUF
- *      yahrzeit_scheduler decides WHEN a scheduled action is due.
- *      yahrzeit decides HOW to run the action and, when appropriate, transmit it.
+ *      cron decides WHEN scheduled phases run.
+ *      yahrzeit_scheduler decides WHETHER the requested phase applies today.
+ *      yahrzeit decides HOW to run/transmit.
  *      yahrzeit_engine.php decides WHAT names should be lit, audited, or reported.
  *
  *      Manual operator actions and web-page actions should normally call
  *      bin/yahrzeit directly, not this scheduler.
- * 
+ *
  * HISTORY
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
- *      Version 2 was entirely in crontab
+ *      Version 2 was entirely in crontab.
  *      Version 3 modernized for PHP 8 in 2026.
  *
  * COPYRIGHT NOTICE
@@ -60,28 +62,27 @@ require_once dirname(__DIR__) . "/include/misc.inc.php";
 
 date_default_timezone_set("America/Los_Angeles");
 
-const DEFAULT_WINDOW_MINUTES = 8;           // the event might trigger up to 8 minutes before, but alway on a 15 minute boundary
-const STATE_FILENAME = "data/yahrzeit_scheduler_state.ini";
-const CBS_LATITUDE = 37.78259;
-const CBS_LONGITUDE = -122.47324;
-
 function scheduler_usage()
 {
     global $argv;
     $prog = basename($argv[0]);
 
     echo "Usage:\n";
-    echo "  $prog [options]\n\n";
+    echo "  $prog --phase PHASE [options]\n\n";
+    echo "Phases:\n";
+    echo "  --phase yizkor-on     Run Yizkor lighting if today is a configured Yizkor day.\n";
+    echo "  --phase yizkor-off    Restore normal yahrzeit lighting if today is a configured Yizkor day.\n";
+    echo "  --phase yahrzeit      Run normal yahrzeit lighting.\n\n";
     echo "Options:\n";
     echo "  --dry-run             Show what would be run; do not call bin/yahrzeit.\n";
     echo "  --now 'YYYY-MM-DD HH:MM'\n";
     echo "                        Test as if the current time were the supplied time.\n";
-    echo "  --window MINUTES      Time window for matching scheduled actions. Default: 15.\n";
-    echo "  --no-state            Do not read or write the state file. Useful for tests.\n";
     echo "  --verbose             Print non-action diagnostics.\n";
     echo "  -h, --help            Show this help.\n\n";
-    echo "Typical cron entry:\n";
-    echo "  */15 * * * * cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler >> data/scheduler.log 2>&1\n";
+    echo "Typical cron entries:\n";
+    echo "  0 11 * * * cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yizkor-on  >> data/scheduler.log 2>&1\n";
+    echo "  0 13 * * * cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yizkor-off >> data/scheduler.log 2>&1\n";
+    echo "  0 16 * * * cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yahrzeit   >> data/scheduler.log 2>&1\n";
 }
 
 function fail($message)
@@ -93,10 +94,9 @@ function fail($message)
 function parse_options($argv)
 {
     $opts = array(
+        'phase' => '',
         'dry_run' => false,
         'now' => time(),
-        'window_minutes' => DEFAULT_WINDOW_MINUTES,
-        'use_state' => true,
         'verbose' => false,
     );
 
@@ -111,10 +111,6 @@ function parse_options($argv)
 
         case '--dry-run':
             $opts['dry_run'] = true;
-            break;
-
-        case '--no-state':
-            $opts['use_state'] = false;
             break;
 
         case '--verbose':
@@ -133,12 +129,12 @@ function parse_options($argv)
             $opts['now'] = $ts;
             break;
 
-        case '--window':
+        case '--phase':
             $i++;
-            if ($i >= count($argv) || !is_numeric($argv[$i])) {
-                fail("--window requires a numeric minute value");
+            if ($i >= count($argv)) {
+                fail("--phase requires yizkor-on, yizkor-off, or yahrzeit");
             }
-            $opts['window_minutes'] = max(1, (int)$argv[$i]);
+            $opts['phase'] = $argv[$i];
             break;
 
         default:
@@ -146,68 +142,20 @@ function parse_options($argv)
         }
     }
 
+    if ($opts['phase'] == '') {
+        fail("missing required --phase option");
+    }
+
+    switch ($opts['phase']) {
+    case 'yizkor-on':
+    case 'yizkor-off':
+    case 'yahrzeit':
+        break;
+    default:
+        fail("unknown phase: " . $opts['phase']);
+    }
+
     return $opts;
-}
-
-function state_path()
-{
-    return site_root() . "/" . STATE_FILENAME;
-}
-
-function read_state()
-{
-    $path = state_path();
-
-    if (!file_exists($path)) {
-        return array();
-    }
-
-    $state = parse_ini_file($path);
-    return is_array($state) ? $state : array();
-}
-
-function write_state($state)
-{
-    $path = state_path();
-    $dir = dirname($path);
-
-    if (!is_dir($dir)) {
-        mkdir($dir, 0775, true);
-    }
-
-    ksort($state);
-
-    $tmp = $path . ".tmp";
-    $content = "";
-
-    foreach ($state as $key => $value) {
-        $safe_key = preg_replace('/[^A-Za-z0-9_.-]/', '_', $key);
-        $content .= $safe_key . " = " . $value . "\n";
-    }
-
-    if (file_put_contents($tmp, $content) === false) {
-        fail("could not write temporary state file: $tmp");
-    }
-
-    if (!rename($tmp, $path)) {
-        fail("could not replace state file: $path");
-    }
-}
-
-function prune_state($state, $now)
-{
-    // Keep roughly two months of state.  This is long enough to avoid
-    // accidental duplicate special-day actions, but short enough to keep the
-    // file tiny.
-    $cutoff = $now - 60 * 24 * 60 * 60;
-
-    foreach ($state as $key => $value) {
-        if (is_numeric($value) && (int)$value < $cutoff) {
-            unset($state[$key]);
-        }
-    }
-
-    return $state;
 }
 
 function timestamp_line($message)
@@ -221,137 +169,6 @@ function timestamp_line($message)
 function bool_yes($value)
 {
     return isset($value) && strtoupper(trim((string)$value)) == "YES";
-}
-
-function parse_clock_time($hh_key, $mm_key, $ampm_key, $minhag, $base_timestamp)
-{
-    $hh = isset($minhag[$hh_key]) ? (int)$minhag[$hh_key] : 0;
-    $mm = isset($minhag[$mm_key]) ? (int)$minhag[$mm_key] : 0;
-    $ampm = isset($minhag[$ampm_key]) ? strtolower(trim($minhag[$ampm_key])) : "am";
-
-    if ($hh < 1 || $hh > 12 || $mm < 0 || $mm > 59) {
-        return false;
-    }
-
-    if ($ampm == "pm" && $hh != 12) {
-        $hh += 12;
-    }
-    if ($ampm == "am" && $hh == 12) {
-        $hh = 0;
-    }
-
-    return mktime($hh, $mm, 0,
-                  (int)date('n', $base_timestamp),
-                  (int)date('j', $base_timestamp),
-                  (int)date('Y', $base_timestamp));
-}
-
-function cbs_sunset_timestamp($base_timestamp)
-{
-    $noon = mktime(12, 0, 0,
-                   (int)date('n', $base_timestamp),
-                   (int)date('j', $base_timestamp),
-                   (int)date('Y', $base_timestamp));
-
-    $sun = date_sun_info($noon, CBS_LATITUDE, CBS_LONGITUDE);
-
-    return isset($sun['sunset']) ? $sun['sunset'] : false;
-}
-
-function yahrzeit_daily_target($minhag, $now)
-{
-    if (isset($minhag['yahrzeitLightTime']) && $minhag['yahrzeitLightTime'] == 'atSunset') {
-        $sunset = cbs_sunset_timestamp($now);
-        if ($sunset === false) {
-            return false;
-        }
-
-        $minutes_before = isset($minhag['yahrzeitMinBefore'])
-            ? (int)$minhag['yahrzeitMinBefore']
-            : 18;
-
-        return $sunset - ($minutes_before * 60);
-    }
-
-    return parse_clock_time('yahrzeitLightOnHH',
-                            'yahrzeitLightOnMM',
-                            'yahrzeitLightOnAmPm',
-                            $minhag,
-                            $now);
-}
-
-function yizkor_on_target($minhag, $now)
-{
-    if (isset($minhag['yizkorLightTime']) && $minhag['yizkorLightTime'] == 'atSunset') {
-        $sunset = cbs_sunset_timestamp($now);
-        if ($sunset === false) {
-            return false;
-        }
-
-        $minutes_before = isset($minhag['yizkorMinBefore'])
-            ? (int)$minhag['yizkorMinBefore']
-            : 18;
-
-        return $sunset - ($minutes_before * 60);
-    }
-
-    return parse_clock_time('yizkorLightOnHH',
-                            'yizkorLightOnMM',
-                            'yizkorLightOnAmPm',
-                            $minhag,
-                            $now);
-}
-
-function yizkor_off_target($minhag, $now)
-{
-    if (isset($minhag['yizkorLightTime']) && $minhag['yizkorLightTime'] == 'atSunset') {
-        $sunset = cbs_sunset_timestamp($now);
-        if ($sunset === false) {
-            return false;
-        }
-
-        $minutes_after = isset($minhag['yizkorMinAfter'])
-            ? (int)$minhag['yizkorMinAfter']
-            : 72;
-
-        return $sunset + ($minutes_after * 60);
-    }
-
-    return parse_clock_time('yizkorLightOffHH',
-                            'yizkorLightOffMM',
-                            'yizkorLightOffAmPm',
-                            $minhag,
-                            $now);
-}
-
-function motzei_shabbat_target($minhag, $now)
-{
-    if (date('w', $now) != 6) {
-        return false;
-    }
-
-    $sunset = cbs_sunset_timestamp($now);
-    if ($sunset === false) {
-        return false;
-    }
-
-    $minutes_after = isset($minhag['yahrzeitMinAfter'])
-        ? (int)$minhag['yahrzeitMinAfter']
-        : 72;
-
-    return $sunset + ($minutes_after * 60);
-}
-
-function is_due_now($target, $now, $window_minutes)
-{
-    if ($target === false) {
-        return false;
-    }
-
-    $window_seconds = $window_minutes * 60;
-
-    return (($target - $window_seconds) <= $now) &&
-           ($now <= ($target + $window_seconds));
 }
 
 function hebrew_date_parts($timestamp)
@@ -418,9 +235,12 @@ function yizkor_reasons_today($minhag, $now)
             }
         }
 
-        // we allow for other yikzor-like services, 
+        // Other Yizkor-like Hebrew-date observance,
         // for example Yom HaZikaron on 4 Iyar.
-        if (bool_yes($minhag['yizkorOther']) && isset($minhag['otherEngOrHeb']) && $minhag['otherEngOrHeb'] == 'heb') {
+        if (bool_yes($minhag['yizkorOther']) &&
+            isset($minhag['otherEngOrHeb']) &&
+            $minhag['otherEngOrHeb'] == 'heb') {
+
             $other_month_name = closest_hebrew_month(isset($minhag['otherHebMM']) ? $minhag['otherHebMM'] : "");
             $other_day = isset($minhag['otherHebDD']) ? (int)$minhag['otherHebDD'] : 0;
 
@@ -433,7 +253,10 @@ function yizkor_reasons_today($minhag, $now)
         }
     }
 
-    if (bool_yes($minhag['yizkorOther']) && isset($minhag['otherEngOrHeb']) && $minhag['otherEngOrHeb'] == 'eng') {
+    if (bool_yes($minhag['yizkorOther']) &&
+        isset($minhag['otherEngOrHeb']) &&
+        $minhag['otherEngOrHeb'] == 'eng') {
+
         $mm_name = isset($minhag['otherEngMM']) ? $minhag['otherEngMM'] : "";
         $dd = isset($minhag['otherEngDD']) ? (int)$minhag['otherEngDD'] : 0;
 
@@ -445,80 +268,6 @@ function yizkor_reasons_today($minhag, $now)
     }
 
     return $reasons;
-}
-
-function action_key($name, $target, $extra = "")
-{
-    $key = date('Y-m-d', $target) . "-" . $name;
-
-    if ($extra != "") {
-        $key .= "-" . preg_replace('/[^A-Za-z0-9_.-]/', '_', $extra);
-    }
-
-    return $key;
-}
-
-function make_action($name, $target, $args, $reason, $extra_key = "")
-{
-    return array(
-        'name' => $name,
-        'target' => $target,
-        'args' => $args,
-        'reason' => $reason,
-        'key' => action_key($name, $target, $extra_key),
-    );
-}
-
-function decide_action($minhag, $state, $now, $window_minutes)
-{
-    $yizkor_reasons = yizkor_reasons_today($minhag, $now);
-
-    if (count($yizkor_reasons) > 0) {
-        $reason_text = implode(", ", $yizkor_reasons);
-
-        $target = yizkor_on_target($minhag, $now);
-        if (is_due_now($target, $now, $window_minutes)) {
-            return make_action("yizkor-on",
-                               $target,
-                               array("--yizkor"),
-                               "Yizkor lighting on: $reason_text",
-                               $reason_text);
-        }
-
-        $target = yizkor_off_target($minhag, $now);
-        if (is_due_now($target, $now, $window_minutes)) {
-            return make_action("yizkor-off",
-                               $target,
-                               array(),
-                               "Yizkor service over; restore normal yahrzeit lighting: $reason_text",
-                               $reason_text);
-        }
-    }
-
-    $target = yahrzeit_daily_target($minhag, $now);
-    if (is_due_now($target, $now, $window_minutes)) {
-        return make_action("daily-yahrzeit",
-                           $target,
-                           array(),
-                           "daily yahrzeit update");
-    }
-
-    if (!bool_yes($minhag['yahrzeitFullWeek'])) {
-        $target = motzei_shabbat_target($minhag, $now);
-        if (is_due_now($target, $now, $window_minutes)) {
-            return make_action("motzei-shabbat-yahrzeit",
-                               $target,
-                               array(),
-                               "Motzei Shabbat yahrzeit restore");
-        }
-    }
-
-    return null;
-}
-
-function already_ran($state, $key)
-{
-    return isset($state[$key]);
 }
 
 function run_yahrzeit_command($args, $reason, $opts)
@@ -549,48 +298,45 @@ function main($argv)
 {
     $opts = parse_options($argv);
     $now = $opts['now'];
+
     global $log_now;
     $log_now = $now;
 
     $minhag = read_minhag_ini();
-    $state = $opts['use_state'] ? read_state() : array();
-    $state = prune_state($state, $now);
+    $phase = $opts['phase'];
 
-    $action = decide_action($minhag, $state, $now, $opts['window_minutes']);
+    if ($phase == 'yahrzeit') {
+        return run_yahrzeit_command(array(), "normal yahrzeit lighting", $opts);
+    }
 
-    if ($action === null) {
+    $reasons = yizkor_reasons_today($minhag, $now);
+    $is_yizkor_day = (count($reasons) > 0);
+    $reason_text = $is_yizkor_day ? implode(", ", $reasons) : "not a configured Yizkor day";
+
+    if ($phase == 'yizkor-on') {
+        if ($is_yizkor_day) {
+            return run_yahrzeit_command(array("--yizkor"), "Yizkor lighting on: $reason_text", $opts);
+        }
+
         if ($opts['verbose']) {
-            timestamp_line("No scheduled action due. now=" . date('Y-m-d H:i:s', $now));
-        }
-        if ($opts['use_state']) {
-            write_state($state);
+            timestamp_line("No action: yizkor-on phase, $reason_text");
         }
         return 0;
     }
 
-    $target_text = date('Y-m-d H:i:s', $action['target']);
+    if ($phase == 'yizkor-off') {
+        if ($is_yizkor_day) {
+            return run_yahrzeit_command(array(), "Yizkor service over; restore normal yahrzeit lighting: $reason_text", $opts);
+        }
 
-    if (already_ran($state, $action['key'])) {
-        timestamp_line("SKIP: already ran " . $action['name'] . " for target $target_text");
-        if ($opts['use_state']) {
-            write_state($state);
+        if ($opts['verbose']) {
+            timestamp_line("No action: yizkor-off phase, $reason_text");
         }
         return 0;
     }
 
-    $rc = run_yahrzeit_command($action['args'],
-                               $action['reason'] . "; target=$target_text",
-                               $opts);
-
-    if ($rc == 0) {
-        $state[$action['key']] = $now;
-    }
-
-    if ($opts['use_state']) {
-        write_state($state);
-    }
-
-    return $rc;
+    fail("unknown phase: $phase");
+    return 1;
 }
 
 exit(main($argv));

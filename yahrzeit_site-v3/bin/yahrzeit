@@ -37,7 +37,8 @@
 #      --test generate their command streams here and transmit directly.
 #
 # BLUF
-#      yahrzeit_scheduler decides WHEN a scheduled action is due.
+#      cron decides WHEN scheduled phases run.
+#      yahrzeit_scheduler decides WHETHER the requested phase applies today.
 #      yahrzeit decides HOW to run the action and, when appropriate, transmit it.
 #      yahrzeit_engine.php decides WHAT names should be lit, audited, or reported.
 #

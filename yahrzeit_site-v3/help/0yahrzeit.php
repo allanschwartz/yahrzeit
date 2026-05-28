@@ -17,7 +17,7 @@ require_once "../include/misc.inc.php";
 // help/0yahrzeit.php
 $title = "Yahrzeit Wall Home Help";
 $description = "Help for the Yahrzeit Wall home and status page.";
-$tab = 4;         // Reports
+$tab = 0;         // Yahrzeit
 $helpfile = "";  // no nested page-help link on a help page
 
 emitHeader($title, $tab);
@@ -70,3 +70,10 @@ Use the navigation tabs to reach the main maintenance screens.
 The Home page does not edit records, change Minhag settings, or send commands
 to the wall. Use the appropriate maintenance screen for those actions.
 </p>
+    </div>
+</div>
+
+<?php
+emitPageCopyright2();
+emitFooter();
+?>

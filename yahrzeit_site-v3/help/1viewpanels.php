@@ -77,3 +77,11 @@ If a panel location appears incorrect, use the Reports page to run the
 database audit. The audit checks memorial records against the configured
 panel geometry.
 </p>
+
+   </div>
+</div>
+
+<?php
+emitPageCopyright2();
+emitFooter();
+?>
