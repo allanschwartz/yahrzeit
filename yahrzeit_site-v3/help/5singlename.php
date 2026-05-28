@@ -11,7 +11,24 @@
  */
 ?>
 
-<h2>Single Name Help</h2>
+<?php
+require_once "../include/misc.inc.php";
+
+// help/5singlename.php
+$title = "Memorial Record Name Help";
+$description = "Help for reviewing one memorial record in detail.";
+$tab = 3;         // Reports
+$helpfile = "";  // no nested page-help link on a help page
+
+emitHeader($title, $tab);
+emitTopOfScreen($title, $description, "");
+?>
+
+<div class="helpBox">
+    <div class="helpTitle">Memorial Record Help</div>
+
+    <div class="helpBody">
+
 
 <p>
 The Single Name page shows the details for one memorial record in the

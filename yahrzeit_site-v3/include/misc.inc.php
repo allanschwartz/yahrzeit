@@ -129,6 +129,17 @@ function site_root()
     return dirname(__DIR__);
 }
 
+function site_url_prefix()
+{
+    $script = $_SERVER['SCRIPT_NAME'] ?? "";
+    return (strpos($script, "/help/") !== false) ? "../" : "";
+}
+
+function site_url($path)
+{
+    return site_url_prefix() . ltrim($path, "/");
+}
+
 // Read data/minhag.ini and merge it with defaults.
 // The defaults make the application tolerant of older or partially edited
 // configuration files. Boolean-like values are normalized to "YES" or "NO".
@@ -294,13 +305,18 @@ function h($s)
 
 function emitMessagePage( $message, $click_here_msg, $click_here_url ) 
 {
+
+$transGif = h(site_url("images/trans.gif"));
+$infoIcon = h(site_url("images/info_icon.gif"));
+$clickUrl = h(site_url($click_here_url));
+
 $text = <<< ENDOFTEXT
 
     <table width="400" border="0" align="center" cellpadding="6" cellspacing="0" class="botBorder">
       <tbody> 
         <tr> 
           <td width="370">
-            <img src="images/trans.gif" width="1" height="1">
+            <img src="$transGif" width="1" height="1">
           </td>
         </tr>
         <tr> 
@@ -309,7 +325,7 @@ $text = <<< ENDOFTEXT
               <tbody>
                 <tr> 
                   <td width="53" align="left" valign="top">
-                    <img src="images/info_icon.gif" width="43" height="43">
+                    <img src="$infoIcon" width="43" height="43">
                   </td>
                   <td width="335" align="left" valign="middle">
                     <span class="boldtext">Description</span>
@@ -322,7 +338,7 @@ $text = <<< ENDOFTEXT
                     <br> <br> 
                
                     <span class="text">
-                        <a href="$click_here_url"> $click_here_msg </a>
+                        <a href="$clickUrl"> $click_here_msg </a>
                     </span>
                   </td>
                 </tr>
@@ -338,10 +354,20 @@ ENDOFTEXT;
 }
 
 
-function emitTopOfScreen( $title, $description, $helpfile ) 
+function emitTopOfScreen($title, $description, $helpfile = "")
 {
+    $transGif = h(site_url("images/trans.gif"));
 
-$text = <<< ENDOFTEXT
+    $pageHelpLink = "<br>";
+    if ($helpfile !== "") {
+        $helpUrl = h(site_url($helpfile));
+        $pageHelpLink = <<<ENDOFTEXT
+                <a href="$helpUrl"
+                   target="WWHFrame" class="textSmallUnderBlue">Page Help</a>
+ENDOFTEXT;
+    }
+
+    $text = <<<ENDOFTEXT
 
     <!-- Top of Screen Page Title / Description / Page Help -->
     <table border="0" cellpadding="0" cellspacing="0" width="95%">
@@ -353,7 +379,7 @@ $text = <<< ENDOFTEXT
         </tr>
         <tr>
             <td colspan="2" height=1 class="hline">
-                <img src="images/trans.gif" width=1 height=1>
+                <img src="$transGif" width=1 height=1>
             </td>
         </tr>
         <tr>
@@ -365,8 +391,7 @@ $text = <<< ENDOFTEXT
         <tr>
             <td></td>
             <td align="right">
-                <a href="$helpfile" 
-                   target="WWHFrame" class="textSmallUnderBlue">Page Help</a>
+$pageHelpLink
             </td>
         </tr>
     </table>
@@ -378,11 +403,13 @@ ENDOFTEXT;
 
 function toptab ( $selected, $fileref, $tabname ) 
 {
+    $fileUrl = h(site_url($fileref));
+
    echo '<td width="14" height="23" class=' . 
     ($selected ? '"tabSelectedBeg"' : '"tabUnselectedBeg"' )."> &nbsp; </td>\n";
    echo '<td class=' . 
     ($selected ? '"tabSelectedBg"' : '"tabUnselectedBg"' ).'>';
-   echo '<a href="' . $fileref . '" class=' . 
+   echo '<a href="' . $fileUrl . '" class=' . 
             ($selected ? '"tabTextSel"' : '"tabTextUnsel"' ).'> ' . $tabname . "</a></td>\n";
    echo '<td width="14" class=' . 
     ($selected ? '"tabSelectedEnd"' : '"tabUnselectedEnd"' )."> &nbsp; </td>\n";
@@ -395,6 +422,9 @@ function toptab ( $selected, $fileref, $tabname )
 function emitHeader( $title, $tab )
 {
 
+$mainHelpUrl = h(site_url("help/user_guide.php"));
+$steelBlue = h(site_url("css/SteelBlue.css"));
+
 ?>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -403,7 +433,7 @@ function emitHeader( $title, $tab )
 <TITLE>Yahrzeit Controller -- <?php echo $title; ?> </TITLE>
 
 <LINK REL="SHORTCUT ICON" HREF="/favicon.ico">
-<link href="css/SteelBlue.css" rel="stylesheet" type="text/css">
+<link href="<?php echo $steelBlue ?>" rel="stylesheet" type="text/css">
 
 </head>
 <body class="bgNone">
@@ -417,7 +447,7 @@ function emitHeader( $title, $tab )
 <table width="99%" border="0" cellspacing="0" class="tabsBg" cellpadding="0">
   <tr height="48">
     <td valign="middle" width="380">
-        <img src="images/CBS+Primary+Logo+2023-Gold.webp"
+        <img src="<?php echo h(site_url('images/CBS+Primary+Logo+2023-Gold.webp')); ?>"
              width="320"
              style="display:block; margin-left:12px;">
     </td>
@@ -437,8 +467,8 @@ function emitHeader( $title, $tab )
     </td>
 
     <td align="right" valign="middle" width="180">
-        <a href="help/index.htm" target="PageHelp" class="textSmallUnderBlue"
-           style="margin-right:20px;">Main Help</a>
+    <a href="<?php echo $mainHelpUrl ?>" target="PageHelp" class="textSmallUnderBlue"
+           target="WWHFrame" class="textSmallUnderBlue">User Guide</a>
     </td>
   </tr>
 </table>
@@ -483,7 +513,7 @@ function emitHeader( $title, $tab )
         <!-- END outer table around left nav pane -->
 
     </td>
-    <td width="2"><img src="images/trans.gif" width=1 height=1></td>
+    <td width="2"><img src="<?php echo h(site_url('images/trans.gif')); ?>" width=1 height=1></td>
 
     <td width="4" valign="top" align="left">
 

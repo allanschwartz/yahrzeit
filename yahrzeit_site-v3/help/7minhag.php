@@ -12,7 +12,23 @@
  */
 ?>
 
-<h2>Minhag Settings Help</h2>
+<?php
+require_once "../include/misc.inc.php";
+
+// help/7minhag.php
+$title = "Minhag Settings Help";
+$description = "Help for synagogue-wide Yahrzeit and Yizkor lighting policy.";
+$tab = 5;         // Minhag
+$helpfile = "";  // no nested page-help link on a help page
+
+emitHeader($title, $tab);
+emitTopOfScreen($title, $description, "");
+?>
+
+<div class="helpBox">
+    <div class="helpTitle">Minhag Settings Help</div>
+
+    <div class="helpBody">
 
 <p>
 The Minhag page controls synagogue-wide rules for Yahrzeit and Yizkor
@@ -28,8 +44,10 @@ the English/Gregorian date stored for each memorial record.
 </p>
 
 <p>
-If English-date yahrzeits begin at nightfall, the wall treats the observance
-as beginning at the prior evening’s sunset rather than at midnight.
+Yahrzeit lighting may begin at a fixed clock time, such as 7:00 AM or
+5:00 PM. If the wall is configured for Erev Shabbat to Erev Shabbat
+lighting, the start time may instead be based on candle-lighting time,
+such as 18 minutes before sunset.
 </p>
 
 <h3>Shabbat and Weekly Lighting</h3>
@@ -43,20 +61,22 @@ through a longer weekly observance window.
 
 <p>
 The Yizkor section controls which holidays receive full-wall Yizkor lighting
-and what time that lighting begins and ends.
+and what time that lighting begins and ends. Common Yizkor observances include
+Yom Kippur, Shemini Atzeret, Pesach, and Shavuot.
 </p>
 
 <p>
 Pesach and Shavuot have day-number choices because communities differ about
 which day Yizkor is observed. Use the setting that matches Congregation Beth
-Sholom practice.
+Sholom practice — that is, the day on which Yizkor services are held.
 </p>
 
 <h3>Other Yizkor Date</h3>
 
 <p>
 The optional “Other” date can be used for a special full-wall observance on
-a specified Hebrew date, such as a community memorial day.
+a specified Hebrew date, such as a community memorial day. Examples might
+include Yom HaZikaron or Yom HaShoah, depending on local practice.
 </p>
 
 <h3>Saving Changes</h3>

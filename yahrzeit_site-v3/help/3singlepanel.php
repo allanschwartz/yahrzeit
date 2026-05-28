@@ -11,7 +11,23 @@
  */
 ?>
 
-<h2>Single Panel Help</h2>
+<?php
+require_once "../include/misc.inc.php";
+
+// help/3singlepanel.php
+$title = "Single Panel Help";
+$description = "Help for viewing one physical panel and its assigned memorial names.";
+$tab = 2;         // panels
+$helpfile = "";  // no nested page-help link on a help page
+
+emitHeader($title, $tab);
+emitTopOfScreen($title, $description, "");
+?>
+
+<div class="helpBox">
+    <div class="helpTitle">Single Panel Help</div>
+
+    <div class="helpBody">
 
 <p>
 The Single Panel page shows one physical panel of the CBS Yahrzeit Wall.

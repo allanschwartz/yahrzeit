@@ -11,7 +11,23 @@
  */
 ?>
 
-<h2>Yahrzeit Wall Home Help</h2>
+<?php
+require_once "../include/misc.inc.php";
+
+// help/0yahrzeit.php
+$title = "Yahrzeit Wall Home Help";
+$description = "Help for the Yahrzeit Wall home and status page.";
+$tab = 4;         // Reports
+$helpfile = "";  // no nested page-help link on a help page
+
+emitHeader($title, $tab);
+emitTopOfScreen($title, $description, "");
+?>
+
+<div class="helpBox">
+    <div class="helpTitle">Yahrzeit Wall Home Help</div>
+
+    <div class="helpBody">
 
 <p>
 The Home page is the main status page for the CBS Yahrzeit Wall web

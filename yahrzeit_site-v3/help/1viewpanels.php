@@ -11,7 +11,23 @@
  */
 ?>
 
-<h2>View Panels Help</h2>
+<?php
+require_once "../include/misc.inc.php";
+
+// help/1viewpanels.php
+$title = "View Panels Help";
+$description = "Help for viewing the wall layout and using manual wall-wide lighting controls.";
+$tab = 2;         // Reports
+$helpfile = "";  // no nested page-help link on a help page
+
+emitHeader($title, $tab);
+emitTopOfScreen($title, $description, "");
+?>
+
+<div class="helpBox">
+    <div class="helpTitle">View Panels Help</div>
+
+    <div class="helpBody">
 
 <p>
 The View Panels page shows the physical layout of the CBS Yahrzeit Wall.

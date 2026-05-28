@@ -11,7 +11,24 @@
  */
 ?>
 
-<h2>View Names Help</h2>
+<?php
+require_once "../include/misc.inc.php";
+
+// help/4viewnames.php
+$title = "View Names Help";
+$description = "Help for searching and reviewing memorial records.";
+$tab = 3;         // Reports
+$helpfile = "";  // no nested page-help link on a help page
+
+emitHeader($title, $tab);
+emitTopOfScreen($title, $description, "");
+?>
+
+<div class="helpBox">
+    <div class="helpTitle">View Names Help</div>
+
+    <div class="helpBody">
+
 
 <p>
 The View Names page is a read-only browser for the Yahrzeit Wall memorial

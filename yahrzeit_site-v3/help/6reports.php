@@ -11,7 +11,23 @@
  */
 ?>
 
-<h2>Reports and Audit Help</h2>
+<?php
+require_once "../include/misc.inc.php";
+
+// help/6reports.php
+$title = "Reports Help";
+$description = "Help for Yahrzeit reports, audit, preview, CSV download, and CSV upload.";
+$tab = 4;         // Reports
+$helpfile = "";  // no nested page-help link on a help page
+
+emitHeader($title, $tab);
+emitTopOfScreen($title, $description, "");
+?>
+
+<div class="helpBox">
+    <div class="helpTitle">Reports and Audit Help</div>
+
+    <div class="helpBody">
 
 <p>
 The Reports page provides tools for reviewing the memorial database and
@@ -59,3 +75,5 @@ If the audit reports errors after an upload, correct the CSV file and upload
 again before relying on scheduled lighting.
 </p>
 
+    </div>
+</div>

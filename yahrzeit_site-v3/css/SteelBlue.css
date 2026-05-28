@@ -663,4 +663,43 @@ TABLE.rowBorder TD {
 	font-weight: bold;
 }
 
+.helpBox {
+    margin-top: 12px;
+    border: 1px solid #9fb6d5;
+    background-color: #ffffff;
+}
 
+.helpTitle {
+    background-color: #dbe6f5;
+    color: #003366;
+    font-weight: bold;
+    padding: 6px 8px;
+    border-bottom: 1px solid #9fb6d5;
+}
+
+.helpBody h2 {
+    margin-top: 0;
+    color: #003366;
+}
+
+.helpBody h3 {
+    color: #003366;
+    border-bottom: 1px solid #d0d8e8;
+    margin-top: 18px;
+}
+
+.helpBody code {
+    background-color: #eef3fa;
+    padding: 1px 4px;
+}
+
+.helpBody ul {
+    margin-top: 6px;
+}
+
+.helpBody {
+    padding: 10px 14px;
+    line-height: 1.45;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+}

@@ -258,8 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($action == 'preview') {
         list($status, $output) = reports_run_yahrzeit(array('--notransmit'));
-        reports_render_output_page($title, $tab, $description, $helpfile,
-                    "Controller command preview (exit " . $status . ")", $output);
+        reports_render_output_page($title, $tab, $description, "Controller command preview (exit " . $status . ")", $output);
         exit;
     }
 
@@ -269,8 +268,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
-    reports_render_output_page($title, $tab, $description, $helpfile,
-                "Unknown request", "Unknown reports action.\n");
+    reports_render_output_page($title, $tab, $description, "Unknown request", "Unknown reports action.\n");
     exit;
 }
 
