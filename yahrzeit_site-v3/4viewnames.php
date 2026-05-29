@@ -42,8 +42,13 @@
     require_once "include/misc.inc.php";
     require_once "include/panels.inc.php";
     require_once "include/names.inc.php";
+    require_once "include/date_support.inc.php";
+
     $minhag = read_minhag_ini();
 
+    /*
+     * Page metadata used by emitTopOfScreen().
+     */
     $title = "Yahrzeit Names";
     $description = "List observed Yahrzeits.  Click on a name to view that individual record.";
     $tab = 3;         // Names

@@ -44,6 +44,7 @@
 
     require_once "include/misc.inc.php";
     require_once "include/names.inc.php";
+    require_once "include/date_support.inc.php";
 
     $minhag = read_minhag_ini();
 
@@ -175,7 +176,7 @@
             <td class="text">
                 English
                     <select name="engYzMonth" style="width:50" class="formStyleSmall">
-                        <?php print_option1($person['engYzMonth'], $english_month_names); ?>
+                        <?php print_option1($person['engYzMonth'], ENGLISH_MONTH_NAMES); ?>
                     </select>
                     <select name="engYzDD" style="width:40" class="formStyleSmall">
                         <?php print_option_n1n2($person['engYzDD'], 1, 31, "%02d"); ?>
@@ -189,7 +190,7 @@
                         <?php print_option_n1n2($person['hebYzDD'], 1, 30, "%02d"); ?>
                     </select>
                     <select name="hebYzMonth" style="width:80" class="formStyleSmall">
-                        <?php print_option1($person['hebYzMonth'], $hebrew_month_names); ?>
+                        <?php print_option1($person['hebYzMonth'], HEBREW_MONTH_NAMES); ?>
                     </select>
                     <input type="text" name="hebYzYYYY" maxlength="4" size="4" class="formStyle" style="width:40"
                         value="<?php echo h($person['hebYzYYYY']) ?>" 

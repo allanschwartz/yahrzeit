@@ -59,6 +59,7 @@
  */
 
 require_once dirname(__DIR__) . "/include/misc.inc.php";
+require_once dirname(__DIR__) . "/include/date_support.inc.php";
 
 date_default_timezone_set("America/Los_Angeles");
 
@@ -194,8 +195,6 @@ function hebrew_date_parts($timestamp)
 
 function yizkor_reasons_today($minhag, $now)
 {
-    global $english_month_mapping;
-    global $hebrew_month_mapping;
 
     $reasons = array();
     $h = hebrew_date_parts($now);
@@ -245,8 +244,8 @@ function yizkor_reasons_today($minhag, $now)
             $other_day = isset($minhag['otherHebDD']) ? (int)$minhag['otherHebDD'] : 0;
 
             if ($other_month_name != "" &&
-                isset($hebrew_month_mapping[$other_month_name]) &&
-                $h['month'] == $hebrew_month_mapping[$other_month_name] &&
+                isset(HEBREW_MONTH_MAPPING[$other_month_name]) &&
+                $h['month'] == HEBREW_MONTH_MAPPING[$other_month_name] &&
                 $h['day'] == $other_day) {
                 $reasons[] = "Other Hebrew date: $other_day $other_month_name";
             }
@@ -260,8 +259,8 @@ function yizkor_reasons_today($minhag, $now)
         $mm_name = isset($minhag['otherEngMM']) ? $minhag['otherEngMM'] : "";
         $dd = isset($minhag['otherEngDD']) ? (int)$minhag['otherEngDD'] : 0;
 
-        if (isset($english_month_mapping[$mm_name]) &&
-            (int)date('n', $now) == $english_month_mapping[$mm_name] &&
+        if (isset(ENGLISH_MONTH_MAPPING[$mm_name]) &&
+            (int)date('n', $now) == ENGLISH_MONTH_MAPPING[$mm_name] &&
             (int)date('j', $now) == $dd) {
             $reasons[] = "Other English date: $mm_name $dd";
         }

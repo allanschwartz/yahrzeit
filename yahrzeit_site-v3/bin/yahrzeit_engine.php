@@ -102,6 +102,7 @@ require_once dirname(__DIR__) . "/include/misc.inc.php";
 require_once site_root() . "/include/panels.inc.php";
 require_once site_root() . "/include/names.inc.php";
 require_once site_root() . "/include/leds.inc.php";
+require_once site_root() . "/include/date_support.inc.php";
 
 
 // ---------------------------------------------------------------------------
@@ -188,7 +189,7 @@ function yz_main()
     global $options;
 
     $selected_ts = selected_timestamp();
-    setup_yahrzeit_date_context($selected_ts);
+    set_yahrzeit_date_context($selected_ts);
 
     if (isset($options['report'])) {
         return emit_yahrzeit_report($options['report'], $selected_ts);
@@ -200,7 +201,7 @@ function yz_main()
 
     // Normal command-stream path.
     echo "\n# Today is ";
-    if (haYomShabbat()) {
+    if (is_friday_for_shabbat_lighting()) {
         echo "SHABBAT ";
     }
     echo "$today_month/$today_day/$today_year ... ";
@@ -287,38 +288,6 @@ function selected_timestamp()
 
     return time();
 }
-
-function setup_yahrzeit_date_context($timestamp)
-{
-    global $today_month;
-    global $today_day;
-    global $today_year;
-
-    global $hebrewDay;
-    global $hebrewMonth;
-    global $hebrewMonthName;
-    global $hebrewYear;
-
-    $today_month = date('n', $timestamp);
-    $today_day   = date('j', $timestamp);
-    $today_year  = date('Y', $timestamp);
-
-    $jdDate = gregoriantojd($today_month, $today_day, $today_year);
-    $hebrewMonthName = jdmonthname($jdDate, 4);
-    $hebrewDate = jdtojewish($jdDate);
-    list($hebrewMonth, $hebrewDay, $hebrewYear) = explode('/', $hebrewDate);
-}
-
-function hebrew_year_for_timestamp($timestamp)
-{
-    $jd = gregoriantojd(date('n', $timestamp), date('j', $timestamp), date('Y', $timestamp));
-    $hebrewDate = jdtojewish($jd);
-    $parts = explode('/', $hebrewDate);
-
-    return isset($parts[2]) ? (int)$parts[2] : 0;
-}
-
-
 
 // ---------------------------------------------------------------------------
 // Audit reporting
@@ -550,7 +519,6 @@ function report_date_range($kind, $base_timestamp)
 
 function yahrzeit_candidate_dates_in_range($person, $start_ts, $end_ts)
 {
-    global $hebrew_month_mapping;
 
     $candidates = array();
 
@@ -563,7 +531,7 @@ function yahrzeit_candidate_dates_in_range($person, $start_ts, $end_ts)
             ? closest_hebrew_month($person['hebYzMonth'])
             : "";
 
-        if ($month_name == "" || !isset($hebrew_month_mapping[$month_name])) {
+        if ($month_name == "" || !isset(HEBREW_MONTH_MAPPING[$month_name])) {
             return $candidates;
         }
 
@@ -571,7 +539,7 @@ function yahrzeit_candidate_dates_in_range($person, $start_ts, $end_ts)
             return $candidates;
         }
 
-        $hmonth = (int)$hebrew_month_mapping[$month_name];
+        $hmonth = (int)HEBREW_MONTH_MAPPING[$month_name];
         $hday   = (int)$person['hebYzDD'];
 
         if ($hday < 1 || $hday > 30) {
@@ -619,7 +587,7 @@ function yahrzeit_candidate_dates_in_range($person, $start_ts, $end_ts)
         for ($year = $start_year; $year <= $end_year; $year++) {
             $candidate_day = $day;
 
-            if ($month == 2 && $day == 29 && !isLeapYear($year)) {
+            if ($month == 2 && $day == 29 && !is_english_leap_year($year)) {
                 $candidate_day = 28;
             }
 
@@ -690,7 +658,7 @@ function yz_process_person($person)
     else if (
         isset($minhag['yahrzeitPlusShabbat']) &&
         $minhag['yahrzeitPlusShabbat'] == "YES" &&
-        haYomShabbat() &&
+        is_friday_for_shabbat_lighting() &&
         isYahrzeitThisWeek($person)
     ) {
         $reason = "plus-Shabbat weekly yahrzeit";
@@ -748,7 +716,6 @@ function isYahrzeitToday($person)
     global $minhag;
     global $hebrewMonthName;
     global $hebrewYear;
-    global $hebrew_month_mapping;
 
     $result_code = false;
     $heb_or_eng = "";
@@ -782,11 +749,11 @@ function isYahrzeitToday($person)
             ? closest_hebrew_month($person['hebYzMonth'])
             : "";
 
-        if ($heb_month_name == "" || !isset($hebrew_month_mapping[$heb_month_name])) {
+        if ($heb_month_name == "" || !isset(HEBREW_MONTH_MAPPING[$heb_month_name])) {
             return false;
         }
 
-        $m = $hebrew_month_mapping[$heb_month_name];
+        $m = HEBREW_MONTH_MAPPING[$heb_month_name];
 
         if (!isset($person['hebYzDD']) || !is_numeric($person['hebYzDD'])) {
             return false;
@@ -828,7 +795,7 @@ function isYahrzeitToday($person)
 
         list($mm, $dd, $yy) = $parts;
 
-        $result_code = engDayMatch($mm, $dd);
+        $result_code = english_day_matches_today_or_tomorrow($mm, $dd);
     }
     else if ($use_english) {
         $heb_or_eng = "eng";
@@ -836,7 +803,7 @@ function isYahrzeitToday($person)
         $eng_month = isset($person['engYzMonth']) ? $person['engYzMonth'] : "";
         $eng_day   = isset($person['engYzDD'])    ? $person['engYzDD']    : "";
 
-        $result_code = engDayMatch($eng_month, $eng_day);
+        $result_code = english_day_matches_today_or_tomorrow($eng_month, $eng_day);
     }
 
     if (debug_level() >= 30 && $result_code) {
@@ -869,7 +836,6 @@ function isYahrzeitThisWeek($person)
     global $minhag;
     global $hebrewMonthName;
     global $hebrewYear;
-    global $hebrew_month_mapping;
 
     $result_code = false;
     $heb_or_eng = "";
@@ -903,11 +869,11 @@ function isYahrzeitThisWeek($person)
             ? closest_hebrew_month($person['hebYzMonth'])
             : "";
 
-        if ($heb_month_name == "" || !isset($hebrew_month_mapping[$heb_month_name])) {
+        if ($heb_month_name == "" || !isset(HEBREW_MONTH_MAPPING[$heb_month_name])) {
             return false;
         }
 
-        $m = $hebrew_month_mapping[$heb_month_name];
+        $m = HEBREW_MONTH_MAPPING[$heb_month_name];
 
         if (!isset($person['hebYzDD']) || !is_numeric($person['hebYzDD'])) {
             return false;
@@ -949,7 +915,7 @@ function isYahrzeitThisWeek($person)
 
         list($mm, $dd, $yy) = $parts;
 
-        $result_code = engWeekMatch($mm, $dd);
+        $result_code = english_day_matches_yahrzeit_week($mm, $dd);
     }
     else if ($use_english) {
         $heb_or_eng = "eng";
@@ -957,7 +923,7 @@ function isYahrzeitThisWeek($person)
         $eng_month = isset($person['engYzMonth']) ? $person['engYzMonth'] : "";
         $eng_day   = isset($person['engYzDD'])    ? $person['engYzDD']    : "";
 
-        $result_code = engWeekMatch($eng_month, $eng_day);
+        $result_code = english_day_matches_yahrzeit_week($eng_month, $eng_day);
     }
 
     if (debug_level() >= 30 && $result_code) {
@@ -983,151 +949,6 @@ function isYahrzeitThisWeek($person)
 }
 
 
-// Boolean: is this person's yahrzeit today?
-
-function engDayMatch($month, $day)
-{
-    global $today_month;
-    global $today_day;
-    global $today_year;
-    global $options;
-    global $english_month_mapping;
-
-    $result_code = false;
-
-    if ($month == "" || $day == "") {
-        return false;
-    }
-
-    // Convert month names such as "Feb" or "May" to month numbers.
-    if (!is_numeric($month)) {
-        if (!isset($english_month_mapping[$month])) {
-            return false;
-        }
-        $month = $english_month_mapping[$month];
-    }
-
-    $month = (int) $month;
-    $day   = (int) $day;
-    $year  = (int) $today_year;
-
-    if ($month < 1 || $month > 12 || $day < 1 || $day > 31) {
-        return false;
-    }
-
-    // Special case for Feb 29 in non-leap years.
-    if ($month == 2 && $day == 29 && !isLeapYear($year)) {
-        $day = 28;
-    }
-
-    $yz_date  = mktime(0, 0, 0, $month,       $day,       $year);
-    $today    = mktime(0, 0, 0, $today_month, $today_day, $today_year);
-    $tomorrow = strtotime("tomorrow", $today);
-
-    if ($yz_date == $tomorrow || $yz_date == $today) {
-        $result_code = true;
-    }
-
-    if (debug_level() >= 20 && $result_code) {
-        $printable_rc = $result_code ? "TRUE" : "FALSE";
-
-        debug_log( 20,
-            "yz_date $yz_date today $today tomorrow $tomorrow",
-            __LINE__
-        );
-
-        debug_log( 20,
-            "engDayMatch($month $day) returns $printable_rc",
-            __LINE__
-        );
-    }
-
-    return $result_code;
-}
-
-
-// Boolean: is this person's yahrzeit sometime this coming week?
-
-function engWeekMatch($month, $day)
-{
-    global $today_month;
-    global $today_day;
-    global $today_year;
-    global $english_month_mapping;
-
-    $result_code = false;
-
-    if ($month == "" || $day == "") {
-        return false;
-    }
-
-    // Convert month names such as "Feb" or "May" to month numbers.
-    if (!is_numeric($month)) {
-        if (!isset($english_month_mapping[$month])) {
-            return false;
-        }
-        $month = $english_month_mapping[$month];
-    }
-
-    $month = (int)$month;
-    $day   = (int)$day;
-    $year  = (int)$today_year;
-
-    if ($month < 1 || $month > 12 || $day < 1 || $day > 31) {
-        return false;
-    }
-
-    // Special case for Feb 29 in non-leap years.
-    if ($month == 2 && $day == 29 && !isLeapYear($year)) {
-        $day = 28;
-    }
-
-    $yz_date = mktime(0, 0, 0, $month,       $day,       $year);
-    $today   = mktime(0, 0, 0, $today_month, $today_day, $today_year);
-
-    // We assume this daemon is normally run in the late afternoon,
-    // computing yahrzeits for tomorrow / after sunset.
-    //
-    // If today is Erev Shabbat, the window is today through next Friday.
-    // Otherwise, compute the current Friday-to-Friday week window.
-    if (haYomShabbat()) {
-        $first_date  = strtotime("today", $today);
-        $second_date = strtotime("next friday", $today);
-    } else {
-        $second_date = strtotime("next friday", $today);
-        $first_date  = strtotime("-7 days", $second_date);
-    }
-
-    if ($first_date === false || $second_date === false || $yz_date === false) {
-        return false;
-    }
-
-    if (($first_date <= $yz_date) && ($yz_date <= $second_date)) {
-        $result_code = true;
-    }
-
-    if (debug_level() >= 20 && $result_code) {
-        $printable_rc = $result_code ? "TRUE" : "FALSE";
-        debug_log( 20,
-            "yz_date $yz_date today $today first_date $first_date second_date $second_date",
-            __LINE__
-        );
-        debug_log( 20,
-            "engWeekMatch($month $day) returns $printable_rc",
-            __LINE__
-        );
-    }
-
-    return $result_code;
-}
-
-
-// Boolean: does the given MONTH/DAY match today or tomorrow?
-//
-// This function is used after yahrzeit dates have been converted to a
-// Gregorian month/day for the current Hebrew/civil year.  The daemon is
-// normally run late in the day, so "today or tomorrow" is intentional:
-// after sunset, tomorrow's yahrzeit may already be the active observance.
 
 
 
@@ -1191,45 +1012,6 @@ function person_uses_hebrew_date($person)
     }
 
     return isset($minhag['yahrzeitEngOrHeb']) && $minhag['yahrzeitEngOrHeb'] == "heb";
-}
-
-function english_month_number($month)
-{
-    global $english_month_mapping;
-
-    if ($month == "") {
-        return 0;
-    }
-
-    if (is_numeric($month)) {
-        return (int)$month;
-    }
-
-    return isset($english_month_mapping[$month]) ? (int)$english_month_mapping[$month] : 0;
-}
-
-function isLeapYear($year)
-{
-    return (($year % 4) == 0) &&
-           ((($year % 100) != 0) || (($year % 400) == 0));
-}
-
-
-// Boolean: is tonight the Sabbath?
-//
-// This returns true on Friday, because the daemon is normally run in the
-// late afternoon to compute the lights for the coming evening / Shabbat.
-
-function haYomShabbat()
-{
-    global $today_month;
-    global $today_day;
-    global $today_year;
-
-    $timestamp = mktime(16, 0, 0, $today_month, $today_day, $today_year);
-    $dateinfo = getdate($timestamp);
-
-    return ($dateinfo['weekday'] == "Friday");
 }
 
 // -----------------------------------------------------------------------------

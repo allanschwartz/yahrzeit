@@ -32,8 +32,7 @@
  */
 
 
-global $led_panel_mapping;
-$led_panel_mapping = array (
+const LED_PANEL_MAPPING = [
     "col1a" => 1,  "col1b" => 2,  "col1c" => 3,
     "col2a" => 4,  "col2b" => 5,  "col2c" => 6,
     "col3a" => 7,  "col3b" => 8,  "col3c" => 9,
@@ -41,14 +40,12 @@ $led_panel_mapping = array (
     "col5a" => 13, "col5b" => 14, "col5c" => 15,
     "col6a" => 16, "col6b" => 17, "col6c" => 18,
     "col7a" => 19, "col7b" => 20, "col7c" => 21,
-);
+];
 
 
 function yz_panel_number($panelId)
 {
-    global $led_panel_mapping;
-
-    return isset($led_panel_mapping[$panelId]) ? $led_panel_mapping[$panelId] : "";
+    return LED_PANEL_MAPPING[$panelId] ?? "";
 }
 
 

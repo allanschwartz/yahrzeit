@@ -57,7 +57,6 @@ global $yahrzeitDB;
 
 function yahrzeit_map_internal( $rawrecord )
 {
-    global $english_month_names;
 
     // first field, NAME
     $name = explode( " ", trim( $rawrecord[0] ) );
@@ -99,17 +98,16 @@ function yahrzeit_map_internal( $rawrecord )
     $location = explode( "-", trim ( $rawrecord[7] ) );
 
     $hebrew_month_name = closest_hebrew_month( $hdod[1] );
-    global $hebrew_month_mapping;
 
     $person = array (
             'lastName'          =>   $lastname,
             'firstName'         =>   $firstname,
-            'engYzMonth'        =>   $english_month_names[$dod['month']-1],
+            'engYzMonth'        =>   ENGLISH_MONTH_NAMES[$dod['month']-1],
             'engYzDD'           =>   $dod['day'],
             'engYzYYYY'         =>   $dod['year'],
             'hebYzDD'           =>   $hdod[0],
             'hebYzMonth'        =>   $hebrew_month_name,
-            'hebYzMM'           =>   $hebrew_month_mapping[ $hebrew_month_name ],
+            'hebYzMM'           =>   HEBREW_MONTH_MAPPING[ $hebrew_month_name ],
             'hebYzYYYY'         =>   $hdod[2],
             'useHeb'            =>   (stristr( $options, 'HEB' ) ? true : false),
             'useEng'            =>   (stristr( $options, 'ENG' ) ? true : false),
@@ -130,8 +128,6 @@ function yahrzeit_map_internal( $rawrecord )
 
 function yahrzeit_map_external( $person )
 {
-    global $english_month_mapping;
-
     $name = $person['firstName'] . " " . $person['lastName'];
     $name2 = $person['lastName'] . ", " . $person['firstName'];
     $dod =  " " . $person['engYzMonth'] . " " . $person['engYzDD'] . ", " . $person['engYzYYYY'];
@@ -331,7 +327,7 @@ function yz_process_person( $i, $person )
             $x = explode( "/", $caldate );
             //echo "caldate $caldate \n";
             $dod =  $person['engYzMonth'] . " " . $person['engYzDD'] . ", " . $person['engYzYYYY'];
-            if ( ( $person['engYzMonth'] != $english_month_names[ $x[0] - 1 ] ) ||
+            if ( ( $person['engYzMonth'] != ENGLISH_MONTH_NAMES[ $x[0] - 1 ] ) ||
                ( $person['engYzDD'] != $x[1] ) ||
                ( $person['engYzYYYY'] != $x[2] ) ) {
                 echo "DATE ERROR... name " . $person['firstName'] . " " .  $person['lastName'] . " caldate $caldate recorded-date $dod\n";
@@ -351,7 +347,7 @@ function yz_process_person( $i, $person )
         // "month/day/year"
         $x = explode( "/", $caldate );
         $person['engYzDD'] =  $x[1];
-        $person['engYzMonth'] = $english_month_names[ $x[0] - 1 ];
+        $person['engYzMonth'] = ENGLISH_MONTH_NAMES[ $x[0] - 1 ];
         $person['engYzYYYY'] =  $x[2];
         //echo "lastname " .  $person['lastName'] . " year $x[2] \n";
         if ($x[2] > $newyear ) {
@@ -366,8 +362,7 @@ function yz_process_person( $i, $person )
             // "month/day/year"
             $x = explode( "/", $caldate );
             $person['engYzDD'] =  $x[1];
-            global $english_month_names;
-            $person['engYzMonth'] = $english_month_names[ $x[0] - 1 ];
+            $person['engYzMonth'] = ENGLISH_MONTH_NAMES[ $x[0] - 1 ];
             $person['engYzYYYY'] =  $x[2];
         }
         //echo "lastname " .  $person['lastName'] . " year $x[2] \n";
@@ -385,7 +380,7 @@ function yz_process_person( $i, $person )
         // "month/day/year"
         $x = explode( "/", $caldate );
         $person['engYzDD'] =  $x[1];
-        $person['engYzMonth'] = $english_month_names[ $x[0] - 1 ];
+        $person['engYzMonth'] = ENGLISH_MONTH_NAMES[ $x[0] - 1 ];
         $person['engYzYYYY'] =  $x[2];
     }
     else {

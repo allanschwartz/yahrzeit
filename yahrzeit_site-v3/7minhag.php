@@ -53,6 +53,7 @@
  */
 
     require_once "include/misc.inc.php";
+    require_once "include/date_support.inc.php";
 
     $minhag = read_minhag_ini();
 
@@ -117,8 +118,6 @@
 
     function emit_minhag_form($minhag, $title, $description)
     {
-        global $english_month_names;
-        global $hebrew_month_names;
         global $helpfile;
 
         emitTopOfScreen($title, $description, $helpfile);
@@ -290,7 +289,7 @@
                        <?php echo ($minhag['otherEngOrHeb'] == "eng" ? "checked" : ""); ?> >
                        English
                 <select name="otherEngMM" style="width:50" class="formStyleSmall">
-                    <?php print_option1($minhag['otherEngMM'], $english_month_names); ?>
+                    <?php print_option1($minhag['otherEngMM'], ENGLISH_MONTH_NAMES); ?>
                 </select>
                 <select name="otherEngDD" style="width:40" class="formStyleSmall">
                     <?php print_option_n1n2($minhag['otherEngDD'], 1, 31, "%02d"); ?>
@@ -305,7 +304,7 @@
                     <?php print_option_n1n2($minhag['otherHebDD'], 1, 30, "%02d"); ?>
                 </select>
                 <select name="otherHebMM" style="width:80" class="formStyleSmall">
-                    <?php print_option1($minhag['otherHebMM'], $hebrew_month_names); ?>
+                    <?php print_option1($minhag['otherHebMM'], HEBREW_MONTH_NAMES); ?>
                 </select>
             </td>
             <td id="dateErr">&nbsp;</td>

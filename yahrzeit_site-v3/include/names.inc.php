@@ -93,7 +93,6 @@ function yahrzeit_split_name($full_name)
 
 function yahrzeit_parse_english_date($date_str)
 {
-    global $english_month_names;
 
     $date_str = trim($date_str);
 
@@ -122,7 +121,7 @@ function yahrzeit_parse_english_date($date_str)
         $dod['year'] += 1900;
     }
 
-    $result['monthName'] = $english_month_names[$dod['month'] - 1];
+    $result['monthName'] = ENGLISH_MONTH_NAMES[$dod['month'] - 1];
     $result['day']       = $dod['day'];
     $result['year']      = $dod['year'];
 
@@ -132,7 +131,6 @@ function yahrzeit_parse_english_date($date_str)
 
 function yahrzeit_parse_hebrew_date($date_str)
 {
-    global $hebrew_month_mapping;
 
     $date_str = trim($date_str);
 
@@ -166,8 +164,8 @@ function yahrzeit_parse_hebrew_date($date_str)
 
     $result['day']       = $hdod[0];
     $result['monthName'] = $hebrew_month_name;
-    $result['monthNum']  = ($hebrew_month_name != "" && isset($hebrew_month_mapping[$hebrew_month_name]))
-                         ? $hebrew_month_mapping[$hebrew_month_name]
+    $result['monthNum']  = ($hebrew_month_name != "" && isset(HEBREW_MONTH_MAPPING[$hebrew_month_name]))
+                         ? HEBREW_MONTH_MAPPING[$hebrew_month_name]
                          : "";
     $result['year']      = $hdod[2];
 
@@ -250,7 +248,6 @@ function yahrzeit_map_internal($rawrecord)
 
 function yahrzeit_map_external($person)
 {
-    global $english_month_mapping;
 
     $first = isset($person['firstName']) ? trim($person['firstName']) : "";
     $last  = isset($person['lastName'])  ? trim($person['lastName'])  : "";
@@ -266,8 +263,8 @@ function yahrzeit_map_external($person)
     if ($person['engYzMonth'] == "" || $person['engYzDD'] == "") {
         $dod = "";
     } else {
-        $month = isset($english_month_mapping[$person['engYzMonth']])
-               ? $english_month_mapping[$person['engYzMonth']]
+        $month = isset(ENGLISH_MONTH_MAPPING[$person['engYzMonth']])
+               ? ENGLISH_MONTH_MAPPING[$person['engYzMonth']]
                : $person['engYzMonth'];
 
         $dod = $month . "/" . $person['engYzDD'] . "/" . $person['engYzYYYY'];
