@@ -22,8 +22,6 @@ Priority markers:
 
 - Done for current deployment.
 - Future cleanup:
-  - **[B]** Split calendar/date helpers into `include/date_support.inc.php`.
-  - **[B]** Move per-person helper functions into an expanded `include/names.inc.php`.
   - **[B]** Consider `include/audit_support.inc.php` for panel/name validation and duplicate-location checks.
   - Keep `yahrzeit_engine.php` as the orchestration layer: parse options, select mode, read data, and call engine/report/audit functions.
 
@@ -78,9 +76,7 @@ Priority markers:
 
 ### `6reports.php`
 
-- **[A]** Test CSV download/upload.
-- **[A]** Verify upload creates a backup and immediately runs audit.
-- Reports/audit/preview functionality is otherwise in good shape.
+- OK.
 
 ### `7minhag.php`
 

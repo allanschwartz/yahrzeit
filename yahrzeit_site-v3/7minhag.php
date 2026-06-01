@@ -52,75 +52,72 @@
  *      All rights reserved.
  */
 
-    require_once "include/misc.inc.php";
-    require_once "include/date_support.inc.php";
+require_once "include/misc.inc.php";
+require_once "include/date_support.inc.php";
 
-    $minhag = read_minhag_ini();
+const MINHAG_TITLE = "Yahrzeit Minhag";
+const MINHAG_TAB = 5;
+const MINHAG_HELPFILE = "help/7minhag.php";
 
-    /*
-    * Page metadata used by emitTopOfScreen().
-    */
-    $title = "Yahrzeit Minhag";
-    $description = "Special <i>minhag</i> or customs used for Yahrzeit Wall " .
-                "specific to " . h($minhag['synagogueName']) . ". " .
-                "<br>These observances apply uniformly to all individuals.";
-    $tab = 5;                    // Minhag tab
-    $helpfile = "help/7minhag.php";
+function minhag_page_description($minhag)
+{
+    return "Special <i>minhag</i> or customs used for Yahrzeit Wall " .
+           "specific to " . h($minhag['synagogueName'] ?? "") . ". " .
+           "<br>These observances apply uniformly to all individuals.";
+}
 
-    function post_value($key, $default = "")
-    {
-        return isset($_POST[$key]) ? $_POST[$key] : $default;
-    }
+function minhag_post_value($key, $default = "")
+{
+    return $_POST[$key] ?? $default;
+}
 
-    function build_minhag_from_post()
-    {
-        return array(
-            'synagogueName'        => post_value('synagogueName'),
-            'affiliation'          => post_value('affiliation'),
+function minhag_build_from_post()
+{
+    return [
+            'synagogueName'        => minhag_post_value('synagogueName'),
+            'affiliation'          => minhag_post_value('affiliation'),
 
-            'yahrzeitEngOrHeb'     => post_value('yahrzeitEngOrHeb'),
-            'yahrzeitLightOnHH'    => post_value('yahrzeitLightOnHH'),
-            'yahrzeitLightOnMM'    => post_value('yahrzeitLightOnMM'),
-            'yahrzeitLightOnAmPm'  => post_value('yahrzeitLightOnAmPm'),
-            'yahrzeitLightOffHH'   => post_value('yahrzeitLightOffHH'),
-            'yahrzeitLightOffMM'   => post_value('yahrzeitLightOffMM'),
-            'yahrzeitLightOffAmPm' => post_value('yahrzeitLightOffAmPm'),
-            'yahrzeitLightTime'    => post_value('yahrzeitLightTime'),
-            'yahrzeitMinBefore'    => post_value('yahrzeitMinBefore'),
-            'yahrzeitMinAfter'     => post_value('yahrzeitMinAfter'),
-            'yahrzeitPlusShabbat'  => myBool(post_value('yahrzeitPlusShabbat')),
-            'yahrzeitFullWeek'     => myBool(post_value('yahrzeitFullWeek')),
+            'yahrzeitEngOrHeb'     => minhag_post_value('yahrzeitEngOrHeb'),
+            'yahrzeitLightOnHH'    => minhag_post_value('yahrzeitLightOnHH'),
+            'yahrzeitLightOnMM'    => minhag_post_value('yahrzeitLightOnMM'),
+            'yahrzeitLightOnAmPm'  => minhag_post_value('yahrzeitLightOnAmPm'),
+            'yahrzeitLightOffHH'   => minhag_post_value('yahrzeitLightOffHH'),
+            'yahrzeitLightOffMM'   => minhag_post_value('yahrzeitLightOffMM'),
+            'yahrzeitLightOffAmPm' => minhag_post_value('yahrzeitLightOffAmPm'),
+            'yahrzeitLightTime'    => minhag_post_value('yahrzeitLightTime'),
+            'yahrzeitMinBefore'    => minhag_post_value('yahrzeitMinBefore'),
+            'yahrzeitMinAfter'     => minhag_post_value('yahrzeitMinAfter'),
+            'yahrzeitPlusShabbat'  => myBool(minhag_post_value('yahrzeitPlusShabbat')),
+            'yahrzeitFullWeek'     => myBool(minhag_post_value('yahrzeitFullWeek')),
 
-            'yizkorYomKippur'      => myBool(post_value('yizkorYomKippur')),
-            'yizkorShmini'         => myBool(post_value('yizkorShmini')),
-            'yizkorPesach'         => myBool(post_value('yizkorPesach')),
-            'yizkorPesachDay'      => post_value('yizkorPesachDay'),
-            'yizkorShavuot'        => myBool(post_value('yizkorShavuot')),
-            'yizkorShavuotDay'     => post_value('yizkorShavuotDay'),
-            'yizkorOther'          => myBool(post_value('yizkorOther')),
-            'otherEngOrHeb'        => post_value('otherEngOrHeb'),
-            'otherEngMM'           => post_value('otherEngMM'),
-            'otherEngDD'           => post_value('otherEngDD'),
-            'otherHebDD'           => post_value('otherHebDD'),
-            'otherHebMM'           => post_value('otherHebMM'),
+            'yizkorYomKippur'      => myBool(minhag_post_value('yizkorYomKippur')),
+            'yizkorShmini'         => myBool(minhag_post_value('yizkorShmini')),
+            'yizkorPesach'         => myBool(minhag_post_value('yizkorPesach')),
+            'yizkorPesachDay'      => minhag_post_value('yizkorPesachDay'),
+            'yizkorShavuot'        => myBool(minhag_post_value('yizkorShavuot')),
+            'yizkorShavuotDay'     => minhag_post_value('yizkorShavuotDay'),
+            'yizkorOther'          => myBool(minhag_post_value('yizkorOther')),
+            'otherEngOrHeb'        => minhag_post_value('otherEngOrHeb'),
+            'otherEngMM'           => minhag_post_value('otherEngMM'),
+            'otherEngDD'           => minhag_post_value('otherEngDD'),
+            'otherHebDD'           => minhag_post_value('otherHebDD'),
+            'otherHebMM'           => minhag_post_value('otherHebMM'),
 
-            'yizkorLightTime'      => post_value('yizkorLightTime'),
-            'yizkorLightOnHH'      => post_value('yizkorLightOnHH'),
-            'yizkorLightOnMM'      => post_value('yizkorLightOnMM'),
-            'yizkorLightOnAmPm'    => post_value('yizkorLightOnAmPm'),
-            'yizkorLightOffHH'     => post_value('yizkorLightOffHH'),
-            'yizkorLightOffMM'     => post_value('yizkorLightOffMM'),
-            'yizkorLightOffAmPm'   => post_value('yizkorLightOffAmPm'),
-            'yizkorMinBefore'      => post_value('yizkorMinBefore'),
-            'yizkorMinAfter'       => post_value('yizkorMinAfter'),
-        );
-    }
+            'yizkorLightTime'      => minhag_post_value('yizkorLightTime'),
+            'yizkorLightOnHH'      => minhag_post_value('yizkorLightOnHH'),
+            'yizkorLightOnMM'      => minhag_post_value('yizkorLightOnMM'),
+            'yizkorLightOnAmPm'    => minhag_post_value('yizkorLightOnAmPm'),
+            'yizkorLightOffHH'     => minhag_post_value('yizkorLightOffHH'),
+            'yizkorLightOffMM'     => minhag_post_value('yizkorLightOffMM'),
+            'yizkorLightOffAmPm'   => minhag_post_value('yizkorLightOffAmPm'),
+            'yizkorMinBefore'      => minhag_post_value('yizkorMinBefore'),
+            'yizkorMinAfter'       => minhag_post_value('yizkorMinAfter'),
+    ];
+}
 
-    function emit_minhag_form($minhag, $title, $description)
-    {
-        global $helpfile;
-
-        emitTopOfScreen($title, $description, $helpfile);
+function minhag_render_form($minhag)
+{
+    emitTopOfScreen(MINHAG_TITLE, minhag_page_description($minhag), MINHAG_HELPFILE);
 ?>
 
 <form name="minhagForm" action="7minhag.php" method="POST">
@@ -366,7 +363,6 @@
 <?php
         emitCopyright();
 ?>
-
     </table>
 <br>&nbsp;<br>
 </form>
@@ -374,33 +370,66 @@
 <?php
     }
 
-    if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-        emitHeader($title, $tab);
-        emit_minhag_form($minhag, $title, $description);
-        emitFooter();
-    } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $new_minhag = build_minhag_from_post();
 
-        emitHeader($title, $tab);
+function minhag_render_main_page()
+{
+    $minhag = read_minhag_ini();
 
-        if (write_minhag_ini($new_minhag) < 0) {
-            emitMessagePage("Config write failure: minhag.ini",
-                            "click here to return to Minhag",
-                            "7minhag.php");
-        } else {
-            emitMessagePage(
-        "Configuration Saved<br><br>" .
-        "If you changed Yizkor service times or other scheduled-lighting times, " .
-        "review the Minhag page help for the corresponding crontab entries. " .
-        "This page saves <code>data/minhag.ini</code>, but it does not install " .
-        "or modify cron jobs.",
-        "click here to continue",
-        "0yahrzeit.php"
-    );
-        }
+    emitHeader(MINHAG_TITLE, MINHAG_TAB);
+    minhag_render_form($minhag);
+    emitFooter();
+}
 
-        emitFooter();
+function minhag_render_save_result($ok)
+{
+    emitHeader(MINHAG_TITLE, MINHAG_TAB);
+
+    if (!$ok) {
+        emitMessagePage(
+            "Config write failure: minhag.ini",
+            "click here to return to Minhag",
+            "7minhag.php"
+        );
     } else {
-        die("This script only works with GET and POST requests.");
+        emitMessagePage(
+            "Configuration Saved<br><br>" .
+            "If you changed Yizkor service times or other scheduled-lighting times, " .
+            "review the Minhag page help for the corresponding crontab entries. " .
+            "This page saves <code>data/minhag.ini</code>, but it does not install " .
+            "or modify cron jobs.",
+            "click here to continue",
+            "0yahrzeit.php"
+        );
     }
-?>
+
+    emitFooter();
+}
+
+function minhag_handle_post()
+{
+    $new_minhag = minhag_build_from_post();
+    minhag_render_save_result(write_minhag_ini($new_minhag) >= 0);
+}
+
+// -----------------------------------------------------------------------------
+// Program entry point
+// -----------------------------------------------------------------------------
+
+function minhag_main()
+{
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+    if ($method == 'POST') {
+        minhag_handle_post();
+        return;
+    }
+
+    if ($method == 'GET') {
+        minhag_render_main_page();
+        return;
+    }
+
+    die("This script only works with GET and POST requests.");
+}
+
+minhag_main();

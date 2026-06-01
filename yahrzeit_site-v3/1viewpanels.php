@@ -44,106 +44,122 @@
  *      All rights reserved.
  */
 
-    require_once "include/misc.inc.php";
-    require_once "include/panels.inc.php";
+require_once "include/misc.inc.php";
+require_once "include/panels.inc.php";
 
+const PANELS_TITLE = "View Yahrzeit Panels";
+const PANELS_TAB = 2;
+const PANELS_HELPFILE = "help/1viewpanels.php";
+
+const PANEL_IMAGE_AREAS = [
+    "col1a" => "25,0,140,130",
+    "col1b" => "25,131,140,232",
+    "col1c" => "25,233,140,334",
+
+    "col2a" => "141,0,240,132",
+    "col2b" => "141,133,240,232",
+    "col2c" => "141,233,240,334",
+
+    "col3a" => "241,0,337,134",
+    "col3b" => "241,135,337,232",
+    "col3c" => "241,233,337,332",
+
+    "col4a" => "338,0,429,135",
+    "col4b" => "338,136,429,230",
+    "col4c" => "338,231,429,326",
+
+    "col5a" => "430,0,517,137",
+    "col5b" => "430,138,517,228",
+    "col5c" => "430,229,517,321",
+
+    "col6a" => "518,0,599,137",
+    "col6b" => "518,138,599,228",
+    "col6c" => "518,229,599,318",
+
+    "col7a" => "600,0,686,138",
+    "col7b" => "600,139,686,226",
+    "col7c" => "600,227,686,317",
+];
+
+// -----------------------------------------------------------------------------
+// Page metadata
+// -----------------------------------------------------------------------------
+
+function panels_description()
+{
     $minhag = read_minhag_ini();
+    $synagogue = h($minhag['synagogueName'] ?? "Congregation Beth Sholom");
 
-    /*
-     * Page metadata used by emitTopOfScreen().
-     */
-    $title = "View Yahrzeit Panels";
-    $description =  "View the physical Yahrzeit panel geometry installed at " .
-                h($minhag['synagogueName']) . ". " .
-                "Click a panel in the photo, or click a panel ID in the table, " .
-                "to view the names assigned to that panel. " .
-                "<p>Below are manual wall-wide lighting operations: all on, all off, and Yizkor. " .
-                "These operations send commands to the wall immediately.";
-    $tab = 2;         // Panels
-    $helpfile = "help/1viewpanels.php";
+    return "View the physical Yahrzeit panel geometry installed at $synagogue. " .
+           "Click a panel in the photo, or click a panel ID in the table, " .
+           "to view the names assigned to that panel. " .
+           "<p>Below are manual wall-wide lighting operations: all on, all off, and Yizkor. " .
+           "These operations send commands to the wall immediately.";
+}
 
+// -----------------------------------------------------------------------------
+// Manual wall operations
+// -----------------------------------------------------------------------------
 
-    function run_yahrzeit_operation($operation)
-    {
-        $script = __DIR__ . "/bin/yahrzeit";
+function run_yahrzeit_operation($operation)
+{
+    $allowed = [
+        "all-off" => "--all-off",
+        "all-on"  => "--all-on",
+        "yizkor"  => "--yizkor",
+    ];
 
-        if (!is_executable($script)) {
-            return array(false, "Yahrzeit command script is not executable: $script");
-        }
-
-        $allowed = array(
-            "all-off" => "--all-off",
-            "all-on"  => "--all-on",
-            "yizkor"  => "--yizkor",
-        );
-
-        if (!isset($allowed[$operation])) {
-            return array(false, "Unsupported lighting operation: $operation");
-        }
-
-        // Local lab override.  Remove this for CBS deployment so bin/yahrzeit
-        // uses its default production controller host.
-        $allanHost = "192.168.86.240";
-
-        $cmd = escapeshellcmd($script) .
-               " --host " . escapeshellarg($allanHost) .
-               " " . $allowed[$operation] . " 2>&1";
-
-        $output = array();
-        $rc = 0;
-        exec($cmd, $output, $rc);
-
-        return array($rc == 0, implode("\n", $output));
+    if (!isset($allowed[$operation])) {
+        return [false, "Unsupported lighting operation: $operation"];
     }
 
+    $script = __DIR__ . "/bin/yahrzeit";
 
-    function emit_panel_image_map()
-    {
-        $areas = array(
-            "col1a" => "25,0,140,130",
-            "col1b" => "25,131,140,232",
-            "col1c" => "25,233,140,334",
-
-            "col2a" => "141,0,240,132",
-            "col2b" => "141,133,240,232",
-            "col2c" => "141,233,240,334",
-
-            "col3a" => "241,0,337,134",
-            "col3b" => "241,135,337,232",
-            "col3c" => "241,233,337,332",
-
-            "col4a" => "338,0,429,135",
-            "col4b" => "338,136,429,230",
-            "col4c" => "338,231,429,326",
-
-            "col5a" => "430,0,517,137",
-            "col5b" => "430,138,517,228",
-            "col5c" => "430,229,517,321",
-
-            "col6a" => "518,0,599,137",
-            "col6b" => "518,138,599,228",
-            "col6c" => "518,229,599,318",
-
-            "col7a" => "600,0,686,138",
-            "col7b" => "600,139,686,226",
-            "col7c" => "600,227,686,317",
-        );
-
-        echo "                <map name=\"panelmap\">\n";
-        foreach ($areas as $panelId => $coords) {
-            echo "                    <area href=\"3singlepanel.php?panel=" . h($panelId) .
-                 "\" coords=\"" . h($coords) . "\">\n";
-        }
-        echo "                </map>\n";
-        echo "                <img src=\"images/image-21panels.jpg\" usemap=\"#panelmap\" width=\"700\">\n";
+    if (!is_executable($script)) {
+        return [false, "Yahrzeit command script is not executable: $script"];
     }
 
+    // Local lab override.  Remove this for CBS deployment so bin/yahrzeit
+    // uses its default production controller host.
+    $allanHost = "192.168.86.240";
 
-    function emit_panel_geometry_table()
-    {
-        $n = panel_readDB();
+    $cmd = escapeshellarg($script) .
+           " --host " . escapeshellarg($allanHost) .
+           " " . escapeshellarg($allowed[$operation]) . " 2>&1";
+
+    exec($cmd, $output, $rc);
+
+    return [$rc == 0, implode("\n", $output)];
+}
+
+function panels_handle_post()
+{
+    $operation = $_POST['lighting_operation'] ?? "";
+    [$ok, $message] = run_yahrzeit_operation($operation);
+
+    panels_render_operation_result_page($operation, $ok, $message);
+}
+
+// -----------------------------------------------------------------------------
+// Rendering helpers
+// -----------------------------------------------------------------------------
+
+function panels_render_image_map()
+{
+    echo "                <map name=\"panelmap\">\n";
+
+    foreach (PANEL_IMAGE_AREAS as $panelId => $coords) {
+        echo "                    <area href=\"3singlepanel.php?panel=" . h($panelId) .
+             "\" coords=\"" . h($coords) . "\">\n";
+    }
+
+    echo "                </map>\n";
+    echo "                <img src=\"images/image-21panels.jpg\" usemap=\"#panelmap\" width=\"700\">\n";
+}
+
+function panels_render_geometry_table()
+{
 ?>
-
                 <table border="2">
                     <tr class="text">
                         <th>Panel ID</th>
@@ -152,9 +168,9 @@
                     </tr>
 
 <?php
-        for ($i = 0; $i < $n; $i++) {
-            $panel = panel_getObj($i);
-            $panelId = $panel['panelId'];
+    for ($i = 0; $i < panel_numrows(); $i++) {
+        $panel = panel_getObj($i);
+        $panelId = $panel['panelId'];
 ?>
                     <tr class="text">
                         <td>
@@ -171,17 +187,16 @@
                         </td>
                     </tr>
 <?php
-        }
+    }
 ?>
                 </table>
 <?php
-    }
+}
 
-
-    function emit_panels_page($title, $description, $tab, $helpfile)
-    {
-        emitHeader($title, $tab);
-        emitTopOfScreen($title, $description, $helpfile);
+function panels_render_main_page()
+{
+    emitHeader(PANELS_TITLE, PANELS_TAB);
+    emitTopOfScreen(PANELS_TITLE, panels_description(), PANELS_HELPFILE);
 ?>
 
     <form name="viewpanels" action="<?php echo h($_SERVER['PHP_SELF']); ?>" method="POST">
@@ -202,7 +217,7 @@
         <tr>
             <td colspan="3" align="center">
 <?php
-        emit_panel_image_map();
+    panels_render_image_map();
 ?>
             </td>
         </tr>
@@ -210,7 +225,7 @@
         <tr>
             <td colspan="3" align="center">
 <?php
-        emit_panel_geometry_table();
+    panels_render_geometry_table();
 ?>
             </td>
         </tr>
@@ -244,23 +259,21 @@
 <?php
         emitCopyright();
 ?>
-
     </table>
     <br>&nbsp;<br>
     </form>
-
 <?php
-        emitFooter();
-    }
+    emitFooter();
+}
 
+function panels_render_operation_result_page($operation, $ok, $message)
+{
+    $titleText = $ok ? "Lighting operation completed" : "Lighting operation failed";
 
-    function emit_operation_result_page($title, $tab, $operation, $ok, $message, $helpfile)
-    {
-        $titleText = $ok ? "Lighting operation completed" : "Lighting operation failed";
-
-        emitHeader($title, $tab);
-        emitTopOfScreen($titleText, 
-                "Result from manual lighting operation: " . $operation, $helpfile);
+    emitHeader(PANELS_TITLE, PANELS_TAB);
+    emitTopOfScreen($titleText,
+                    "Result from manual lighting operation: " . $operation,
+                    PANELS_HELPFILE);
 ?>
 
     <table cellspacing="0" cellpadding="4" width="90%" border="0" class="botBorder">
@@ -274,29 +287,35 @@
                 <a href="1viewpanels.php">Return to the Panels page</a>
             </td>
         </tr>
-
 <?php
         emitCopyright();
 ?>
-
     </table>
+    <br>&nbsp;<br>
 
 <?php
-        emitFooter();
+    emitFooter();
+}
+
+// -----------------------------------------------------------------------------
+// Program entry point
+// -----------------------------------------------------------------------------
+
+function panels_main()
+{
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+    if ($method == 'POST') {
+        panels_handle_post();
+        return;
     }
 
-
-    if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-        emit_panels_page($title, $description, $tab, $helpfile);
+    if ($method == 'GET') {
+        panels_render_main_page();
+        return;
     }
-    elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $operation = isset($_POST['lighting_operation']) ? $_POST['lighting_operation'] : "";
 
-        list($ok, $message) = run_yahrzeit_operation($operation);
+    die("This script only works with GET and POST requests.");
+}
 
-        emit_operation_result_page($title, $tab, $operation, $ok, $message, $helpfile);
-    }
-    else {
-        die("This script only works with GET and POST requests.");
-    }
-?>
+panels_main();

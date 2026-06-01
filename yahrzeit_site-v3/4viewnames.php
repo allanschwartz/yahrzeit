@@ -39,106 +39,97 @@
  *      All rights reserved.
  */
 
-    require_once "include/misc.inc.php";
-    require_once "include/panels.inc.php";
-    require_once "include/names.inc.php";
-    require_once "include/date_support.inc.php";
+require_once "include/misc.inc.php";
+require_once "include/date_support.inc.php";
+require_once "include/names.inc.php";
 
-    $minhag = read_minhag_ini();
+const VIEWNAMES_TITLE = "Yahrzeit Names";
+const VIEWNAMES_DESCRIPTION = "List observed Yahrzeits. Click on a name to view that individual record.";
+const VIEWNAMES_TAB = 3;
+const VIEWNAMES_HELPFILE = "help/4viewnames.php";
+const VIEWNAMES_PAGE = "4viewnames.php";
 
-    /*
-     * Page metadata used by emitTopOfScreen().
-     */
-    $title = "Yahrzeit Names";
-    $description = "List observed Yahrzeits.  Click on a name to view that individual record.";
-    $tab = 3;         // Names
-    $helpfile = "help/4viewnames.php";
 
-  
+// -----------------------------------------------------------------------------
+// Search and formatting helpers
+// -----------------------------------------------------------------------------
 
-    function yahrzeit_person_matches_query($person, $query)
-    {
-        if ($query == "") {
-            return true;
-        }
+function viewnames_english_date($person)
+{
+    return trim(
+        ($person['engYzMonth'] ?? "") . "/" .
+        ($person['engYzDD']    ?? "") . "/" .
+        ($person['engYzYYYY']  ?? ""),
+        "/"
+    );
+}
 
-        $haystack = strtolower(
-            $person['firstName'] . " " .
-            $person['lastName'] . " " .
-            $person['lastNameFirst'] . " " .
-            $person['engYzMonth'] . "/" .
-            $person['engYzDD'] . "/" .
-            $person['engYzYYYY'] . " " .
-            $person['hebYzDD'] . " " .
-            $person['hebYzMonth'] . " " .
-            $person['hebYzYYYY'] . " " .
-            $person['options'] . " " .
-            $person['panelId'] . "-" .
-            $person['row'] . "-" .
-            $person['column']
-        );
+function viewnames_hebrew_date($person)
+{
+    return trim(
+        ($person['hebYzDD']    ?? "") . " " .
+        ($person['hebYzMonth'] ?? "") . " " .
+        ($person['hebYzYYYY']  ?? "")
+    );
+}
 
-        $words = preg_split('/\s+/', strtolower(trim($query)));
-        if ($words === false) {
-            return true;
-        }
+function viewnames_search_text($person)
+{
+    return strtolower(implode(" ", [
+        yahrzeit_person_name($person),
+        $person['lastNameFirst'] ?? "",
+        viewnames_english_date($person),
+        viewnames_hebrew_date($person),
+        yahrzeit_person_options_text($person),
+        $person['options'] ?? "",
+        yahrzeit_person_location($person),
+    ]));
+}
 
-        foreach ($words as $word) {
-            if ($word == "") {
-                continue;
-            }
+function viewnames_person_matches_query($person, $query)
+{
+    $query = strtolower(trim($query));
 
-            if (strpos($haystack, $word) === false) {
-                return false;
-            }
-        }
-
+    if ($query == "") {
         return true;
     }
 
-    if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-        emitHeader( $title, $tab );
+    $haystack = viewnames_search_text($person);
+    $words = preg_split('/\s+/', $query) ?: [];
 
-        $query = isset($_GET['q']) ? trim($_GET['q']) : "";
+    foreach ($words as $word) {
+        if ($word != "" && !str_contains($haystack, $word)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+// -----------------------------------------------------------------------------
+// Rendering helpers
+// -----------------------------------------------------------------------------
+
+function viewnames_render_search_form($query)
+{
 ?>
-
-<body class="bgNone">
-
-<?php   
-    emitTopOfScreen( $title, $description, $helpfile );
-?>
-
-    <table cellSpacing=0 cellPadding=4 width=90% border=0 class="botBorder">
-        <tr><td width="35%"></td>
-            <td width="40%"></td>
-            <td width="25%"></td>
-        </tr>
-
-        <tr>
-            <td colspan="3" class="header2Bg" align="left" height="25">
-                <span class=boldText> Yahrzeit Names </span>
-            </td>
-        </tr>
-
-        <tr>
-            <td colspan=3 align="center">
-                <form name="searchnames" action="<?php echo h($_SERVER['PHP_SELF']) ?>" method="GET">
+                <form name="searchnames" action="<?php echo h(VIEWNAMES_PAGE); ?>" method="GET">
                     <span class="text">Search names, dates, options, or location:</span>
-                    <input type="text" name="q" size="40" value="<?php echo h($query) ?>">
+                    <input type="text" name="q" size="40" value="<?php echo h($query); ?>">
                     <input type="submit" value="Search" class="button">
                     <input type="button" value="Clear" class="button"
-                           onclick='window.location="4viewnames.php";return false;'>
+                           onclick='window.location="<?php echo h(VIEWNAMES_PAGE); ?>";return false;'>
                 </form>
-            </td>
-        </tr>
-
-        <tr>
-            <td colspan=3 align="center">
 <?php
-                $n = yahrzeit_readDB();
-                $displayed = 0;
+}
+
+function viewnames_render_names_table($query)
+{
+    $n = yahrzeit_readDB();
+    $displayed = 0;
 ?>
-                <table border=2>
+                <table border="2">
                     <tr class="text">
                         <th>Name</th>
                         <th>English Date</th>
@@ -146,80 +137,81 @@
                         <th>Options</th>
                         <th>Location</th>
                     </tr>
-
 <?php
-                    for ( $i = 0; $i < $n; $i++ ) {
-                        $remembered = yahrzeit_getObj( $i );
+    for ($i = 0; $i < $n; $i++) {
+        $person = yahrzeit_getObj($i);
 
-                        if (!yahrzeit_person_matches_query($remembered, $query)) {
-                            continue;
-                        }
-                        $name = trim($remembered['firstName'] . " " . $remembered['lastName']);
+        if (!viewnames_person_matches_query($person, $query)) {
+            continue;
+        }
 
-                        $englishDate = trim(
-                            $remembered['engYzMonth'] . "/" .
-                            $remembered['engYzDD'] . "/" .
-                            $remembered['engYzYYYY'],
-                            "/"
-                        );
-
-                        $hebrewDate = trim(
-                            $remembered['hebYzDD'] . " " .
-                            $remembered['hebYzMonth'] . " " .
-                            $remembered['hebYzYYYY']
-                        );
-
-                        $options = isset($remembered['options']) ? trim($remembered['options']) : "";
-
-                        $location = trim(
-                            $remembered['panelId'] . "-" .
-                            $remembered['row'] . "-" .
-                            $remembered['column'],
-                            "-"
-                        );
-
-                        $displayed++;
+        $displayed++;
 ?>
-
-                        <tr class="text">
-                            <td>
-                            <a href="5singlename.php?row=<?php echo h($i) ?>">
-                                <?php echo h($name) ?>
+                    <tr class="text">
+                        <td>
+                            <a href="5singlename.php?row=<?php echo h($i); ?>">
+                                <?php echo h(yahrzeit_person_name($person)); ?>
                             </a>
-                            </td>
-                            <td> <!-- English Yahrzeit Date -->
-                                <?php echo h($englishDate) ?>
-                            </td>
-                            <td> <!-- Hebrew Yahrzeit Date -->
-                                <?php echo h($hebrewDate) ?>
-                            </td>
-                            <td> <!-- Options -->
-                                <?php echo h($options) ?> 
-                            </td>
-                            <td> <!-- Location -->
-                                <?php echo h($location) ?> 
-                            </td>
-                        </tr>
+                        </td>
+                        <td><?php echo h(viewnames_english_date($person)); ?></td>
+                        <td><?php echo h(viewnames_hebrew_date($person)); ?></td>
+                        <td><?php echo h(yahrzeit_person_options_text($person)); ?></td>
+                        <td><?php echo h(yahrzeit_person_location($person)); ?></td>
+                    </tr>
 <?php
-                    }
+    }
 
-                    if ($displayed == 0) {
+    if ($displayed == 0) {
 ?>
-                        <tr class="text">
-                            <td colspan=5 align="center">
-                                <i>No matching Yahrzeit records found.</i>
-                            </td>
-                        </tr>
+                    <tr class="text">
+                        <td colspan="5" align="center">
+                            <i>No matching Yahrzeit records found.</i>
+                        </td>
+                    </tr>
 <?php
-                    }
+    }
 ?>
                 </table>
+                <br>
+                <span class="textSmall">
+                    Showing <?php echo h($displayed); ?> of <?php echo h($n); ?> records.
+                </span>
+<?php
+}
+
+function viewnames_render_main_page()
+{
+    $query = trim($_GET['q'] ?? "");
+
+    emitHeader(VIEWNAMES_TITLE, VIEWNAMES_TAB);
+    emitTopOfScreen(VIEWNAMES_TITLE, VIEWNAMES_DESCRIPTION, VIEWNAMES_HELPFILE);
+?>
+    <table cellspacing="0" cellpadding="4" width="90%" border="0" class="botBorder">
+        <tr>
+            <td width="35%"></td>
+            <td width="40%"></td>
+            <td width="25%"></td>
+        </tr>
+
+        <tr>
+            <td colspan="3" class="header2Bg" align="left" height="25">
+                <span class="boldText">Yahrzeit Names</span>
             </td>
         </tr>
 
         <tr>
-            <td colspan=3 align="center" class="textSmall">
-                Showing <?php echo h($displayed) ?> of <?php echo h($n) ?> records.
+            <td colspan="3" align="center">
+<?php
+                viewnames_render_search_form($query);
+?>
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="3" align="center">
+<?php
+                viewnames_render_names_table($query);
+?>
             </td>
         </tr>
 
@@ -228,18 +220,29 @@
         </tr>
 
 <?php
-        emitCopyright(); 
+        emitCopyright();
 ?>
-
     </table>
-<br>&nbsp;<br>
-</body>
+    <br>&nbsp;<br>
+<?php
+    emitFooter();
+}
 
-<?php 
-        emitFooter();
-    }
-    else {
-        die ("This script only works with GET requests.");
+
+// -----------------------------------------------------------------------------
+// Program entry point
+// -----------------------------------------------------------------------------
+
+function viewnames_main()
+{
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+    if ($method == 'GET') {
+        viewnames_render_main_page();
+        return;
     }
 
-?>
+    die("This script only works with GET requests.");
+}
+
+viewnames_main();

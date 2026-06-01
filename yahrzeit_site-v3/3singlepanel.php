@@ -40,186 +40,193 @@
  *      All rights reserved.
  */
 
-    require_once "include/misc.inc.php";
-    require_once "include/panels.inc.php";
-    require_once "include/names.inc.php";
-    require_once "include/date_support.inc.php";
+require_once "include/misc.inc.php";
+require_once "include/panels.inc.php";
+require_once "include/names.inc.php";
+require_once "include/date_support.inc.php";
 
-    $minhag = read_minhag_ini();
-
-    /*
-     * Page metadata used by emitTopOfScreen().
-     */
-    $panelid = isset($_GET['panel']) ? $_GET['panel'] : "";
-
-    $title = "Single Yahrzeit Panel";
-    $description = "View the memorial names assigned to one physical Yahrzeit Wall panel. " .
-                "Click a name to view the memorial record for that individual. ";
-    $tab = 2;         // Panels
-    $helpfile = "help/3singlepanel.php";
+const SINGLE_PANEL_TITLE = "Single Yahrzeit Panel";
+const SINGLE_PANEL_DESCRIPTION =
+    "View the memorial names assigned to one physical Yahrzeit Wall panel. " .
+    "Click a name to view the memorial record for that individual.";
+const SINGLE_PANEL_TAB = 2;
+const SINGLE_PANEL_HELPFILE = "help/3singlepanel.php";
 
 
-    function panel_person_display_name($person)
-    {
-        $name = trim($person['firstName'] . " " . $person['lastName']);
+// -----------------------------------------------------------------------------
+// Data helpers
+// -----------------------------------------------------------------------------
 
-        if ($name == "") {
-            return "(unnamed)";
-        }
+function single_panel_person_display_name($person)
+{
+    $name = trim(($person['firstName'] ?? "") . " " . ($person['lastName'] ?? ""));
+    return $name != "" ? $name : "(unnamed)";
+}
 
-        return $name;
+function single_panel_person_is_reserved($person)
+{
+    if (!empty($person['reserved'])) {
+        return true;
     }
 
-    function panel_person_is_reserved($person)
-    {
-        if (isset($person['reserved']) && $person['reserved']) {
-            return true;
+    return str_contains(strtoupper(single_panel_person_display_name($person)), "RESERVED");
+}
+
+function single_panel_build_complete_panel($panelid)
+{
+    $completePanel = [];
+    $n = yahrzeit_readDB();
+
+    for ($i = 0; $i < $n; $i++) {
+        $person = yahrzeit_getObj($i);
+
+        if (($person['panelId'] ?? "") != $panelid) {
+            continue;
         }
 
-        $name = strtoupper(panel_person_display_name($person));
-        return ($name == "RESERVED" || strpos($name, "RESERVED") !== false);
+        $row = (int)($person['row'] ?? 0);
+        $col = (int)($person['column'] ?? 0);
+
+        if ($row <= 0 || $col <= 0) {
+            continue;
+        }
+
+        $completePanel[$row][$col] = $person;
     }
 
-    function build_complete_panel($panelid)
-    {
-        $completePanel = array();
+    return $completePanel;
+}
 
-        $n = yahrzeit_readDB();
+function single_panel_load_panel($panelid)
+{
+    return $panelid == "" ? null : panel_getObj_byId($panelid);
+}
 
-        for ($i = 0; $i < $n; $i++) {
-            $person = yahrzeit_getObj($i);
 
-            if (!isset($person['panelId']) || $person['panelId'] != $panelid) {
-                continue;
-            }
+// -----------------------------------------------------------------------------
+// Rendering helpers
+// -----------------------------------------------------------------------------
 
-            if (!isset($person['row']) || !isset($person['column'])) {
-                continue;
-            }
+function single_panel_render_message_page($message)
+{
+    emitHeader(SINGLE_PANEL_TITLE, SINGLE_PANEL_TAB);
+    emitMessagePage($message, "click here to return to the Panels page", "1viewpanels.php");
+    emitFooter();
+}
 
-            $row = (int)$person['row'];
-            $col = (int)$person['column'];
+function single_panel_render_cell($person, $cellWidth)
+{
+    echo '<td width="' . h($cellWidth) . '%">';
+    echo '<table><tr class="text">';
+    echo '<td><img src="images/ledoff.gif"></td>';
+    echo '<td valign="center">';
 
-            if ($row <= 0 || $col <= 0) {
-                continue;
-            }
-
-            $completePanel[$row][$col] = $person;
-        }
-
-        return $completePanel;
+    if ($person == null) {
+        echo '<span class="textSmall"><i>(open)</i></span>';
+    } elseif (single_panel_person_is_reserved($person)) {
+        echo '<span class="textSmall"><i>reserved</i></span>';
+    } else {
+        $name = single_panel_person_display_name($person);
+        $key = $person['index'] ?? "";
+        echo '<a href="5singlename.php?row=' . h($key) . '">' . h($name) . '</a>';
     }
 
-    function emit_panel_cell($person, $cellWidth)
-    {
-        echo '<td width="' . h($cellWidth) . '%">';
-        echo '<table><tr class="text">';
-        echo '<td><img src="images/ledoff.gif"></td>';
-        echo '<td valign="center">';
+    echo '</td>';
+    echo '</tr></table>';
+    echo '</td>';
+}
 
-        if ($person == null) {
-            echo '<span class="textSmall"><i>(open)</i></span>';
-        }
-        elseif (panel_person_is_reserved($person)) {
-            echo '<span class="textSmall"><i>reserved</i></span>';
-        }
-        else {
-            $name = panel_person_display_name($person);
-            $key = isset($person['index']) ? $person['index'] : "";
-            echo '<a href="5singlename.php?row=' . h($key) . '">' . h($name) . '</a>';
+function single_panel_render_panel_table($panel, $completePanel)
+{
+    $nRows = (int)$panel['nRows'];
+    $nCols = (int)$panel['nCols'];
+    $cellWidth = ($nCols > 0) ? floor(100 / $nCols) : 16;
+
+    echo '<table border="2">';
+
+    for ($row = 1; $row <= $nRows; $row++) {
+        echo '<tr class="text">';
+
+        for ($col = 1; $col <= $nCols; $col++) {
+            single_panel_render_cell($completePanel[$row][$col] ?? null, $cellWidth);
         }
 
-        echo '</td>';
-        echo '</tr></table>';
-        echo '</td>';
+        echo '</tr>';
     }
 
-    function emit_single_panel_table($panel, $completePanel)
-    {
-        $nRows = (int)$panel['nRows'];
-        $nCols = (int)$panel['nCols'];
-        $cellWidth = ($nCols > 0) ? floor(100 / $nCols) : 16;
+    echo '</table>';
+}
 
-        echo '<table border="2">';
+function single_panel_render_main_page($panelid, $panel, $completePanel)
+{
+    $title = SINGLE_PANEL_TITLE . " -- \"" . $panelid . "\"";
 
-        for ($row = 1; $row <= $nRows; $row++) {
-            echo '<tr class="text">';
-
-            for ($col = 1; $col <= $nCols; $col++) {
-                $person = isset($completePanel[$row][$col]) ? $completePanel[$row][$col] : null;
-                emit_panel_cell($person, $cellWidth);
-            }
-
-            echo '</tr>';
-        }
-
-        echo '</table>';
-    }
-
-    if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-        if ($panelid == "") {
-            emitHeader($title, $tab);
-            emitMessagePage(
-                "Missing panel ID.",
-                "click here to return to the Panels page",
-                "1viewpanels.php"
-            );
-            emitFooter();
-            exit;
-        }
-
-        panel_readDB();
-        $panel = panel_getObj_byId($panelid);
-
-        if ($panel == null) {
-            emitHeader($title, $tab);
-            emitMessagePage(
-                "Unknown panel ID: " . h($panelid),
-                "click here to return to the Panels page",
-                "1viewpanels.php"
-            );
-            emitFooter();
-            exit;
-        }
-
-        $title = "Single Yahrzeit Panel -- \"" . $panelid . "\"";
-        $completePanel = build_complete_panel($panelid);
-
-        emitHeader($title, $tab);
-        emitTopOfScreen($title, $description, $helpfile);
+    emitHeader($title, SINGLE_PANEL_TAB);
+    emitTopOfScreen($title, SINGLE_PANEL_DESCRIPTION, SINGLE_PANEL_HELPFILE);
 ?>
 
-    <table cellSpacing=0 cellPadding=4 width=90% border=0 class="botBorder">
-        <tr><td width="35%"></td>
+    <table cellspacing="0" cellpadding="4" width="90%" border="0" class="botBorder">
+        <tr>
+            <td width="35%"></td>
             <td width="40%"></td>
             <td width="25%"></td>
         </tr>
 
         <tr>
-            <td colspan="3" class="header2Bg" align="left" height="25" >
-                <span class=boldText><?php echo h($panelid); ?></span>
+            <td colspan="3" class="header2Bg" align="left" height="25">
+                <span class="boldText"><?php echo h($panelid); ?></span>
             </td>
         </tr>
 
         <tr>
-            <td colspan=3>
+            <td colspan="3">
 <?php
-                emit_single_panel_table($panel, $completePanel);
+                single_panel_render_panel_table($panel, $completePanel);
 ?>
             </td>
         </tr>
-
 <?php
         emitCopyright();
 ?>
-
     </table>
-<br>&nbsp;<br>
+    <br>&nbsp;<br>
 
-<?php 
-        emitFooter();
-    } else {
+<?php
+    emitFooter();
+}
+
+
+// -----------------------------------------------------------------------------
+// Program entry point
+// -----------------------------------------------------------------------------
+
+function single_panel_main()
+{
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+    if ($method != 'GET') {
         die("This script only works with GET requests.");
     }
 
-?>
+    $panelid = $_GET['panel'] ?? "";
+
+    if ($panelid == "") {
+        single_panel_render_message_page("Missing panel ID.");
+        return;
+    }
+
+    $panel = single_panel_load_panel($panelid);
+
+    if ($panel == null) {
+        single_panel_render_message_page("Unknown panel ID: " . h($panelid));
+        return;
+    }
+
+    single_panel_render_main_page(
+        $panelid,
+        $panel,
+        single_panel_build_complete_panel($panelid)
+    );
+}
+
+single_panel_main();

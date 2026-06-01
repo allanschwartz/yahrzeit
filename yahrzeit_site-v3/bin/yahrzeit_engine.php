@@ -79,23 +79,12 @@
 
 /*
  * TODO
- *      This file is now the central engine and has grown large.  A future
- *      refactor should split helper logic into smaller include files:
+ *      Keep this file as the command-line orchestration layer:
+ *      parse options, select mode, read data, and call lighting,
+ *      report, or audit functions.
  *
- *          include/date_support.inc.php
- *              Gregorian/Hebrew date conversion, date-range matching,
- *              leap-year handling, Shabbat/week calculations.
- *
- *          include/name_support.inc.php or expanded names.inc.php
- *              person_name(), person_location(), person_options_text(),
- *              person date-field formatting, and other per-record helpers.
- *
- *          include/audit_support.inc.php
- *              panel/name validation and duplicate-location checks.
- *
- *      Keep yahrzeit_engine.php as the orchestration layer: parse options,
- *      select mode, read data, and call the appropriate engine/report/audit
- *      functions.
+ *      Possible future split:
+ *          include/audit_support.inc.php  validation and duplicate-location checks
  */
 
 require_once dirname(__DIR__) . "/include/misc.inc.php";
@@ -326,8 +315,8 @@ function emit_audit_report()
 
     for ($i = 0; $i < $n; $i++) {
         $person = yahrzeit_getObj($i);
-        $name = person_name($person);
-        $location = person_location($person);
+        $name = yahrzeit_person_name($person);
+        $location = yahrzeit_person_location($person);
 
         if ($name == "") {
             echo "# AUDIT WARNING: row $i has no name, location=$location\n";
@@ -364,7 +353,7 @@ function emit_audit_report()
 
         if ($row_i < 1 || $row_i > (int)$panel['nRows'] ||
             $col_i < 1 || $col_i > (int)$panel['nCols']) {
-            echo "# AUDIT ERROR: row $i $name location '$location' outside geometry " .
+            echo "# AUDIT ERROR: record $i $name location '$location' outside geometry " .
                  $panel['nRows'] . "x" . $panel['nCols'] . "\n";
             $errors++;
             continue;
@@ -414,7 +403,7 @@ function emit_yahrzeit_report($kind, $base_timestamp)
 
     for ($i = 0; $i < $n; $i++) {
         $person = yahrzeit_getObj($i);
-        $name = person_name($person);
+        $name = yahrzeit_person_name($person);
 
         if ($name == "") {
             continue;
@@ -429,7 +418,7 @@ function emit_yahrzeit_report($kind, $base_timestamp)
 
     usort($rows, function($a, $b) {
         if ($a[0] == $b[0]) {
-            return strcmp(person_name($a[1]), person_name($b[1]));
+            return strcmp(yahrzeit_person_name($a[1]), yahrzeit_person_name($b[1]));
         }
         return ($a[0] < $b[0]) ? -1 : 1;
     });
@@ -448,7 +437,7 @@ function emit_yahrzeit_report($kind, $base_timestamp)
         $ts = $row[0];
         $person = $row[1];
 
-        $name = person_name($person);
+        $name = yahrzeit_person_name($person);
 
         $heb = trim(
             (isset($person['hebYzDD']) ? $person['hebYzDD'] : "") . " " .
@@ -468,8 +457,8 @@ function emit_yahrzeit_report($kind, $base_timestamp)
             substr($name, 0, 32),
             substr($heb, 0, 18),
             substr($eng, 0, 14),
-            person_location($person),
-            person_options_text($person)
+            yahrzeit_person_location($person),
+            yahrzeit_person_options_text($person)
         );
     }
 
@@ -526,7 +515,7 @@ function yahrzeit_candidate_dates_in_range($person, $start_ts, $end_ts)
         return $candidates;
     }
 
-    if (person_uses_hebrew_date($person)) {
+    if (yahrzeit_person_uses_hebrew_date($person)) {
         $month_name = isset($person['hebYzMonth'])
             ? closest_hebrew_month($person['hebYzMonth'])
             : "";
@@ -948,71 +937,6 @@ function isYahrzeitThisWeek($person)
     return $result_code;
 }
 
-
-
-
-
-// ---------------------------------------------------------------------------
-// Person and date helper functions
-// ---------------------------------------------------------------------------
-
-function person_name($person)
-{
-    $first = isset($person['firstName']) ? $person['firstName'] : "";
-    $last  = isset($person['lastName'])  ? $person['lastName']  : "";
-
-    return trim($first . " " . $last);
-}
-
-function person_location($person)
-{
-    $panel = isset($person['panelId']) ? $person['panelId'] : "";
-    $row   = isset($person['row'])     ? $person['row']     : "";
-    $col   = isset($person['column'])  ? $person['column']  : "";
-
-    return "$panel-$row-$col";
-}
-
-function person_options_text($person)
-{
-    $opts = array();
-
-    if (isset($person['useHeb']) && $person['useHeb']) {
-        $opts[] = "HEB";
-    }
-    if (isset($person['useEng']) && $person['useEng']) {
-        $opts[] = "ENG";
-    }
-    if (isset($person['manual']) && $person['manual']) {
-        $opts[] = "MANUAL";
-    }
-    if (isset($person['reserved']) && $person['reserved']) {
-        $opts[] = "RESERVED";
-    }
-    if (isset($person['yomhashoah']) && $person['yomhashoah']) {
-        $opts[] = "HASHOAH";
-    }
-    if (isset($person['yomhazikaron']) && $person['yomhazikaron']) {
-        $opts[] = "HAZIKARON";
-    }
-
-    return implode(",", $opts);
-}
-
-function person_uses_hebrew_date($person)
-{
-    global $minhag;
-
-    if (isset($person['useHeb']) && $person['useHeb']) {
-        return true;
-    }
-
-    if (isset($person['useEng']) && $person['useEng']) {
-        return false;
-    }
-
-    return isset($minhag['yahrzeitEngOrHeb']) && $minhag['yahrzeitEngOrHeb'] == "heb";
-}
 
 // -----------------------------------------------------------------------------
 // Program entry point

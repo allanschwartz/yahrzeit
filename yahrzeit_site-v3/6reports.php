@@ -46,33 +46,36 @@
  *      All rights reserved.
  */
 
-    require_once "include/misc.inc.php";
+require_once "include/misc.inc.php";
 
-    /*
-    * Page metadata used by emitTopOfScreen().
-    */
+const REPORTS_TITLE       = "Yahrzeit Reports";
+const REPORTS_DESCRIPTION = "Generate Yahrzeit reports, preview controller commands, and export or import the Yahrzeit database.";
+const REPORTS_TAB         = 4;
+const REPORTS_HELPFILE    = "help/6reports.php";
+const REPORTS_CSV_FILE    = "yahrzeits-rev4.csv";
 
-    $title = "Yahrzeit Reports";
-    $description = "Generate Yahrzeit reports, preview controller commands, and export or import the Yahrzeit database.";
-    $tab = 4;         // Reports
-    $helpfile = "help/6reports.php";
+const REPORTS_VALID_KINDS = [
+    'day'        => true,
+    'week'       => true,
+    'next-week'  => true,
+    'month'      => true,
+    'next-month' => true,
+];
+
+// -----------------------------------------------------------------------------
+// Path and command helpers
+// -----------------------------------------------------------------------------
 
 function reports_site_root()
 {
-    if (function_exists('site_root')) {
-        return site_root();
-    }
-
-    return __DIR__;
+    return function_exists('site_root') ? site_root() : __DIR__;
 }
 
 function reports_data_path($filename)
 {
-    if (function_exists('data_path')) {
-        return data_path($filename);
-    }
-
-    return reports_site_root() . "/data/" . $filename;
+    return function_exists('data_path')
+         ? data_path($filename)
+         : reports_site_root() . "/data/" . $filename;
 }
 
 function reports_yahrzeit_script()
@@ -85,55 +88,196 @@ function reports_today()
     return date('Y-m-d');
 }
 
+function reports_run_yahrzeit($args)
+{
+    $script = reports_yahrzeit_script();
+
+    if (!is_file($script)) {
+        return [1, "bin/yahrzeit was not found: $script\n"];
+    }
+
+    $cmd = implode(' ', array_map('escapeshellarg', array_merge([$script], $args))) . " 2>&1";
+    $output = [];
+    $status = 0;
+
+    exec($cmd, $output, $status);
+
+    return [$status, implode("\n", $output) . "\n"];
+}
+
+// -----------------------------------------------------------------------------
+// Validation helpers
+// -----------------------------------------------------------------------------
+
 function reports_valid_date($date)
 {
     if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
         return false;
     }
 
-    list($year, $month, $day) = explode('-', $date);
+    [$year, $month, $day] = explode('-', $date);
     return checkdate((int)$month, (int)$day, (int)$year);
 }
 
 function reports_valid_kind($kind)
 {
-    $valid = array(
-        'day'        => true,
-        'week'       => true,
-        'next-week'  => true,
-        'month'      => true,
-        'next-month' => true,
-    );
-
-    return isset($valid[$kind]);
+    return isset(REPORTS_VALID_KINDS[$kind]);
 }
 
-function reports_run_yahrzeit($args)
+function reports_uploaded_csv_looks_valid($filename)
 {
-    $script = reports_yahrzeit_script();
-
-    if (!is_file($script)) {
-        return array(1, "bin/yahrzeit was not found: " . $script . "\n");
+    if (($fp = fopen($filename, "r")) === false) {
+        return false;
     }
 
-    $cmd_parts = array(escapeshellarg($script));
-    foreach ($args as $arg) {
-        $cmd_parts[] = escapeshellarg($arg);
+    $rows = 0;
+    $valid = 0;
+
+    while (($row = fgetcsv($fp, 4096, ",", "\"", "")) !== false) {
+        $rows++;
+
+        if ($rows > 5000) {
+            fclose($fp);
+            return false;
+        }
+
+        $name = is_array($row) ? trim($row[0] ?? "") : "";
+        if (count($row) >= 8 && $name != "" && strcasecmp($name, "DECEASED") != 0) {
+            $valid++;
+        }
     }
 
-    $cmd = implode(' ', $cmd_parts) . " 2>&1";
-    $output = array();
-    $status = 0;
+    fclose($fp);
 
-    exec($cmd, $output, $status);
-
-    return array($status, implode("\n", $output) . "\n");
+    return $valid > 100;
 }
 
-function reports_render_output_page($title, $tab, $heading, $helpfile, $message, $output = "")
+// -----------------------------------------------------------------------------
+// Action handlers
+// -----------------------------------------------------------------------------
+
+function reports_handle_report()
 {
-    emitHeader($title, $tab);
-    emitTopOfScreen($title, $heading, $helpfile);
+    $kind = $_POST['report_kind'] ?? "";
+    $date = $_POST['report_date'] ?? reports_today();
+
+    if (!reports_valid_kind($kind)) {
+        return [false, "Invalid report kind", "Unknown report kind: $kind\n"];
+    }
+
+    if (!reports_valid_date($date)) {
+        return [false, "Invalid report date", "Date must be YYYY-MM-DD.\n"];
+    }
+
+    [$status, $output] = reports_run_yahrzeit(['--report', $kind, '--date', $date]);
+
+    return [$status == 0, "Report: $kind for $date (exit $status)", $output];
+}
+
+function reports_handle_audit()
+{
+    [$status, $output] = reports_run_yahrzeit(['--audit']);
+
+    return [$status == 0, "Database audit (exit $status)", $output];
+}
+
+function reports_handle_preview()
+{
+    [$status, $output] = reports_run_yahrzeit(['--notransmit']);
+
+    return [$status == 0, "Controller command preview (exit $status)", $output];
+}
+
+function reports_handle_upload()
+{
+    $live = reports_data_path(REPORTS_CSV_FILE);
+
+    if (!isset($_FILES['csvfile']) || $_FILES['csvfile']['error'] != UPLOAD_ERR_OK) {
+        return [false, "No CSV file was uploaded successfully.", ""];
+    }
+
+    $tmp  = $_FILES['csvfile']['tmp_name'];
+    $name = $_FILES['csvfile']['name'] ?? "uploaded file";
+
+    if (!is_uploaded_file($tmp)) {
+        return [false, "Upload did not come from PHP's upload mechanism.", ""];
+    }
+
+    if (filesize($tmp) <= 0) {
+        return [false, "Uploaded file is empty.", ""];
+    }
+
+    if (!reports_uploaded_csv_looks_valid($tmp)) {
+        return [false, "Uploaded file does not look like a valid Yahrzeit CSV database.", ""];
+    }
+
+    $stamp  = date("Ymd-His");
+    $backup = reports_data_path("backups/yahrzeits-rev4.$stamp.csv");
+    $new    = reports_data_path("yahrzeits-rev4.upload.$stamp.csv");
+
+    if (!is_dir(dirname($backup)) && !mkdir(dirname($backup), 0775, true)) {
+        return [false, "Could not create backup directory.", ""];
+    }
+
+    if (!copy($live, $backup)) {
+        return [false, "Could not create backup copy of the current CSV file.", ""];
+    }
+
+    if (!move_uploaded_file($tmp, $new)) {
+        return [false, "Could not move uploaded CSV into the data directory.", ""];
+    }
+
+    if (!rename($new, $live)) {
+        return [false, "Could not replace the live CSV file. Backup was preserved.", ""];
+    }
+
+    [$audit_status, $audit_output] = reports_run_yahrzeit(['--audit']);
+
+    $message = "Uploaded $name. Backup saved as " . basename($backup) .
+               ". Audit exit status: $audit_status.";
+
+    // The upload itself succeeded even if the audit reports data problems.
+    return [true, $message, $audit_output];
+}
+
+function reports_download_csv()
+{
+    $csv = reports_data_path(REPORTS_CSV_FILE);
+
+    if (!is_file($csv) || !is_readable($csv)) {
+        http_response_code(404);
+        echo "Yahrzeit database file not found.\n";
+        exit;
+    }
+
+    header('Content-Type: text/csv');
+    header('Content-Disposition: attachment; filename="' . REPORTS_CSV_FILE . '"');
+    header('Content-Length: ' . filesize($csv));
+    readfile($csv);
+    exit;
+}
+
+function reports_dispatch_post()
+{
+    $action = $_POST['action'] ?? "";
+
+    return match ($action) {
+        'report'   => reports_handle_report(),
+        'audit'    => reports_handle_audit(),
+        'preview'  => reports_handle_preview(),
+        'upload'   => reports_handle_upload(),
+        default    => [false, "Unknown request", "Unknown reports action.\n"],
+    };
+}
+
+// -----------------------------------------------------------------------------
+// Rendering helpers
+// -----------------------------------------------------------------------------
+
+function reports_render_result_page($message, $output = "")
+{
+    emitHeader(REPORTS_TITLE, REPORTS_TAB);
+    emitTopOfScreen(REPORTS_TITLE, REPORTS_DESCRIPTION, REPORTS_HELPFILE);
 ?>
 
 <table cellspacing="0" cellpadding="4" width="90%" border="0" class="botBorder">
@@ -151,135 +295,22 @@ function reports_render_output_page($title, $tab, $heading, $helpfile, $message,
             <a href="6reports.php">Return to Reports</a>
         </td>
     </tr>
+<?php
+        emitCopyright();
+?>
 </table>
+<br>&nbsp;<br>
 
 <?php
     emitFooter();
 }
 
-function reports_download_csv()
+function reports_render_main_page()
 {
-    $csv = reports_data_path("yahrzeits-rev4.csv");
+    $today = reports_today();
 
-    if (!is_file($csv) || !is_readable($csv)) {
-        http_response_code(404);
-        echo "Yahrzeit database file not found.\n";
-        exit;
-    }
-
-    header('Content-Type: text/csv');
-    header('Content-Disposition: attachment; filename="yahrzeits-rev4.csv"');
-    header('Content-Length: ' . filesize($csv));
-    readfile($csv);
-    exit;
-}
-
-function reports_upload_csv()
-{
-    if (!isset($_FILES['importFile'])) {
-        return array(false, "No upload file was received.\n");
-    }
-
-    $file = $_FILES['importFile'];
-
-    if ($file['error'] != UPLOAD_ERR_OK) {
-        return array(false, "Upload failed with PHP upload error code " . $file['error'] . ".\n");
-    }
-
-    $original_name = isset($file['name']) ? $file['name'] : "";
-    if ($original_name == "" || !preg_match('/\.csv$/i', $original_name)) {
-        return array(false, "Upload rejected: file name must end in .csv.\n");
-    }
-
-    $data_dir = reports_site_root() . "/data";
-    $backup_dir = $data_dir . "/backups";
-    $csv = reports_data_path("yahrzeits-rev4.csv");
-
-    if (!is_dir($backup_dir) && !mkdir($backup_dir, 0755, true)) {
-        return array(false, "Could not create backup directory: " . $backup_dir . "\n");
-    }
-
-    if (is_file($csv)) {
-        $backup = $backup_dir . "/yahrzeits-rev4-" . date('Ymd-His') . ".csv";
-        if (!copy($csv, $backup)) {
-            return array(false, "Could not create backup before import: " . $backup . "\n");
-        }
-    }
-
-    if (!move_uploaded_file($file['tmp_name'], $csv)) {
-        return array(false, "Could not move uploaded file into place: " . $csv . "\n");
-    }
-
-    list($status, $audit_output) = reports_run_yahrzeit(array('--audit'));
-
-    $message = "Uploaded " . $original_name . " as data/yahrzeits-rev4.csv.\n\n";
-    $message .= "Audit after import exited with status " . $status . ".\n\n";
-    $message .= $audit_output;
-
-    return array(true, $message);
-}
-
-// CSV download must happen before any page output.
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'download') {
-    reports_download_csv();
-}
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $action = isset($_POST['action']) ? $_POST['action'] : "";
-
-    if ($action == 'report') {
-        $kind = isset($_POST['report_kind']) ? $_POST['report_kind'] : "";
-        $date = isset($_POST['report_date']) ? $_POST['report_date'] : reports_today();
-
-        if (!reports_valid_kind($kind)) {
-            reports_render_output_page($title, $tab, $description, $helpfile,
-                    "Invalid report kind", "Unknown report kind: " . $kind . "\n");
-            exit;
-        }
-
-        if (!reports_valid_date($date)) {
-            reports_render_output_page($title, $tab, $description, $helpfile,
-                    "Invalid report date", "Date must be YYYY-MM-DD.\n");
-            exit;
-        }
-
-        list($status, $output) = reports_run_yahrzeit(array('--report', $kind, '--date', $date));
-        reports_render_output_page($title, $tab, $description, $helpfile,
-                    "Report: " . $kind . " for " . $date . " (exit " . $status . ")", $output);
-        exit;
-    }
-
-    if ($action == 'audit') {
-        list($status, $output) = reports_run_yahrzeit(array('--audit'));
-        reports_render_output_page($title, $tab, $description, $helpfile,
-                    "Database audit (exit " . $status . ")", $output);
-        exit;
-    }
-
-    if ($action == 'preview') {
-        list($status, $output) = reports_run_yahrzeit(array('--notransmit'));
-        reports_render_output_page($title, $tab, $description, "Controller command preview (exit " . $status . ")", $output);
-        exit;
-    }
-
-    if ($action == 'upload') {
-        list($ok, $output) = reports_upload_csv();
-        reports_render_output_page($title, $tab, $description, $ok ? "Upload complete" : "Upload failed", $output);
-        exit;
-    }
-
-    reports_render_output_page($title, $tab, $description, "Unknown request", "Unknown reports action.\n");
-    exit;
-}
-
-if ($_SERVER['REQUEST_METHOD'] != 'GET') {
-    die("This script only works with GET and POST requests.");
-}
-
-$today = reports_today();
-
-emitHeader($title, $tab);
-emitTopOfScreen($title, $description, $helpfile);
+    emitHeader(REPORTS_TITLE, REPORTS_TAB);
+    emitTopOfScreen(REPORTS_TITLE, REPORTS_DESCRIPTION, REPORTS_HELPFILE);
 ?>
 
 <form name="reports" action="<?php echo h($_SERVER['PHP_SELF']); ?>" method="POST" enctype="multipart/form-data">
@@ -399,7 +430,7 @@ emitTopOfScreen($title, $description, $helpfile);
             </span>
         </td>
         <td>
-            <input type="file" name="importFile" maxlength="64" size="25" class="formStyle" accept=".csv,text/csv">
+            <input type="file" name="csvfile" maxlength="1284" size="25" accept=".csv,text/csv">
             <br><br>
             <button type="submit" name="action" value="upload" class="button">UPLOAD CSV</button>
         </td>
@@ -416,10 +447,43 @@ emitTopOfScreen($title, $description, $helpfile);
             Keep a downloaded copy of the current CSV before uploading a replacement.
         </td>
     </tr>
+<?php
+        emitCopyright();
+?>
 </table>
-
 </form>
+<br>&nbsp;<br>
 
 <?php
-emitFooter();
-?>
+    emitFooter();
+}
+
+// -----------------------------------------------------------------------------
+// Program entry point
+// -----------------------------------------------------------------------------
+
+function reports_main()
+{
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    $action = $_POST['action'] ?? "";
+
+    // CSV download must happen before any page output.
+    if ($method == 'POST' && $action == 'download') {
+        reports_download_csv();
+    }
+
+    if ($method == 'POST') {
+        [$ok, $message, $output] = reports_dispatch_post();
+        reports_render_result_page($message, $output);
+        return;
+    }
+
+    if ($method == 'GET') {
+        reports_render_main_page();
+        return;
+    }
+
+    die("This script only works with GET and POST requests.");
+}
+
+reports_main();

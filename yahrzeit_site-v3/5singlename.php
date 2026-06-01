@@ -63,38 +63,6 @@
         return isset($_POST[$name]) ? $_POST[$name] : $default;
     }
 
-    function blank_yahrzeit_person()
-    {
-        return array(
-            'lastName'       => "",
-            'firstName'      => "",
-
-            'engYzMonth'     => "",
-            'engYzDD'        => "",
-            'engYzYYYY'      => "",
-
-            'hebYzDD'        => "",
-            'hebYzMonth'     => "",
-            'hebYzMM'        => "",
-            'hebYzYYYY'      => "",
-
-            'useHeb'         => true,
-            'useEng'         => false,
-            'yomhashoah'     => false,
-            'yomhazikaron'   => false,
-            'onnow'          => false,
-            'reserved'       => false,
-            'manual'         => false,
-
-            'panelId'        => "",
-            'row'            => "",
-            'column'         => "",
-
-            'oldLocation'    => "",
-            'newyear'        => ""
-        );
-    }
-
     if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         emitHeader($title, $tab);
 
@@ -102,7 +70,7 @@
         $is_add = isset($_GET['add']) || $row == "" || $row == "add";
 
         if ($is_add) {
-            $person = blank_yahrzeit_person();
+            $person = yahrzeit_blank_person();
         } else {
             yahrzeit_readDB();
 
@@ -204,17 +172,16 @@
                 Yahrzeit Location
             </td>
             <td class="text">
-                Panel Name &mdash; Row &mdash; Column
+                Panel Name &mdash; Column &mdash; Row
                 <br>
                 <input type="text" name="panelId" maxlength="20" size="20" class="formStyle" style="width:100"
                     value="<?php echo h($person['panelId']) ?>">
-
-                &mdash;
-                <input type="text" name="row" maxlength="3" size="2" class="formStyle" style="width:30"
-                    value="<?php echo h($person['row']) ?>">
                 &mdash;
                 <input type="text" name="column" maxlength="3" size="2" class="formStyle" style="width:30"
                     value="<?php echo h($person['column']) ?>">
+                &mdash;
+                <input type="text" name="row" maxlength="3" size="2" class="formStyle" style="width:30"
+                    value="<?php echo h($person['row']) ?>">
             </td>
             <td id="locationErr">&nbsp;</td>
         </tr>
@@ -297,11 +264,9 @@
 <?php
         emitCopyright();
 ?>
-
     </table>
 <br>&nbsp;<br>
 </form>
-</body>
 
 <?php 
         emitFooter();
@@ -339,7 +304,7 @@
         );
 
         if (isset($_POST['add'])) {
-            $row = yahrzeit_numrows() + 1;
+            $row = yahrzeit_record_cound() + 1;
         } else {
             $row = post_value('rowIndex');
 

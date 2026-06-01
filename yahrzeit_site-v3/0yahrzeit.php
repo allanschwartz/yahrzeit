@@ -47,42 +47,80 @@
  *      All rights reserved.
  */
 
-    require_once "include/misc.inc.php";
-    require_once "include/panels.inc.php";
-    require_once "include/names.inc.php";
-    require_once "include/date_support.inc.php";
+require_once "include/misc.inc.php";
+require_once "include/panels.inc.php";
+require_once "include/names.inc.php";
+require_once "include/date_support.inc.php";
 
-    date_default_timezone_set("America/Los_Angeles");
+date_default_timezone_set("America/Los_Angeles");
 
+const YAHRZEIT_TITLE    = "Yahrzeit Controller";
+const YAHRZEIT_TAB      = 1;
+const YAHRZEIT_HELPFILE = "help/0yahrzeit.php";
+
+// -----------------------------------------------------------------------------
+// Page data helpers
+// -----------------------------------------------------------------------------
+
+function yahrzeit_page_description()
+{
     $minhag = read_minhag_ini();
 
-    /*
-     * Page metadata used by emitTopOfScreen().
-     */
-    $title = "Yahrzeit Controller";
-    $description = "Home and status page for the Yahrzeit panels at " .
-                   h($minhag['synagogueName']) . ".";
-    $tab = 1;         // Yahrzeit
-    $helpfile = "help/0yahrzeit.php";
+    return "Home and status page for the Yahrzeit panels at " .
+           h($minhag['synagogueName'] ?? "") . ".";
+}
 
+function controller_summary_lines()
+{
+    $panelCount = panel_readDB();
+    $nameCount  = yahrzeit_readDB();
 
-    function controller_summary_lines()
-    {
-        $panelCount = panel_readDB();
-        $nameCount = yahrzeit_readDB();
+    return [
+        h($panelCount) . ' panels defined (click on <a href="1viewpanels.php">Panels</a>)',
+        h($nameCount) . ' names defined (click on <a href="4viewnames.php">Names</a>)',
+        'Manual lighting operations are available from the Panels screen'
+    ];
+}
 
-        return array(
-            h($panelCount) . ' panels defined (click on <a href="1viewpanels.php">Panels</a>)',
-            h($nameCount) . ' names defined (click on <a href="4viewnames.php">Names</a>)',
-            'Manual lighting operations are available from the Panels screen'
-        );
+function yahrzeit_next_shabbat_lighting_line()
+{
+    $nextFriday = next_friday_timestamp();
+    $fridaySunsetTimestamp = cbs_sunset_timestamp($nextFriday);
+
+    if ($fridaySunsetTimestamp === false) {
+        return "This week's Shabbat sunset time is unknown.";
     }
 
-    emitHeader($title, $tab);
-?>
+    $fridaySunsetText = date("l F j, Y, g:i a", $fridaySunsetTimestamp);
 
-<?php
-    emitTopOfScreen($title, $description, $helpfile);
+    return "On " . h($fridaySunsetText) . " this week's yahrzeits will be lit.";
+}
+
+// -----------------------------------------------------------------------------
+// Rendering helpers
+// -----------------------------------------------------------------------------
+
+function yahrzeit_render_scheduled_events()
+{
+    $todaySunsetText = cbs_sunset_time_string(time());
+
+    echo "Today's sunset in San Francisco is at " . h($todaySunsetText) . ".<br>\n";
+    echo yahrzeit_next_shabbat_lighting_line() . "<br>\n";
+}
+
+function yahrzeit_render_controller_summary()
+{
+    foreach (controller_summary_lines() as $line) {
+        echo $line . "<br>\n";
+    }
+}
+
+function yahrzeit_render_main_page()
+{
+    $minhag = read_minhag_ini();
+
+    emitHeader(YAHRZEIT_TITLE, YAHRZEIT_TAB);
+    emitTopOfScreen(YAHRZEIT_TITLE, yahrzeit_page_description(), YAHRZEIT_HELPFILE);
 ?>
 
     <table cellSpacing=0 cellPadding=4 width=90% border=0 class="botBorder">
@@ -95,7 +133,7 @@
         <tr>
             <td colspan="3" class="header2Bg" align="left" height="25">
                 <span class="boldText">
-                    <?php echo h($minhag['synagogueName']); ?> Yahrzeit Controller
+                    <?php echo h($minhag['synagogueName'] ?? ""); ?> Yahrzeit Controller
                 </span>
             </td>
         </tr>
@@ -117,18 +155,7 @@
             </td>
             <td class="text">
 <?php
-            $todaySunsetText = cbs_sunset_time_string(time());
-            echo "Today's sunset in San Francisco is about " . h($todaySunsetText) . ".<br>";
-
-            $nextFriday = next_friday_timestamp();
-            $fridaySunsetTimestamp = cbs_sunset_timestamp($nextFriday);
-
-            if ($fridaySunsetTimestamp === false) {
-                echo "This week's Shabbat sunset time is unknown.<br>";
-            } else {
-                $fridaySunsetText = date("l F j, Y, g:i a", $fridaySunsetTimestamp);
-                echo "On " . h($fridaySunsetText) . " this week's yahrzeits will be lit.<br>";
-            }
+                yahrzeit_render_scheduled_events();
 ?>
                 <br>
             </td>
@@ -141,9 +168,7 @@
             </td>
             <td class="text">
 <?php
-                foreach (controller_summary_lines() as $line) {
-                    echo $line . "<br>\n";
-                }
+                yahrzeit_render_controller_summary();
 ?>
             </td>
             <td id="notused">&nbsp;</td>
@@ -154,7 +179,6 @@
                 <img src="images/image-21panels.jpg" width=700>
             </td>
         </tr>
-
 <?php
         emitCopyright();
 ?>
@@ -162,6 +186,24 @@
     </table>
 <br>&nbsp;<br>
 
-<?php 
+<?php
     emitFooter();
-?>
+}
+
+// -----------------------------------------------------------------------------
+// Program entry point
+// -----------------------------------------------------------------------------
+
+function yahrzeit_main()
+{
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+    if ($method == 'GET') {
+        yahrzeit_render_main_page();
+        return;
+    }
+
+    die("This script only works with GET requests.");
+}
+
+yahrzeit_main();

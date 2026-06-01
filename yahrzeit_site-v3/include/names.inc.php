@@ -18,13 +18,12 @@
  *          yahrzeit_readDB()
  *          yahrzeit_getObj($i)
  *          yahrzeit_putObj($i, $person)
- * 
+ *
  *      This file uses a procedural object-store style rather than PHP classes.
- *
- *      This was intentionally used to keep the CSV file format and schema 
- *      isolated from the rest of the application.  Most code should ask this 
- *      file for a mapped record rather than parsing CSV columns directly.
- *
+ *      That style intentionally keeps the CSV file format and schema isolated
+ *      from the rest of the application.  Most code should ask this file for
+ *      a mapped record rather than parsing CSV columns directly.
+ * 
  * NOTES
  *      The live database is:
  *
@@ -50,8 +49,20 @@
  *      All rights reserved.
  */
 
-global $num_rows;
-global $yahrzeitDB;
+// Module-private state for the memorial-name CSV database.
+// These are PHP globals for historical/procedural reasons only.
+// Code outside names.inc.php should use the yahrzeit_*DB/get/put API.
+global $yahrzeit_record_count;
+global $yahrzeit_records;
+
+const YAHRZEIT_OPTION_FIELDS = [
+    'useHeb'       => 'HEB',
+    'useEng'       => 'ENG',
+    'manual'       => 'MANUAL',
+    'reserved'     => 'RESERVED',
+    'yomhashoah'   => 'HASHOAH',
+    'yomhazikaron' => 'HAZIKARON',
+];
 
 
 // 0     1              2                     3        4
@@ -68,30 +79,27 @@ global $yahrzeitDB;
 //  6  OLD Location
 //  7  New Location panel-col-row
 
-function yahrzeit_safe_field($rawrecord, $index)
+function yahrzeit_csv_field($rawrecord, $index)
 {
-    return isset($rawrecord[$index]) ? trim($rawrecord[$index]) : "";
+    return trim($rawrecord[$index] ?? "");
 }
 
 
-function yahrzeit_split_name($full_name)
+function yahrzeit_split_full_name($full_name)
 {
     $parts = preg_split('/\s+/', trim($full_name));
 
-    if ($parts === false || count($parts) == 0 || $parts[0] == "") {
-        return array("", "");
+    if (!$parts || $parts[0] == "") {
+        return ["", ""];
     }
 
-    $lastname = $parts[count($parts) - 1];
-    unset($parts[count($parts) - 1]);
+    $lastname = array_pop($parts);
 
-    $firstname = implode(" ", $parts);
-
-    return array($firstname, $lastname);
+    return [implode(" ", $parts), $lastname];
 }
 
 
-function yahrzeit_parse_english_date($date_str)
+function yahrzeit_parse_english_date_field($date_str)
 {
 
     $date_str = trim($date_str);
@@ -129,7 +137,7 @@ function yahrzeit_parse_english_date($date_str)
 }
 
 
-function yahrzeit_parse_hebrew_date($date_str)
+function yahrzeit_parse_hebrew_date_field($date_str)
 {
 
     $date_str = trim($date_str);
@@ -147,7 +155,7 @@ function yahrzeit_parse_hebrew_date($date_str)
 
     $hdod = preg_split('/\s+/', $date_str);
 
-    if ($hdod === false || count($hdod) < 3) {
+    if ($hdod === false || count($hdod) < 2) {
         return $result;
     }
 
@@ -157,7 +165,7 @@ function yahrzeit_parse_hebrew_date($date_str)
     //     [0] = 17, [1] = Adar I, [2] = 5764
     if (count($hdod) >= 4) {
         $hdod[1] = $hdod[1] . " " . $hdod[2];
-        $hdod[2] = $hdod[3];
+        $hdod[2] = $hdod[3] ?? "";
     }
 
     $hebrew_month_name = closest_hebrew_month($hdod[1]);
@@ -167,26 +175,25 @@ function yahrzeit_parse_hebrew_date($date_str)
     $result['monthNum']  = ($hebrew_month_name != "" && isset(HEBREW_MONTH_MAPPING[$hebrew_month_name]))
                          ? HEBREW_MONTH_MAPPING[$hebrew_month_name]
                          : "";
-    $result['year']      = $hdod[2];
+    $result['year']      = $hdod[2] ?? "";
 
     return $result;
 }
 
 
-function yahrzeit_parse_location($location_str)
+function yahrzeit_parse_location_field($location_str)
 {
-    $location = explode("-", trim($location_str));
-    $location = array_pad($location, 3, "");
+    [$panel, $column, $row] = array_pad(explode("-", trim($location_str)), 3, "");
 
-    return array(
-        'panelId' => $location[0],
-        'column'  => $location[1],
-        'row'     => $location[2]
-    );
+    return [
+        'panelId' => $panel,
+        'column'  => $column,
+        'row'     => $row
+    ];
 }
 
 
-function yahrzeit_map_internal($rawrecord)
+function yahrzeit_person_from_csv_row($rawrecord)
 {
     // Rev4 CSV fields:
     //
@@ -202,20 +209,20 @@ function yahrzeit_map_internal($rawrecord)
     $rawrecord = array_pad($rawrecord, 8, "");
 
     list($firstname, $lastname) =
-        yahrzeit_split_name(yahrzeit_safe_field($rawrecord, 0));
+        yahrzeit_split_full_name(yahrzeit_csv_field($rawrecord, 0));
 
-    $eng = yahrzeit_parse_english_date(yahrzeit_safe_field($rawrecord, 2));
-    $heb = yahrzeit_parse_hebrew_date(yahrzeit_safe_field($rawrecord, 3));
-    $loc = yahrzeit_parse_location(yahrzeit_safe_field($rawrecord, 7));
+    $eng = yahrzeit_parse_english_date_field(yahrzeit_csv_field($rawrecord, 2));
+    $heb = yahrzeit_parse_hebrew_date_field(yahrzeit_csv_field($rawrecord, 3));
+    $loc = yahrzeit_parse_location_field(yahrzeit_csv_field($rawrecord, 7));
 
-    $newyear     = yahrzeit_safe_field($rawrecord, 4);
-    $options     = yahrzeit_safe_field($rawrecord, 5);
-    $oldLocation = yahrzeit_safe_field($rawrecord, 6);
+    $newyear     = yahrzeit_csv_field($rawrecord, 4);
+    $options     = yahrzeit_csv_field($rawrecord, 5);
+    $oldLocation = yahrzeit_csv_field($rawrecord, 6);
 
     $person = array(
         'lastName'          => $lastname,
         'firstName'         => $firstname,
-        'lastNameFirst'     => yahrzeit_safe_field($rawrecord, 1),
+        'lastNameFirst'     => yahrzeit_csv_field($rawrecord, 1),
         'engYzMonth'        => $eng['monthName'],
         'engYzDD'           => $eng['day'],
         'engYzYYYY'         => $eng['year'],
@@ -235,8 +242,8 @@ function yahrzeit_map_internal($rawrecord)
         'options'           => $options,
 
         'panelId'           => $loc['panelId'],
-        'row'               => $loc['row'],
         'column'            => $loc['column'],
+        'row'               => $loc['row'],
 
         'oldLocation'       => $oldLocation,
         'newyear'           => $newyear
@@ -245,114 +252,88 @@ function yahrzeit_map_internal($rawrecord)
     return $person;
 }
 
-
-function yahrzeit_map_external($person)
+function yahrzeit_person_options_text($person)
 {
+    $opts = [];
 
-    $first = isset($person['firstName']) ? trim($person['firstName']) : "";
-    $last  = isset($person['lastName'])  ? trim($person['lastName'])  : "";
-
-    $name = trim($first . " " . $last);
-
-    if ($last != "" && $first != "") {
-        $lastNameFirst = $last . ", " . $first;
-    } else {
-        $lastNameFirst = $name;
-    }
-
-    if ($person['engYzMonth'] == "" || $person['engYzDD'] == "") {
-        $dod = "";
-    } else {
-        $month = isset(ENGLISH_MONTH_MAPPING[$person['engYzMonth']])
-               ? ENGLISH_MONTH_MAPPING[$person['engYzMonth']]
-               : $person['engYzMonth'];
-
-        $dod = $month . "/" . $person['engYzDD'] . "/" . $person['engYzYYYY'];
-    }
-
-    if ($person['hebYzDD'] == "" || $person['hebYzMonth'] == "") {
-        $hdod = "";
-    } else {
-        $hdod = $person['hebYzDD'] . " " . $person['hebYzMonth'] . " " . $person['hebYzYYYY'];
-    }
-
-    $options =
-            ( $person['useHeb']       ? 'HEB'       : "" ) . " " .
-            ( $person['useEng']       ? 'ENG'       : "" ) . " " .
-            ( $person['yomhashoah']   ? 'HASHOAH'   : "" ) . " " .
-            ( $person['yomhazikaron'] ? 'HAZIKARON' : "" ) . " " .
-            ( $person['onnow']        ? 'ONNOW'     : "" ) . " " .
-            ( $person['reserved']     ? 'RESERVED'  : "" ) . " " .
-            ( $person['manual']       ? 'MANUAL'    : "" );
-
-    $options = trim(preg_replace('/\s+/', ' ', $options));
-
-    $newLocation = "";
-
-    if ($person['panelId'] != "") {
-        if ($person['column'] == "" && $person['row'] == "") {
-            $newLocation = $person['panelId'];
-        } else {
-            $newLocation = $person['panelId'] . "-" . $person['column'] . "-" . $person['row'];
+    foreach (YAHRZEIT_OPTION_FIELDS as $field => $label) {
+        if (!empty($person[$field])) {
+            $opts[] = $label;
         }
     }
 
-    return array(
+    return implode(",", $opts);
+}
+
+function yahrzeit_csv_row_from_person($person)
+{
+    $first = trim($person['firstName'] ?? "");
+    $last  = trim($person['lastName']  ?? "");
+    $name  = trim("$first $last");
+
+    $lastNameFirst = ($last != "" && $first != "")
+                   ? "$last, $first"
+                   : $name;
+
+    if (($person['engYzMonth'] ?? "") == "" || ($person['engYzDD'] ?? "") == "") {
+        $dod = "";
+    } else {
+        $month = ENGLISH_MONTH_MAPPING[$person['engYzMonth']] ?? $person['engYzMonth'];
+        $dod = $month . "/" . $person['engYzDD'] . "/" . ($person['engYzYYYY'] ?? "");
+    }
+
+    if (($person['hebYzDD'] ?? "") == "" || ($person['hebYzMonth'] ?? "") == "") {
+        $hdod = "";
+    } else {
+        $hdod = trim(($person['hebYzDD'] ?? "") . " " .
+             ($person['hebYzMonth'] ?? "") . " " .
+             ($person['hebYzYYYY'] ?? ""));
+    }
+
+    $options = [];
+
+    foreach (YAHRZEIT_OPTION_FIELDS as $field => $label) {
+        if (!empty($person[$field])) {
+            $options[] = $label;
+        }
+    }
+
+    $panel  = $person['panelId'] ?? "";
+    $column = $person['column']  ?? "";
+    $row    = $person['row']     ?? "";
+
+    $newLocation = ($panel == "") ? "" :
+                   (($column == "" && $row == "") ? $panel : 
+                    "$panel-$column-$row");
+
+    return [
         $name,
         $lastNameFirst,
         $dod,
         $hdod,
-        $person['newyear'],
-        $options,
-        $person['oldLocation'],
+        $person['newyear']     ?? "",
+        implode(" ", $options),
+        $person['oldLocation'] ?? "",
         $newLocation
-    );
+    ];
 }
 
 
-function yahrzeit_not_valid_csv_record($rawrecord)
+function yahrzeit_csv_row_is_invalid($rawrecord)
 {
-    // Rev4 database records need at least:
-    //   0  DECEASED
-    //   1  Last-Name-First
-    //   2  Eng. DOD
-    //   3  Heb. DOD
-    //   4  YEAR
-    //   5  OPTIONS
-    //   6  OLD Location
-    //   7  New Location
+    $name = is_array($rawrecord) ? trim($rawrecord[0] ?? "") : "";
 
-    if ($rawrecord === false) {
-        return true;
-    }
-
-    if (!is_array($rawrecord)) {
-        return true;
-    }
-
-    if (count($rawrecord) < 8) {
-        return true;
-    }
-
-    $name_field = isset($rawrecord[0]) ? trim($rawrecord[0]) : "";
-
-    if ($name_field == "") {
-        return true;
-    }
-
-    if (strcasecmp($name_field, "DECEASED") == 0) {
-        return true;
-    }
-
-    return false;
+    return !is_array($rawrecord) ||
+           count($rawrecord) < 8 ||
+           $name == "" ||
+           strcasecmp($name, "DECEASED") == 0;
 }
 
 
 function yahrzeit_readDB()
 {
-    global $num_rows;
-    global $yahrzeitDB;
-    global $yahrzeitHash;
+    global $yahrzeit_record_count;
+    global $yahrzeit_records;
 
     $filename = site_root() . "/data/yahrzeits-rev4.csv";
 
@@ -360,39 +341,30 @@ function yahrzeit_readDB()
         die ("fopen failure");
     }
 
-    $num_rows = 0;
-    $input_line = 0;
-    $yahrzeitDB = array();
-    $yahrzeitHash = array();
+    $yahrzeit_record_count = 0;
+    $yahrzeit_records = array();
 
     while ( ( $rawrecord = fgetcsv($fp, 512, ",", "\"", "") ) !== false ) {
-        $input_line++;
 
-        if (yahrzeit_not_valid_csv_record($rawrecord)) {
+        if (yahrzeit_csv_row_is_invalid($rawrecord)) {
             continue;
         }
 
-        $person = yahrzeit_map_internal($rawrecord);
-        $person['index'] = $num_rows;
+        $person = yahrzeit_person_from_csv_row($rawrecord);
+        $person['index'] = $yahrzeit_record_count;
 
-        $yahrzeitDB[$num_rows] = $person;
-
-        // Hash by physical plaque location too.
-        // This is useful for locating a person by panel/row/column.
-        $location = $person['panelId'] . "-" . $person['row'] . "-" . $person['column'];
-        $yahrzeitHash[$location] = &$yahrzeitDB[$num_rows];
-
-        $num_rows++;
+        $yahrzeit_records[$yahrzeit_record_count] = $person;
+        $yahrzeit_record_count++;
     }
 
     fclose($fp);
-    return $num_rows;
+    return $yahrzeit_record_count;
 }
 
 
 function yahrzeit_writeDB()
 {
-    global $yahrzeitDB;
+    global $yahrzeit_records;
     $filename = site_root() . "/data/yahrzeits-rev4.csv";
 
     if ( ( $fp = fopen( $filename, "w" )) === false ) {
@@ -415,8 +387,8 @@ function yahrzeit_writeDB()
 
     fputcsv($fp, array("", "", "", "", "", "", "", "", "", "", ""), ",", "\"", "");
 
-    foreach ( $yahrzeitDB as $key => $value ) {
-        $record = yahrzeit_map_external( $value );
+    foreach ( $yahrzeit_records as $person) {
+        $record = yahrzeit_csv_row_from_person( $person );
         fputcsv($fp, $record, ",", "\"", "");
     }
 
@@ -424,20 +396,20 @@ function yahrzeit_writeDB()
 }
 
 // Return the number of memorial records currently loaded by yahrzeit_readDB().
-function yahrzeit_numrows()
+function yahrzeit_record_cound()
 {
-    global $num_rows;
+    global $yahrzeit_record_count;
 
-    return ( $num_rows );
+    return ( $yahrzeit_record_count );
 }
 
 // Return one memorial record as an associative array.
 // This is the procedural equivalent of fetching a Name object.
 function yahrzeit_getObj( $row )
 {
-    global $yahrzeitDB;
+    global $yahrzeit_records;
 
-    return ( $yahrzeitDB[$row] );
+    return ( $yahrzeit_records[$row] ?? null );
 }
 
 
@@ -447,10 +419,81 @@ function yahrzeit_getObj( $row )
 // path can probably be removed.
 function yahrzeit_putObj( $row, $person )
 {
-    global $yahrzeitDB;
+    global $yahrzeit_records;
 
-    $yahrzeitDB[$row] = $person;
+    $yahrzeit_records[$row] = $person;
+}
+
+function yahrzeit_blank_person()
+{
+    return array(
+        'lastName'       => "",
+        'firstName'      => "",
+
+        'engYzMonth'     => "",
+        'engYzDD'        => "",
+        'engYzYYYY'      => "",
+
+        'hebYzDD'        => "",
+        'hebYzMonth'     => "",
+        'hebYzMM'        => "",
+        'hebYzYYYY'      => "",
+
+        'useHeb'         => true,
+        'useEng'         => false,
+        'yomhashoah'     => false,
+        'yomhazikaron'   => false,
+        'onnow'          => false,
+        'reserved'       => false,
+        'manual'         => false,
+
+        'panelId'        => "",
+        'column'         => "",
+        'row'            => "",
+
+        'oldLocation'    => "",
+        'newyear'        => ""
+    );
 }
 
 
-?>
+// ---------------------------------------------------------------------------
+// Person and date helper functions
+// ---------------------------------------------------------------------------
+function yahrzeit_person_name($person)
+{
+    return trim(($person['firstName'] ?? "") . " " . ($person['lastName'] ?? ""));
+}
+
+function yahrzeit_person_location($person)
+{
+    $panel  = $person['panelId'] ?? "";
+    $column = $person['column']  ?? "";
+    $row    = $person['row']     ?? "";
+
+    if ($panel == "") {
+        return "";
+    }
+
+    if ($column == "" && $row == "") {
+        return $panel;
+    }
+
+    return "$panel-$column-$row";
+}
+
+function yahrzeit_person_uses_hebrew_date($person)
+{
+    global $minhag;
+
+    if (isset($person['useHeb']) && $person['useHeb']) {
+        return true;
+    }
+
+    if (isset($person['useEng']) && $person['useEng']) {
+        return false;
+    }
+
+    return isset($minhag['yahrzeitEngOrHeb']) && $minhag['yahrzeitEngOrHeb'] == "heb";
+}
+

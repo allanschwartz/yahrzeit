@@ -29,11 +29,11 @@
  *
  *  line    Funtion Declarations
  *  ----    ------------------------------------
- *	  58    function yahrzeit_map_internal( $rawrecord )
- *	 131    function yahrzeit_map_external( $person )
+ *	  58    function yahrzeit_person_from_csv_row( $rawrecord )
+ *	 131    function yahrzeit_csv_row_from_person( $person )
  *	 153    function yahrzeit_readDB()
  *	 178    function yahrzeit_writeDB()
- *	 194    function yahrzeit_numrows()
+ *	 194    function yahrzeit_record_cound()
  *	 202    function yahrzeit_getObj( $row )
  *	 210    function yahrzeit_putObj( $row, $person )
  *	 218    function yahrzeit_delObj( $row )
@@ -46,8 +46,8 @@
 require_once "include/misc.inc.php";
 //require_once "include/names.inc.php";
 
-global $num_rows;
-global $yahrzeitDB;
+global $yahrzeit_record_count;
+global $yahrzeit_records;
 
 
 // 0     1              2                     3        4
@@ -55,7 +55,7 @@ global $yahrzeitDB;
 // Eheved Pinskaya,1/24/1970,17 SHEVAT 5730,Yes,10N3I
 
 
-function yahrzeit_map_internal( $rawrecord )
+function yahrzeit_person_from_csv_row( $rawrecord )
 {
 
     // first field, NAME
@@ -126,7 +126,7 @@ function yahrzeit_map_internal( $rawrecord )
 }
 
 
-function yahrzeit_map_external( $person )
+function yahrzeit_csv_row_from_person( $person )
 {
     $name = $person['firstName'] . " " . $person['lastName'];
     $name2 = $person['lastName'] . ", " . $person['firstName'];
@@ -148,74 +148,74 @@ function yahrzeit_map_external( $person )
 
 function yahrzeit_readDB()
 {
-    global $num_rows;
-    global $yahrzeitDB;
+    global $yahrzeit_record_count;
+    global $yahrzeit_records;
     $filename = "/tmp/yahrzeits-rev3.csv";
 
     if ( ( $fp = fopen( $filename, "r" )) === false ) {
         die ("fopen failure");
     }
-    $num_rows = 0;
+    $yahrzeit_record_count = 0;
     while ( ( $rawrecord = fgetcsv ($fp, 512, "," ) ) !== false ) {
-        $person =  yahrzeit_map_internal( $rawrecord );
-        $person['index'] = $num_rows;
-        $yahrzeitDB[$num_rows] = $person;
+        $person =  yahrzeit_person_from_csv_row( $rawrecord );
+        $person['index'] = $yahrzeit_record_count;
+        $yahrzeit_records[$yahrzeit_record_count] = $person;
         // hash via location, too
         $location = $person['panelId'] . "-" . $person['row'] . "-" . $person['column'];
-        $yahrzeitHash[$location] = &$yahreitdb[$num_rows];
+        $yahrzeitHash[$location] = &$yahreitdb[$yahrzeit_record_count];
 
-        $num_rows++;
+        $yahrzeit_record_count++;
     }
     fclose( $fp );
-    return $num_rows;
+    return $yahrzeit_record_count;
 }
 
 
 function yahrzeit_writeDB()
 {
-    global $yahrzeitDB;
+    global $yahrzeit_records;
     $filename = "/tmp/yahrzeits-rev4.csv";
 
     if ( ( $fp = fopen( $filename, "w" )) === false ) {
         die ("fopen failure");
     }
-    foreach ( $yahrzeitDB as $key => $value ) {
-        $record = yahrzeit_map_external( $value );
+    foreach ( $yahrzeit_records as $key => $value ) {
+        $record = yahrzeit_csv_row_from_person( $value );
         fputcsv($fp, $record);
     }
     fclose($fp);
 }
 
 
-function yahrzeit_numrows()
+function yahrzeit_record_cound()
 {
-    global $num_rows;
+    global $yahrzeit_record_count;
 
-    return ( $num_rows );
+    return ( $yahrzeit_record_count );
 }
 
 
 function yahrzeit_getObj( $row )
 {
-    global $yahrzeitDB;
+    global $yahrzeit_records;
 
-    return ( $yahrzeitDB[$row] );
+    return ( $yahrzeit_records[$row] );
 }
 
 
 function yahrzeit_putObj( $row, $person )
 {
-    global $yahrzeitDB;
+    global $yahrzeit_records;
 
-    $yahrzeitDB[$row] = $person;
+    $yahrzeit_records[$row] = $person;
 }
 
 
 function yahrzeit_delObj( $row )
 {
-    global $yahrzeitDB;
+    global $yahrzeit_records;
 
-    unset( $yahrzeitDB[$row] );
+    unset( $yahrzeit_records[$row] );
 }
 
 

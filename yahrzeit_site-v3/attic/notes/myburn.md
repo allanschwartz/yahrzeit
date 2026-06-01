@@ -52,7 +52,7 @@ Status file updated from the original February 2007 development checklist.
 | Area | File | Status | Notes |
 |---|---|---:|---|
 | Command wrapper | `bin/yahrzeit` | ✅ | Main operator/web/scheduler command path; handles transmission and direct wall operations. |
-| Engine | `bin/yahrzeit_engine.php` | ✅ / ⚠️ | Works; large file. Future refactor should move date helpers and per-person helpers into smaller include files. |
+| Engine | `bin/yahrzeit_engine.php` | ✅ | Works; Was refactored moving date helpers and per-person helpers into smaller include files. |
 | Scheduler | `bin/yahrzeit_scheduler` | ✅ | Simplified phase model: `yizkor-on`, `yizkor-off`, `yahrzeit`. |
 | Crontab helper | `bin/add-to-private-crontab` | ⚠️ | Update/install process should reflect the current phase-based schedule. |
 
@@ -96,13 +96,8 @@ Status file updated from the original February 2007 development checklist.
 - Fix known audit defect: Emile Kingsley uses unknown panel `col58`.
 - Confirm CBS Yizkor service timing and decide whether the scheduler remains three-phase or simplifies to two-phase.
 - Decide whether `5singlename.php` should become fully read-only.
-- Decide whether Yizkor time fields in `7minhag.php` remain visible, become advisory, or are replaced by suggested cron-entry output.
 - Update `bin/add-to-private-crontab` to match the final approved scheduler phase model.
 - Consider later layout modernization: replace the old table-based page shell with a CSS/div layout.
-- Consider future `yahrzeit_engine.php` refactor:
-  - `include/date_support.inc.php`
-  - expanded `include/names.inc.php`
-  - possible `include/audit_support.inc.php`
 
 
 ## Project Management Note
