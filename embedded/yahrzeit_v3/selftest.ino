@@ -42,10 +42,24 @@ static void selftest_corners(byte panel)
     ASSERT(panel <= displayConfig.nPanels);
 
     if (panel == PANEL0) {
-        ledWall.setPixel(1, 1, 1);
-        ledWall.setPixel(1, displayConfig.nRows, 1);
-        ledWall.setPixel(1, 1, displayConfig.nCols);
-        ledWall.setPixel(1, displayConfig.nRows, displayConfig.nCols);
+        // ledWall.setPixel(1, 1, 1);
+        // ledWall.setPixel(1, displayConfig.nRows, 1);
+        // ledWall.setPixel(1, 1, displayConfig.nCols);
+        // ledWall.setPixel(1, displayConfig.nRows, displayConfig.nCols);
+
+        panel = 1;
+        ledWall.setPixelInPanel(1, 1, 1, panel);
+        ledWall.setPixelInPanel(1, ledWall.rowsInPanel(panel), 1, panel);
+        ledWall.setPixelInPanel(1, 1, ledWall.colsInPanel(panel), panel);
+        ledWall.setPixelInPanel(1, ledWall.rowsInPanel(panel),
+                                ledWall.colsInPanel(panel), panel);
+        
+        panel = 2;
+        ledWall.setPixelInPanel(1, 1, 1, panel);
+        ledWall.setPixelInPanel(1, ledWall.rowsInPanel(panel), 1, panel);
+        ledWall.setPixelInPanel(1, 1, ledWall.colsInPanel(panel), panel);
+        ledWall.setPixelInPanel(1, ledWall.rowsInPanel(panel),
+                                ledWall.colsInPanel(panel), panel);
     } else {
         ledWall.setPixelInPanel(1, 1, 1, panel);
         ledWall.setPixelInPanel(1, ledWall.rowsInPanel(panel), 1, panel);
@@ -138,15 +152,19 @@ static void selftest_checkerboard(byte panel)
  */
 void selftest_marching_row(byte panel)
 {
-    ASSERT(panel <= displayConfig.nPanels);
+    // ASSERT(panel <= displayConfig.nPanels);
 
-    const byte nRows = (panel == PANEL0)
-                     ? displayConfig.nRows
-                     : ledWall.rowsInPanel(panel);
+    // const byte nRows = (panel == PANEL0)
+    //                  ? displayConfig.nRows
+    //                  : ledWall.rowsInPanel(panel);
+ 
+    // const byte nCols = (panel == PANEL0)
+    //                  ? displayConfig.nCols
+    //                  : ledWall.colsInPanel(panel);
 
-    const byte nCols = (panel == PANEL0)
-                     ? displayConfig.nCols
-                     : ledWall.colsInPanel(panel);
+for (byte panel = 1; panel <= NPANELS; panel++) {
+    byte nRows = ledWall.rowsInPanel(panel);
+    byte nCols = ledWall.colsInPanel(panel);
 
     for (byte row = 1; row <= nRows; ++row) {
         for (byte col = 1; col <= nCols; ++col) {
@@ -163,9 +181,11 @@ void selftest_marching_row(byte panel)
 
         sleep_ms(true, 1);
     }
+}
 
     // intentional visible pacing for operator observation
     sleep_ms(true, 500);
+
 }
 
 /**

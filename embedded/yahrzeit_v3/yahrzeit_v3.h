@@ -140,9 +140,9 @@ constexpr byte NCOLS   = 40;                  // a column is 56 rows of consecut
 
 #if TEST_FIXTURE
 
-constexpr byte NPANELS = 2;    // bench/test fixture panels
+constexpr byte NPANELS = 3;    // bench/test fixture panels
 constexpr byte NROWS   = 24;   // rows in the test fixture
-constexpr byte NCOLS   = 6;    // columns in the test fixture
+constexpr byte NCOLS   = 9;    // columns in the test fixture
 
 #endif
 
@@ -194,6 +194,8 @@ extern NetworkConfig networkConfig;
 extern char outputBuf[256];
 
 extern bool timingOutputEnabled;
+
+extern bool debugPixel;
 
     
 // ----------------------------------------------------------------------------

@@ -55,7 +55,8 @@ static constexpr byte ledRowOfPanel[NPANELS + 1] = {
 #endif
 
 #if TEST_FIXTURE
-    1, 1, 1
+    1, 
+    1, 1, 
 #endif
 };
 
@@ -75,7 +76,8 @@ static constexpr byte ledColOfPanel[NPANELS + 1] = {
 #endif
 
 #if TEST_FIXTURE
-    1, 1, 4
+    1, 
+    1, 4,
 #endif
 };
 
@@ -95,7 +97,8 @@ static constexpr byte nRowsPerPanel[NPANELS + 1] = {
 #endif
 
 #if TEST_FIXTURE
-    24, 24, 24
+    24, 
+    24, 24,
 #endif
 };
 
@@ -115,7 +118,8 @@ static constexpr byte nColsPerPanel[NPANELS + 1] = {
 #endif
 
 #if TEST_FIXTURE
-    6, 3, 3,
+    9, 
+    3, 3
 #endif
 };
 
@@ -173,10 +177,19 @@ void LedWall::begin()
  */
 byte LedWall::setPixel(bool pixelBit, byte row, byte col)
 {
+    if (debugPixel) {
+        char outputBuffer[64];
+        snprintf( outputBuffer, sizeof outputBuffer, 
+                  "sPix bit %d, row %d, col %d",
+                  pixelBit,  row,  col);
+        Serial.println(outputBuffer);
+    }
     if (row < 1 || row > displayConfig.nRows) {
+        Serial.println("sPix: ERR_ROW");
         return ERR_ROW;
     }
     if (col < 1 || col > displayConfig.nCols) {
+        Serial.println("sPix: ERR_COL");
         return ERR_COL;
     }
 
@@ -195,9 +208,11 @@ byte LedWall::setPixel(bool pixelBit, byte row, byte col)
 bool LedWall::pixelValue(byte row, byte col) const
 {
     if (row < 1 || row > displayConfig.nRows) {
+        Serial.println("pixVal: ERR_row");
         return false;
     }
     if (col < 1 || col > displayConfig.nCols) {
+        Serial.println("pixVal: ERR_col");
         return false;
     }
 
@@ -219,7 +234,15 @@ bool LedWall::pixelValue(byte row, byte col) const
  */
 byte LedWall::setPixelInPanel(bool pixelBit, byte row, byte col, byte panel)
 {
+    if (debugPixel) {
+        char outputBuffer[64];
+        snprintf( outputBuffer, sizeof outputBuffer, 
+                  "sPixInP bit %d, row %d, col %d panel %d",
+                  pixelBit,  row,  col,  panel);
+        Serial.println(outputBuffer);
+    }
     if (panel > displayConfig.nPanels) {
+        Serial.println("setPixelInPanel: ERR_PANEL");
         return ERR_PANEL;
     }
 
