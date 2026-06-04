@@ -79,10 +79,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 YAHRZEIT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 PHP_BIN="$YAHRZEIT_DIR/bin/php"
-CONTROLLER_HOST="192.168.13.9"
-CONTROLLER_PORT="2001"
-NC_DELAY="0.05"
-POST_SEND_DELAY="0.5"
+
+CONTROLLER_HOST="${CONTROLLER_HOST:-192.168.13.9}"
+CONTROLLER_PORT="${CONTROLLER_PORT:-2001}"
+
+NC_DELAY="${NC_DELAY:-0.05}"
+POST_SEND_DELAY="${POST_SEND_DELAY:-0.5}"
+
+TIMEOUT_CMD="${TIMEOUT_CMD:-timeout}"
+NC_TIMEOUT="${NC_TIMEOUT:-5}"
 
 MODE="yahrzeit"
 TRANSMIT=1
@@ -638,8 +643,35 @@ transmit_commands() {
     fi
 
     command -v nc >/dev/null 2>&1 || die "nc not found"
+    command -v "$TIMEOUT_CMD" >/dev/null 2>&1 || die "$TIMEOUT_CMD not found"
 
-    slowcat "$NC_DELAY" | nc "$CONTROLLER_HOST" "$CONTROLLER_PORT"
+    set +e
+    slowcat "$NC_DELAY" |
+        "$TIMEOUT_CMD" "$NC_TIMEOUT" nc "$CONTROLLER_HOST" "$CONTROLLER_PORT"
+    local status=("${PIPESTATUS[@]}")
+    set -e
+
+    local slowcat_status="${status[0]}"
+    local transmit_status="${status[1]}"
+
+    if [[ "$transmit_status" -eq 124 ]]; then
+        echo "ERROR: controller transmit timed out after ${NC_TIMEOUT}s" >&2
+        echo "       host=${CONTROLLER_HOST} port=${CONTROLLER_PORT}" >&2
+        return 124
+    fi
+
+    if [[ "$transmit_status" -ne 0 ]]; then
+        echo "ERROR: controller transmit failed with exit status $transmit_status" >&2
+        echo "       host=${CONTROLLER_HOST} port=${CONTROLLER_PORT}" >&2
+        return "$transmit_status"
+    fi
+
+    if [[ "$slowcat_status" -ne 0 ]]; then
+        echo "ERROR: slowcat failed with exit status $slowcat_status" >&2
+        return "$slowcat_status"
+    fi
+
+    return 0
 }
 
 # Main pipeline:
