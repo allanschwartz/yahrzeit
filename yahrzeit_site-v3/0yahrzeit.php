@@ -120,8 +120,8 @@ function yahrzeit_minhag_summary_lines()
 
 function yahrzeit_next_shabbat_lighting_line()
 {
-    $nextFriday = next_friday_timestamp();
-    $fridaySunsetTimestamp = cbs_sunset_timestamp($nextFriday);
+    $nextErevShabbat = next_erev_shabbat_timestamp();
+    $fridaySunsetTimestamp = cbs_sunset_timestamp($nextErevShabbat);
 
     if ($fridaySunsetTimestamp === false) {
         return "This week's Shabbat sunset time is unknown.";

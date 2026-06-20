@@ -191,7 +191,7 @@ function yz_main()
 
     // Normal command-stream path.
     echo "\n# Today is ";
-    if (is_friday_for_shabbat_lighting()) {
+    if (is_erev_shabbat_for_lighting()) {
         echo "SHABBAT ";
     }
     echo "$today_month/$today_day/$today_year ... ";

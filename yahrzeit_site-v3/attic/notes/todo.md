@@ -63,9 +63,9 @@ These tasks apply throughout the PHP codebase.
   - `--phase yizkor-off`
   - `--phase yahrzeit`
 - **[B] (at CBS)** Confirm CBS Yizkor service timing and decide whether the scheduler remains three-phase or simplifies to two-phase.
-- **[A]** Add the Friday-sunset weekly lighting transition.
-  - Before Friday sunset, retain the active Saturday-through-Friday lighting window.
-  - At or just after Friday sunset, run normal yahrzeit lighting again for the following Saturday-through-Friday window.
+- **[A]** Add the erev_shabbat_to_erev_shabbat weekly lighting transition.
+  - Before Erev Shabbat sunset, retain the active erev_shabbat_to_erev_shabbat lighting window.
+  - At or just after Erev Shabbat sunset, run normal yahrzeit lighting again for the following erev_shabbat_to_erev_shabbat window.
   - The scheduler is the intended dynamic scheduling boundary; do not put this timing decision in a screen or controller wrapper.
   - Decide and document how it schedules the variable sunset-time run on the deployed appliance.
 
@@ -213,7 +213,7 @@ These tasks apply throughout the PHP codebase.
 
 ### `include/yahrzeit_policy.inc.php`
 
-- Provides the active normal-yahrzeit decision and Friday-sunset-aware Saturday-through-Friday lighting window.
+- Provides the active normal-yahrzeit decision and erev_shabbat-aware lighting window.
 - Used by the engine and panel/name views; do not duplicate this decision logic elsewhere.
 - Should answer questions such as:
   - Should this memorial record be lit at this timestamp?
@@ -224,8 +224,7 @@ These tasks apply throughout the PHP codebase.
 
 ### Weekly reports: `bin/yahrzeit_engine.php`, `bin/yahrzeit`, and `6reports.php`
 
-- Current Saturday-week report, panel displays, dry-run preview, and normal engine output agree for the active Saturday-through-Friday window.
-- **[A]** Verify and document the report meaning at the Friday-sunset transition, after the scheduler adds its sunset-time normal-lighting run.
+- Current report, panel displays, dry-run preview, and normal engine output agree for the active erev_shabbat_to_erev_shabbat window.
   - Keep report generation in the engine, wrapper argument handling in `bin/yahrzeit`, and Reports-screen form/rendering changes in `6reports.php`.
 
 ---
@@ -280,5 +279,4 @@ These tasks apply throughout the PHP codebase.
 ## Historical Notes
 
 - This file descends from an older PHP/server-side bug and TODO list dating back to the original 2008 project.
-- Some old references, such as direct `/tty` serial work, predate the later single-port communication server and are now historical only.
 - The project stalled for years, then the PHP/server-side cleanup was pushed through rapidly in the 2026 modernization pass.

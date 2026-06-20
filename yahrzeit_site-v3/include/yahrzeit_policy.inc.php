@@ -21,8 +21,8 @@
  */
 
 // Return the active normal-lighting week as midnight timestamps.  The week is
-// Saturday through Friday.  Before Friday sunset, the current week's Friday
-// remains active; at or after Friday sunset, the following Saturday starts.
+// anchored to the sunset-based erev_shabbat_to_erev_shabbat cycle, so the
+// boundary is evaluated at sunset rather than assuming a fixed midnight day.
 function yahrzeit_lighting_week_range($timestamp = null)
 {
     if ($timestamp === null) {
@@ -193,7 +193,7 @@ function yahrzeit_person_lighting_decision($person, $timestamp = null)
     if (
         isset($minhag['yahrzeitPlusShabbat']) &&
         $minhag['yahrzeitPlusShabbat'] == "YES" &&
-        is_friday_for_shabbat_lighting() &&
+        is_erev_shabbat_for_lighting() &&
         yahrzeit_person_is_observed_this_week($person, $timestamp)
     ) {
         return ['should_light' => true, 'reason' => 'plus-Shabbat weekly yahrzeit'];

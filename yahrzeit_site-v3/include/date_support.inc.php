@@ -138,7 +138,8 @@ function cbs_sunset_time_string($timestamp)
 }
 
 
-function next_friday_timestamp()
+// Return the next Erev Shabbat marker used to anchor the weekly lighting window.
+function next_erev_shabbat_timestamp()
 {
     $today = strtotime("today");
 
@@ -293,9 +294,9 @@ function english_day_matches_yahrzeit_week($month, $day)
     // We assume this daemon is normally run in the late afternoon,
     // computing yahrzeits for tomorrow / after sunset.
     //
-    // If today is Erev Shabbat, the window is today through next Friday.
-    // Otherwise, compute the current Friday-to-Friday week window.
-    if (is_friday_for_shabbat_lighting()) {
+    // If today is Erev Shabbat, the window runs through the next Erev Shabbat.
+    // Otherwise, compute the current erev_shabbat_to_erev_shabbat week window.
+    if (is_erev_shabbat_for_lighting()) {
         $first_date  = strtotime("today", $today);
         $second_date = strtotime("next friday", $today);
     } else {
@@ -334,12 +335,12 @@ function is_english_leap_year($year)
            ((($year % 100) != 0) || (($year % 400) == 0));
 }
 
-// Boolean: is tonight the Sabbath?
+// Boolean: is the current late-afternoon boundary the start of Erev Shabbat?
 //
-// This returns true on Friday, because the daemon is normally run in the
-// late afternoon to compute the lights for the coming evening / Shabbat.
+// This returns true on Friday afternoon, because the daemon is normally run
+// in the late afternoon to compute the lights for the coming evening / Shabbat.
 
-function is_friday_for_shabbat_lighting()
+function is_erev_shabbat_for_lighting()
 {
     global $today_month;
     global $today_day;
