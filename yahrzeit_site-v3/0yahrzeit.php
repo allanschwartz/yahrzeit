@@ -52,6 +52,9 @@ require_once "include/panels.inc.php";
 require_once "include/names.inc.php";
 require_once "include/date_support.inc.php";
 
+global $minhag;
+$minhag = read_minhag_ini();
+
 date_default_timezone_set("America/Los_Angeles");
 
 const YAHRZEIT_TITLE    = "Yahrzeit Controller";
@@ -64,7 +67,7 @@ const YAHRZEIT_HELPFILE = "help/0yahrzeit.php";
 
 function yahrzeit_page_description()
 {
-    $minhag = read_minhag_ini();
+    global $minhag;
 
     return "Home and status page for the Yahrzeit panels at " .
            h($minhag['synagogueName'] ?? "") . ".";
@@ -78,7 +81,40 @@ function controller_summary_lines()
     return [
         h($panelCount) . ' panels defined (click on <a href="1viewpanels.php">Panels</a>)',
         h($nameCount) . ' names defined (click on <a href="4viewnames.php">Names</a>)',
-        'Manual lighting operations are available from the Panels screen'
+        'Reports, audits, command previews, and CSV maintenance are available on the <a href="6reports.php">Reports</a> screen',
+        'Manual lighting operations are available from the <a href="1viewpanels.php">Panels</a> screen'
+    ];
+}
+
+function yahrzeit_label($value, $labels)
+{
+    return $labels[$value] ?? $value;
+}
+
+function yahrzeit_minhag_summary_lines()
+{
+    global $minhag;
+
+    $dateType = yahrzeit_label($minhag['yahrzeitEngOrHeb'] ?? "", [
+        'eng' => 'English',
+        'heb' => 'Hebrew',
+    ]);
+
+    $yahrzeitTiming = yahrzeit_label($minhag['yahrzeitLightTime'] ?? "", [
+        'setTime'  => 'a fixed clock time',
+        'atSunset' => 'a sunset-relative window',
+    ]);
+
+    $yizkorTiming = yahrzeit_label($minhag['yizkorLightTime'] ?? "", [
+        'setTime'  => 'a fixed clock time',
+        'atSunset' => 'a sunset-relative window',
+    ]);
+
+    return [
+        'Yahrzeits are normally observed by ' . h($dateType) . ' date',
+        'Yahrzeit lighting uses ' . h($yahrzeitTiming),
+        'Yizkor lighting uses ' . h($yizkorTiming),
+        'Minhag settings are edited on the <a href="7minhag.php">Minhag</a> screen'
     ];
 }
 
@@ -106,13 +142,6 @@ function yahrzeit_render_scheduled_events()
 
     echo "Today's sunset in San Francisco is at " . h($todaySunsetText) . ".<br>\n";
     echo yahrzeit_next_shabbat_lighting_line() . "<br>\n";
-}
-
-function yahrzeit_render_controller_summary()
-{
-    foreach (controller_summary_lines() as $line) {
-        echo $line . "<br>\n";
-    }
 }
 
 function yahrzeit_render_main_page()
@@ -164,11 +193,27 @@ function yahrzeit_render_main_page()
 
         <tr>
             <td height="25" align="left" valign="top" class="text">
+                Configured Policy Summary
+            </td>
+            <td class="text">
+<?php
+                foreach (yahrzeit_minhag_summary_lines() as $line) {
+                    echo $line . "<br>\n";
+                }
+?>
+            </td>
+            <td id="notused">&nbsp;</td>
+        </tr>
+
+        <tr>
+            <td height="25" align="left" valign="top" class="text">
                 Controller Summary
             </td>
             <td class="text">
 <?php
-                yahrzeit_render_controller_summary();
+                foreach (controller_summary_lines() as $line) {
+                    echo $line . "<br>\n";
+                }
 ?>
             </td>
             <td id="notused">&nbsp;</td>
