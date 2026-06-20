@@ -46,6 +46,12 @@
 
 require_once "include/misc.inc.php";
 require_once "include/panels.inc.php";
+require_once "include/names.inc.php";
+require_once "include/date_support.inc.php";
+require_once "include/yahrzeit_policy.inc.php";
+
+global $minhag;
+$minhag = read_minhag_ini();
 
 const PANELS_TITLE = "View Yahrzeit Panels";
 const PANELS_TAB = 2;
@@ -157,14 +163,61 @@ function panels_render_image_map()
     echo "                <img src=\"images/image-21panels.jpg\" usemap=\"#panelmap\" width=\"700\">\n";
 }
 
-function panels_render_geometry_table()
+function panels_person_is_reserved($person)
 {
+    if (!empty($person['reserved'])) {
+        return true;
+    }
+
+    $name = trim(($person['firstName'] ?? "") . " " . ($person['lastName'] ?? ""));
+    return str_contains(strtoupper($name), "RESERVED");
+}
+
+// Count the same valid, non-reserved panel positions shown by the panel-detail
+// screen.  A later CSV record at a duplicate position wins, as it does there.
+function panels_lit_counts($timestamp)
+{
+    $cells = [];
+    $counts = [];
+    $n = yahrzeit_readDB();
+
+    for ($i = 0; $i < $n; $i++) {
+        $person = yahrzeit_getObj($i);
+        $panelId = $person['panelId'] ?? "";
+        $panel = panel_getObj_byId($panelId);
+        $row = (int)($person['row'] ?? 0);
+        $column = (int)($person['column'] ?? 0);
+
+        if ($panel == null || $row < 1 || $column < 1 ||
+            $row > $panel['nRows'] || $column > $panel['nCols']) {
+            continue;
+        }
+
+        $cells[$panelId]["$row-$column"] = $person;
+    }
+
+    foreach ($cells as $panelId => $panelCells) {
+        foreach ($panelCells as $person) {
+            if (!panels_person_is_reserved($person) &&
+                yahrzeit_person_should_light_now($person, $timestamp)) {
+                $counts[$panelId] = ($counts[$panelId] ?? 0) + 1;
+            }
+        }
+    }
+
+    return $counts;
+}
+
+function panels_render_geometry_table($timestamp)
+{
+    $litCounts = panels_lit_counts($timestamp);
 ?>
                 <table border="2">
                     <tr class="text">
                         <th>Panel ID</th>
                         <th>Geometry</th>
                         <th>Capacity</th>
+                        <th>Lit LEDs</th>
                     </tr>
 
 <?php
@@ -185,6 +238,9 @@ function panels_render_geometry_table()
                         <td>
                             <?php echo h($panel['nNames']); ?> places
                         </td>
+                        <td>
+                            <?php echo h($litCounts[$panelId] ?? 0); ?>
+                        </td>
                     </tr>
 <?php
     }
@@ -195,6 +251,8 @@ function panels_render_geometry_table()
 
 function panels_render_main_page()
 {
+    $timestamp = time();
+
     emitHeader(PANELS_TITLE, PANELS_TAB);
     emitTopOfScreen(PANELS_TITLE, panels_description(), PANELS_HELPFILE);
 ?>
@@ -225,7 +283,7 @@ function panels_render_main_page()
         <tr>
             <td colspan="3" align="center">
 <?php
-    panels_render_geometry_table();
+    panels_render_geometry_table($timestamp);
 ?>
             </td>
         </tr>

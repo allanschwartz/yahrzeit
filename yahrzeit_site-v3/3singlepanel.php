@@ -44,6 +44,10 @@ require_once "include/misc.inc.php";
 require_once "include/panels.inc.php";
 require_once "include/names.inc.php";
 require_once "include/date_support.inc.php";
+require_once "include/yahrzeit_policy.inc.php";
+
+global $minhag;
+$minhag = read_minhag_ini();
 
 const SINGLE_PANEL_TITLE = "Single Yahrzeit Panel";
 const SINGLE_PANEL_DESCRIPTION =
@@ -114,11 +118,19 @@ function single_panel_render_message_page($message)
     emitFooter();
 }
 
-function single_panel_render_cell($person, $cellWidth)
+function single_panel_render_cell($person, $cellWidth, $timestamp)
 {
+    $ledImage = "images/ledoff.gif";
+
+    if ($person != null &&
+        !single_panel_person_is_reserved($person) &&
+        yahrzeit_person_should_light_now($person, $timestamp)) {
+        $ledImage = "images/ledon.gif";
+    }
+
     echo '<td width="' . h($cellWidth) . '%">';
     echo '<table><tr class="text">';
-    echo '<td><img src="images/ledoff.gif"></td>';
+    echo '<td><img src="' . h($ledImage) . '"></td>';
     echo '<td valign="center">';
 
     if ($person == null) {
@@ -136,7 +148,7 @@ function single_panel_render_cell($person, $cellWidth)
     echo '</td>';
 }
 
-function single_panel_render_panel_table($panel, $completePanel)
+function single_panel_render_panel_table($panel, $completePanel, $timestamp)
 {
     $nRows = (int)$panel['nRows'];
     $nCols = (int)$panel['nCols'];
@@ -148,7 +160,7 @@ function single_panel_render_panel_table($panel, $completePanel)
         echo '<tr class="text">';
 
         for ($col = 1; $col <= $nCols; $col++) {
-            single_panel_render_cell($completePanel[$row][$col] ?? null, $cellWidth);
+            single_panel_render_cell($completePanel[$row][$col] ?? null, $cellWidth, $timestamp);
         }
 
         echo '</tr>';
@@ -157,9 +169,26 @@ function single_panel_render_panel_table($panel, $completePanel)
     echo '</table>';
 }
 
-function single_panel_render_main_page($panelid, $panel, $completePanel)
+function single_panel_lit_count($completePanel, $timestamp)
+{
+    $count = 0;
+
+    foreach ($completePanel as $row) {
+        foreach ($row as $person) {
+            if (!single_panel_person_is_reserved($person) &&
+                yahrzeit_person_should_light_now($person, $timestamp)) {
+                $count++;
+            }
+        }
+    }
+
+    return $count;
+}
+
+function single_panel_render_main_page($panelid, $panel, $completePanel, $timestamp)
 {
     $title = SINGLE_PANEL_TITLE . " -- \"" . $panelid . "\"";
+    $litCount = single_panel_lit_count($completePanel, $timestamp);
 
     emitHeader($title, SINGLE_PANEL_TAB);
     emitTopOfScreen($title, SINGLE_PANEL_DESCRIPTION, SINGLE_PANEL_HELPFILE);
@@ -181,8 +210,14 @@ function single_panel_render_main_page($panelid, $panel, $completePanel)
         <tr>
             <td colspan="3">
 <?php
-                single_panel_render_panel_table($panel, $completePanel);
+                single_panel_render_panel_table($panel, $completePanel, $timestamp);
 ?>
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="3" class="text">
+                <?php echo h($litCount); ?> memorial lights should be lit now on this panel.
             </td>
         </tr>
 <?php
@@ -225,7 +260,8 @@ function single_panel_main()
     single_panel_render_main_page(
         $panelid,
         $panel,
-        single_panel_build_complete_panel($panelid)
+        single_panel_build_complete_panel($panelid),
+        time()
     );
 }
 

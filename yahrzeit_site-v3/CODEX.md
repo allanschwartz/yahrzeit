@@ -22,6 +22,14 @@ Important boundaries:
 - bin/yahrzeit_engine.php decides what should be lit.
 - screen PHP files should mostly render pages and dispatch GET/POST actions.
 
+File size / maintainability guidelines:
+- Prefer PHP files under roughly 500 lines.
+- Prefer shell/Python scripts under roughly 200 lines.
+- If a file grows beyond that, do not automatically split it, but flag it as a candidate for refactor.
+- Prefer extracting coherent procedural helper files over adding classes.
+- Do not split files just to satisfy a line-count rule; split only when there is a clear boundary.
+
+
 Validation commands:
 php -l 0yahrzeit.php
 php -l 1viewpanels.php

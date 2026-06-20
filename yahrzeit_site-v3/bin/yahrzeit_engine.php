@@ -92,6 +92,7 @@ require_once site_root() . "/include/panels.inc.php";
 require_once site_root() . "/include/names.inc.php";
 require_once site_root() . "/include/leds.inc.php";
 require_once site_root() . "/include/date_support.inc.php";
+require_once site_root() . "/include/yahrzeit_policy.inc.php";
 
 
 // ---------------------------------------------------------------------------
@@ -203,7 +204,7 @@ function yz_main()
 
     for ($i = 0; $i < $n; $i++) {
         $person = yahrzeit_getObj($i);
-        yz_process_person($person);
+        yz_process_person($person, $selected_ts);
     }
 
     led_data_refresh();
@@ -598,10 +599,8 @@ function yahrzeit_candidate_dates_in_range($person, $start_ts, $end_ts)
 // Normal command-stream processing
 // ---------------------------------------------------------------------------
 
-function yz_process_person($person)
+function yz_process_person($person, $timestamp)
 {
-    global $minhag;
-
     $first = isset($person['firstName']) ? $person['firstName'] : "";
     $last  = isset($person['lastName'])  ? $person['lastName']  : "";
     $name  = trim($first . " " . $last);
@@ -625,46 +624,9 @@ function yz_process_person($person)
         return;
     }
 
-    // Person-level options are booleans in the mapped $person object.
-    $reserved = isset($person['reserved']) && $person['reserved'];
-    $manual   = isset($person['manual'])   && $person['manual'];
-
-    $reason = "";
-    $should_light = false;
-
-    if ($reserved) {
-        $reason = "reserved";
-        $should_light = false;
-    }
-    else if ($manual) {
-        $reason = "manual";
-        $should_light = true;
-    }
-    else if (isYahrzeitToday($person)) {
-        $reason = "yahrzeit today";
-        $should_light = true;
-    }
-    else if (
-        isset($minhag['yahrzeitPlusShabbat']) &&
-        $minhag['yahrzeitPlusShabbat'] == "YES" &&
-        is_friday_for_shabbat_lighting() &&
-        isYahrzeitThisWeek($person)
-    ) {
-        $reason = "plus-Shabbat weekly yahrzeit";
-        $should_light = true;
-    }
-    else if (
-        isset($minhag['yahrzeitFullWeek']) &&
-        $minhag['yahrzeitFullWeek'] == "YES" &&
-        isYahrzeitThisWeek($person)
-    ) {
-        $reason = "full-week yahrzeit";
-        $should_light = true;
-    }
-    else {
-        $reason = "not active";
-        $should_light = false;
-    }
+    $decision = yahrzeit_person_lighting_decision($person, $timestamp);
+    $should_light = $decision['should_light'];
+    $reason = $decision['reason'];
 
     if (audit_mode()) {
         $state = $should_light ? "ON" : "OFF";
@@ -674,8 +636,8 @@ function yz_process_person($person)
     if (debug_level() >= 40) {
         debug_log( 40,
             "yz_process_person: name='$name' location='$location' reserved=" .
-            ($reserved ? "YES" : "NO") .
-            " manual=" . ($manual ? "YES" : "NO") .
+            (!empty($person['reserved']) ? "YES" : "NO") .
+            " manual=" . (!empty($person['manual']) ? "YES" : "NO") .
             " should_light=" . ($should_light ? "YES" : "NO") .
             " reason='$reason'",
             __LINE__
@@ -695,246 +657,6 @@ function yz_process_person($person)
     }
 
     return;
-}
-
-
-// Boolean: does the given MONTH/DAY match between tomorrow and next Erev Shabbat?
-
-function isYahrzeitToday($person)
-{
-    global $minhag;
-    global $hebrewMonthName;
-    global $hebrewYear;
-
-    $result_code = false;
-    $heb_or_eng = "";
-    $yz_jd_date = "";
-    $yz_gregorian_date = "";
-    $m = "";
-    $mm = "";
-    $dd = "";
-    $yy = "";
-
-    $use_hebrew =
-        isset($minhag['yahrzeitEngOrHeb']) &&
-        $minhag['yahrzeitEngOrHeb'] == "heb";
-
-    if (isset($person['useHeb']) && $person['useHeb']) {
-        $use_hebrew = true;
-    }
-
-    $use_english =
-        isset($minhag['yahrzeitEngOrHeb']) &&
-        $minhag['yahrzeitEngOrHeb'] == "eng";
-
-    if (isset($person['useEng']) && $person['useEng']) {
-        $use_english = true;
-    }
-
-    if ($use_hebrew) {
-        $heb_or_eng = "heb";
-
-        $heb_month_name = isset($person['hebYzMonth'])
-            ? closest_hebrew_month($person['hebYzMonth'])
-            : "";
-
-        if ($heb_month_name == "" || !isset(HEBREW_MONTH_MAPPING[$heb_month_name])) {
-            return false;
-        }
-
-        $m = HEBREW_MONTH_MAPPING[$heb_month_name];
-
-        if (!isset($person['hebYzDD']) || !is_numeric($person['hebYzDD'])) {
-            return false;
-        }
-
-        $heb_day = (int)$person['hebYzDD'];
-        $heb_year = (int)$hebrewYear;
-
-        if ($heb_day < 1 || $heb_day > 30 || $heb_year <= 0) {
-            return false;
-        }
-
-        $yz_jd_date = jewishtojd($m, $heb_day, $heb_year);
-
-        // Special case for Tishrei:
-        // if the yahrzeit is in Tishrei, and this is Elul,
-        // then that yahrzeit is in the NEXT Hebrew year.
-        if ($m == 1 && $hebrewMonthName == "Elul") {
-            $yz_jd_date = jewishtojd($m, $heb_day, $heb_year + 1);
-        }
-
-        // Similar special case if this is the first week of Tishrei
-        // and the person's yahrzeit is in Elul. That Elul was last week,
-        // not the coming Elul.
-        if ($m == 13 && $hebrewMonthName == "Tishri") {
-            $yz_jd_date = jewishtojd($m, $heb_day, $heb_year - 1);
-        }
-
-        if (!$yz_jd_date) {
-            return false;
-        }
-
-        $yz_gregorian_date = JDToGregorian($yz_jd_date);
-        $parts = explode('/', $yz_gregorian_date);
-
-        if (count($parts) < 3) {
-            return false;
-        }
-
-        list($mm, $dd, $yy) = $parts;
-
-        $result_code = english_day_matches_today_or_tomorrow($mm, $dd);
-    }
-    else if ($use_english) {
-        $heb_or_eng = "eng";
-
-        $eng_month = isset($person['engYzMonth']) ? $person['engYzMonth'] : "";
-        $eng_day   = isset($person['engYzDD'])    ? $person['engYzDD']    : "";
-
-        $result_code = english_day_matches_today_or_tomorrow($eng_month, $eng_day);
-    }
-
-    if (debug_level() >= 30 && $result_code) {
-        $printable_rc = $result_code ? "TRUE" : "FALSE";
-
-        $heb_month = isset($person['hebYzMonth']) ? $person['hebYzMonth'] : "";
-        $heb_day   = isset($person['hebYzDD'])    ? $person['hebYzDD']    : "";
-        $first     = isset($person['firstName'])  ? $person['firstName']  : "";
-        $last      = isset($person['lastName'])   ? $person['lastName']   : "";
-
-        debug_log( 30,
-            "isYahrzeitToday($heb_or_eng): yz_jd_date=$yz_jd_date yz_gregorian_date=$yz_gregorian_date m=$m hebMon=$heb_month hebDay=$heb_day mm=$mm dd=$dd yy=$yy",
-            __LINE__
-        );
-
-        debug_log( 30,
-            "isYahrzeitToday($heb_or_eng): $first $last returns $printable_rc",
-            __LINE__
-        );
-    }
-
-    return $result_code;
-}
-
-
-// Boolean: is this year a leap year?
-
-function isYahrzeitThisWeek($person)
-{
-    global $minhag;
-    global $hebrewMonthName;
-    global $hebrewYear;
-
-    $result_code = false;
-    $heb_or_eng = "";
-    $yz_jd_date = "";
-    $yz_gregorian_date = "";
-    $m = "";
-    $mm = "";
-    $dd = "";
-    $yy = "";
-
-    $use_hebrew =
-        isset($minhag['yahrzeitEngOrHeb']) &&
-        $minhag['yahrzeitEngOrHeb'] == "heb";
-
-    if (isset($person['useHeb']) && $person['useHeb']) {
-        $use_hebrew = true;
-    }
-
-    $use_english =
-        isset($minhag['yahrzeitEngOrHeb']) &&
-        $minhag['yahrzeitEngOrHeb'] == "eng";
-
-    if (isset($person['useEng']) && $person['useEng']) {
-        $use_english = true;
-    }
-
-    if ($use_hebrew) {
-        $heb_or_eng = "heb";
-
-        $heb_month_name = isset($person['hebYzMonth'])
-            ? closest_hebrew_month($person['hebYzMonth'])
-            : "";
-
-        if ($heb_month_name == "" || !isset(HEBREW_MONTH_MAPPING[$heb_month_name])) {
-            return false;
-        }
-
-        $m = HEBREW_MONTH_MAPPING[$heb_month_name];
-
-        if (!isset($person['hebYzDD']) || !is_numeric($person['hebYzDD'])) {
-            return false;
-        }
-
-        $heb_day = (int)$person['hebYzDD'];
-        $heb_year = (int)$hebrewYear;
-
-        if ($heb_day < 1 || $heb_day > 30 || $heb_year <= 0) {
-            return false;
-        }
-
-        $yz_jd_date = jewishtojd($m, $heb_day, $heb_year);
-
-        // Special case for dates in Tishrei:
-        // if the yahrzeit is in Tishrei, and this is Elul,
-        // then that yahrzeit is in the NEXT Hebrew year.
-        if ($m == 1 && $hebrewMonthName == "Elul") {
-            $yz_jd_date = jewishtojd($m, $heb_day, $heb_year + 1);
-        }
-
-        // Similar special case if this is the first week of Tishrei
-        // and the person's yahrzeit is in Elul.  That Elul was last week,
-        // not the coming Elul.
-        if ($m == 13 && $hebrewMonthName == "Tishri") {
-            $yz_jd_date = jewishtojd($m, $heb_day, $heb_year - 1);
-        }
-
-        if (!$yz_jd_date) {
-            return false;
-        }
-
-        $yz_gregorian_date = JDToGregorian($yz_jd_date);
-        $parts = explode('/', $yz_gregorian_date);
-
-        if (count($parts) < 3) {
-            return false;
-        }
-
-        list($mm, $dd, $yy) = $parts;
-
-        $result_code = english_day_matches_yahrzeit_week($mm, $dd);
-    }
-    else if ($use_english) {
-        $heb_or_eng = "eng";
-
-        $eng_month = isset($person['engYzMonth']) ? $person['engYzMonth'] : "";
-        $eng_day   = isset($person['engYzDD'])    ? $person['engYzDD']    : "";
-
-        $result_code = english_day_matches_yahrzeit_week($eng_month, $eng_day);
-    }
-
-    if (debug_level() >= 30 && $result_code) {
-        $printable_rc = $result_code ? "TRUE" : "FALSE";
-
-        $heb_month = isset($person['hebYzMonth']) ? $person['hebYzMonth'] : "";
-        $heb_day   = isset($person['hebYzDD'])    ? $person['hebYzDD']    : "";
-        $first     = isset($person['firstName'])  ? $person['firstName']  : "";
-        $last      = isset($person['lastName'])   ? $person['lastName']   : "";
-
-        debug_log( 30,
-            "isYahrzeitThisWeek($heb_or_eng): yz_jd_date=$yz_jd_date yz_gregorian_date=$yz_gregorian_date m=$m hebMon=$heb_month hebDay=$heb_day mm=$mm dd=$dd yy=$yy",
-            __LINE__
-        );
-
-        debug_log( 30,
-            "isYahrzeitThisWeek($heb_or_eng): $first $last returns $printable_rc",
-            __LINE__
-        );
-    }
-
-    return $result_code;
 }
 
 

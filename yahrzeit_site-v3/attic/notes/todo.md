@@ -52,9 +52,6 @@ These tasks apply throughout the PHP codebase.
 
 - Done for current deployment.
 - Future cleanup:
-  - **[A]** Identify and isolate the shared “lighting decision” logic.
-    - Goal: one function should decide whether a memorial record should be lit for a given timestamp/minhag context.
-    - This function should support command generation, dashboard counts, and panel visualization.
   - **[B]** Consider `include/audit_support.inc.php` for panel/name validation and duplicate-location checks.
   - Keep `yahrzeit_engine.php` as the orchestration layer: parse options, select mode, read data, and call engine/report/audit functions.
 
@@ -66,6 +63,11 @@ These tasks apply throughout the PHP codebase.
   - `--phase yizkor-off`
   - `--phase yahrzeit`
 - **[B] (at CBS)** Confirm CBS Yizkor service timing and decide whether the scheduler remains three-phase or simplifies to two-phase.
+- **[A]** Add the Friday-sunset weekly lighting transition.
+  - Before Friday sunset, retain the active Saturday-through-Friday lighting window.
+  - At or just after Friday sunset, run normal yahrzeit lighting again for the following Saturday-through-Friday window.
+  - The scheduler is the intended dynamic scheduling boundary; do not put this timing decision in a screen or controller wrapper.
+  - Decide and document how it schedules the variable sunset-time run on the deployed appliance.
 
 ### Cron installation helper
 
@@ -103,18 +105,14 @@ These tasks apply throughout the PHP codebase.
 
 - OK.
 - Read-only single-panel database assignment view.
-- **[A]** Show `ledon.gif` or `ledoff.gif` depending on whether the memorial location should be lit in the current yahrzeit window.
-  - This should use the same shared lighting-policy function used by `0yahrzeit.php` and `bin/yahrzeit_engine.php`.
-  - in order to facilitate that:
-    - Add include/yahrzeit_policy.inc.php to hold shared lighting-policy logic used by yahrzeit_engine.php, 0yahrzeit.php, and 3singlepanel.php.
-  - Keep row/column rendering order for HTML tables: rows outside, columns inside.
-- **[A]** Add a panel-level summary line such as `N yahrzeit lights lit on this panel`.
+- Shows `ledon.gif` / `ledoff.gif` and a calculated lit count through the shared policy helper.
+- Keep row/column rendering order for HTML tables: rows outside, columns inside.
 
 ### `4viewnames.php`
 
 - OK.
 - Read-only searchable memorial-name browser.
-- **[B]** After shared lighting-policy logic exists, consider adding a search/display marker for records currently scheduled to be lit.
+- Shows a compact `ledon.gif` / `ledoff.gif` indicator through the shared policy helper.
 
 ### `5singlename.php`
 
@@ -213,15 +211,22 @@ These tasks apply throughout the PHP codebase.
 - OK.
 - Owns LED/panel/controller mapping.
 
-### Future `include/lighting_policy.inc.php` or equivalent
+### `include/yahrzeit_policy.inc.php`
 
-- **[A]** Consider introducing a shared library for yahrzeit/yizkor lighting decisions.
+- Provides the active normal-yahrzeit decision and Friday-sunset-aware Saturday-through-Friday lighting window.
+- Used by the engine and panel/name views; do not duplicate this decision logic elsewhere.
 - Should answer questions such as:
   - Should this memorial record be lit at this timestamp?
   - Is the current system in normal yahrzeit mode or Yizkor mode?
   - How many memorial records should be lit now?
   - Which records should be marked lit for panel/name views?
 - Must be shared by dashboard/report/panel visualization and command-generation logic to avoid duplicate policy decisions.
+
+### Weekly reports: `bin/yahrzeit_engine.php`, `bin/yahrzeit`, and `6reports.php`
+
+- Current Saturday-week report, panel displays, dry-run preview, and normal engine output agree for the active Saturday-through-Friday window.
+- **[A]** Verify and document the report meaning at the Friday-sunset transition, after the scheduler adds its sunset-time normal-lighting run.
+  - Keep report generation in the engine, wrapper argument handling in `bin/yahrzeit`, and Reports-screen form/rendering changes in `6reports.php`.
 
 ---
 
@@ -269,14 +274,6 @@ These tasks apply throughout the PHP codebase.
 - **[B]** Decide whether any login/security support is needed on the deployed appliance.
 
 ---
-
-## Internal Documentation
-
-- **[B]** Create a standalone internal developer map, probably `docs/php-internal-map.html`.
-  - Include left-sidebar navigation.
-  - Document top-level screens, include files, command-line tools, scheduler, data files, and architectural boundaries.
-  - Use existing file headers and actual code as source of truth.
-  - Do not invent behavior.
 
 ---
 

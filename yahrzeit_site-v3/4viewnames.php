@@ -42,6 +42,10 @@
 require_once "include/misc.inc.php";
 require_once "include/date_support.inc.php";
 require_once "include/names.inc.php";
+require_once "include/yahrzeit_policy.inc.php";
+
+global $minhag;
+$minhag = read_minhag_ini();
 
 const VIEWNAMES_TITLE = "Yahrzeit Names";
 const VIEWNAMES_DESCRIPTION = "List observed Yahrzeits. Click on a name to view that individual record.";
@@ -124,13 +128,14 @@ function viewnames_render_search_form($query)
 <?php
 }
 
-function viewnames_render_names_table($query)
+function viewnames_render_names_table($query, $timestamp)
 {
     $n = yahrzeit_readDB();
     $displayed = 0;
 ?>
                 <table border="2">
                     <tr class="text">
+                        <th>Lit</th>
                         <th>Name</th>
                         <th>English Date</th>
                         <th>Hebrew Date</th>
@@ -146,8 +151,12 @@ function viewnames_render_names_table($query)
         }
 
         $displayed++;
+        $isLit = yahrzeit_person_should_light_now($person, $timestamp);
+        $ledImage = $isLit ? "images/ledon-compact.gif" : "images/ledoff-compact.gif";
+        $ledText = $isLit ? "Lit" : "Not lit";
 ?>
                     <tr class="text">
+                        <td><img src="<?php echo h($ledImage); ?>" alt="<?php echo h($ledText); ?>"></td>
                         <td>
                             <a href="5singlename.php?row=<?php echo h($i); ?>">
                                 <?php echo h(yahrzeit_person_name($person)); ?>
@@ -164,7 +173,7 @@ function viewnames_render_names_table($query)
     if ($displayed == 0) {
 ?>
                     <tr class="text">
-                        <td colspan="5" align="center">
+                        <td colspan="6" align="center">
                             <i>No matching Yahrzeit records found.</i>
                         </td>
                     </tr>
@@ -182,6 +191,7 @@ function viewnames_render_names_table($query)
 function viewnames_render_main_page()
 {
     $query = trim($_GET['q'] ?? "");
+    $timestamp = time();
 
     emitHeader(VIEWNAMES_TITLE, VIEWNAMES_TAB);
     emitTopOfScreen(VIEWNAMES_TITLE, VIEWNAMES_DESCRIPTION, VIEWNAMES_HELPFILE);
@@ -210,7 +220,7 @@ function viewnames_render_main_page()
         <tr>
             <td colspan="3" align="center">
 <?php
-                viewnames_render_names_table($query);
+                viewnames_render_names_table($query, $timestamp);
 ?>
             </td>
         </tr>
