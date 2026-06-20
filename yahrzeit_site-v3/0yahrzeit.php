@@ -51,6 +51,7 @@ require_once "include/misc.inc.php";
 require_once "include/panels.inc.php";
 require_once "include/names.inc.php";
 require_once "include/date_support.inc.php";
+require_once "include/yahrzeit_policy.inc.php";
 
 global $minhag;
 $minhag = read_minhag_ini();
@@ -73,14 +74,20 @@ function yahrzeit_page_description()
            h($minhag['synagogueName'] ?? "") . ".";
 }
 
-function controller_summary_lines()
+function controller_summary_lines($timestamp = null)
 {
+    if ($timestamp === null) {
+        $timestamp = time();
+    }
+
     $panelCount = panel_readDB();
     $nameCount  = yahrzeit_readDB();
+    $litCount   = yahrzeit_lit_person_count($timestamp);
 
     return [
         h($panelCount) . ' panels defined (click on <a href="1viewpanels.php">Panels</a>)',
         h($nameCount) . ' names defined (click on <a href="4viewnames.php">Names</a>)',
+        h($litCount) . ' memorial lights are lit now.',
         'Reports, audits, command previews, and CSV maintenance are available on the <a href="6reports.php">Reports</a> screen',
         'Manual lighting operations are available from the <a href="1viewpanels.php">Panels</a> screen'
     ];
@@ -136,9 +143,13 @@ function yahrzeit_next_shabbat_lighting_line()
 // Rendering helpers
 // -----------------------------------------------------------------------------
 
-function yahrzeit_render_scheduled_events()
+function yahrzeit_render_scheduled_events($timestamp = null)
 {
-    $todaySunsetText = cbs_sunset_time_string(time());
+    if ($timestamp === null) {
+        $timestamp = time();
+    }
+
+    $todaySunsetText = cbs_sunset_time_string($timestamp);
 
     echo "Today's sunset in San Francisco is at " . h($todaySunsetText) . ".<br>\n";
     echo yahrzeit_next_shabbat_lighting_line() . "<br>\n";
@@ -146,6 +157,7 @@ function yahrzeit_render_scheduled_events()
 
 function yahrzeit_render_main_page()
 {
+    $render_timestamp = time();
     $minhag = read_minhag_ini();
 
     emitHeader(YAHRZEIT_TITLE, YAHRZEIT_TAB);
@@ -184,7 +196,7 @@ function yahrzeit_render_main_page()
             </td>
             <td class="text">
 <?php
-                yahrzeit_render_scheduled_events();
+                yahrzeit_render_scheduled_events($render_timestamp);
 ?>
                 <br>
             </td>
@@ -211,7 +223,7 @@ function yahrzeit_render_main_page()
             </td>
             <td class="text">
 <?php
-                foreach (controller_summary_lines() as $line) {
+                foreach (controller_summary_lines($render_timestamp) as $line) {
                     echo $line . "<br>\n";
                 }
 ?>

@@ -11,6 +11,11 @@
  *      day.  Cron decides when each phase runs; this script decides whether
  *      the requested phase applies today.
  *
+ *      The weekly normal-yahrzeit phase is intended to be invoked from cron
+ *      on Friday at 4:00 PM.  This is deliberately before Erev Shabbat sunset,
+ *      but not too far before, and the engine still decides the actual
+ *      lighting state for the current window.
+ *
  *      Supported phases:
  *
  *          --phase yizkor-on

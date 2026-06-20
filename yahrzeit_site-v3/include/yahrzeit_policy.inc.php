@@ -218,4 +218,25 @@ function yahrzeit_person_should_light_now($person, $timestamp = null)
     return $decision['should_light'];
 }
 
+// Count how many memorial records should be lit at the supplied timestamp.
+// This uses the shared policy helper so screens do not duplicate date logic.
+function yahrzeit_lit_person_count($timestamp = null)
+{
+    if ($timestamp === null) {
+        $timestamp = time();
+    }
+
+    $count = 0;
+    $n = yahrzeit_readDB();
+
+    for ($i = 0; $i < $n; $i++) {
+        $person = yahrzeit_getObj($i);
+        if (yahrzeit_person_should_light_now($person, $timestamp)) {
+            $count++;
+        }
+    }
+
+    return $count;
+}
+
 ?>
