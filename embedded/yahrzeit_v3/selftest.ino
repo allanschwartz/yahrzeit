@@ -32,7 +32,7 @@
 /**
  * @brief   SELF TEST 1: turn on the four corner pixels.
  *
- * @param panel   PANEL0 for the whole display, or panel number 1..NPANELS.
+ * @param panel   PANEL0 for the whole display, or panel number 1..displayConfig.nPanels.
  *
  * @note This is the first bring-up test because it verifies both ends of
  *       the logical addressing range without lighting every pixel.
@@ -42,20 +42,13 @@ static void selftest_corners(byte panel)
     ASSERT(panel <= displayConfig.nPanels);
 
     if (panel == PANEL0) {
-        // ledWall.setPixel(1, 1, 1);
-        // ledWall.setPixel(1, displayConfig.nRows, 1);
-        // ledWall.setPixel(1, 1, displayConfig.nCols);
-        // ledWall.setPixel(1, displayConfig.nRows, displayConfig.nCols);
-
-        for (byte ipanel = 1; ipanel < NPANELS; ++ipanel) {
-            ledWall.setPixelInPanel(1, 1, 1, ipanel);
-            ledWall.setPixelInPanel(1, ledWall.rowsInPanel(ipanel), 1, ipanel);
-            ledWall.setPixelInPanel(1, 1, ledWall.colsInPanel(ipanel), ipanel);
-            ledWall.setPixelInPanel(1, ledWall.rowsInPanel(ipanel),
-                                ledWall.colsInPanel(ipanel), ipanel);
-        }
-        
+        // Exercise the full-wall coordinate path.
+        ledWall.setPixel(1, 1, 1);
+        ledWall.setPixel(1, displayConfig.nRows, 1);
+        ledWall.setPixel(1, 1, displayConfig.nCols);
+        ledWall.setPixel(1, displayConfig.nRows, displayConfig.nCols);
     } else {
+        // Exercise the panel-local coordinate path.
         ledWall.setPixelInPanel(1, 1, 1, panel);
         ledWall.setPixelInPanel(1, ledWall.rowsInPanel(panel), 1, panel);
         ledWall.setPixelInPanel(1, 1, ledWall.colsInPanel(panel), panel);
@@ -80,15 +73,15 @@ static void selftest_all_on(bool pixelBit, byte panel)
     if (panel == PANEL0) {
         for (byte col = 1; col <= displayConfig.nCols; ++col) {
             for (byte row = 1; row <= displayConfig.nRows; ++row) {
-                const int byte = ledWall.setPixel(pixelBit, row, col);
-                ASSERT(byte == NO_ERROR);
+                const ResultIds rc = ledWall.setPixel(pixelBit, row, col);
+                ASSERT(rc == NO_ERROR);
             }
         }
     } else {
         for (byte col = 1; col <= ledWall.colsInPanel(panel); ++col) {
             for (byte row = 1; row <= ledWall.rowsInPanel(panel); ++row) {
-                const int byte = ledWall.setPixelInPanel(pixelBit, row, col, panel);
-                ASSERT(byte == NO_ERROR);
+                const ResultIds rc = ledWall.setPixelInPanel(pixelBit, row, col, panel);
+                ASSERT(rc == NO_ERROR);
             }
         }
     }
@@ -149,7 +142,7 @@ static void selftest_checkerboard(byte panel)
 void selftest_marching_row_in_panel(byte panel)
 {
     ASSERT(panel >= 1);
-    ASSERT(panel <= NPANELS);
+    ASSERT(panel <= displayConfig.nPanels);
 
     const byte nRows = ledWall.rowsInPanel(panel);
     const byte nCols = ledWall.colsInPanel(panel);
@@ -157,16 +150,21 @@ void selftest_marching_row_in_panel(byte panel)
     ASSERT(nRows > 0);
     ASSERT(nCols > 0);
 
+    snprintf(outputBuf, sizeof outputBuf,
+             "selftest: marching row panel=%u rows=%u cols=%u",
+             panel, nRows, nCols);
+    serial_log(outputBuf);
+
     for (byte row = 1; row <= nRows; ++row) {
         for (byte col = 1; col <= nCols; ++col) {
-            const int rc = ledWall.setPixelInPanel(1, row, col, panel);
+            const ResultIds rc = ledWall.setPixelInPanel(1, row, col, panel);
             ASSERT(rc == NO_ERROR);
         }
 
         sleep_ms(true, 300);
 
         for (byte col = 1; col <= nCols; ++col) {
-            const int rc = ledWall.setPixelInPanel(0, row, col, panel);
+            const ResultIds rc = ledWall.setPixelInPanel(0, row, col, panel);
             ASSERT(rc == NO_ERROR);
         }
 
@@ -176,7 +174,11 @@ void selftest_marching_row_in_panel(byte panel)
 
 void    selftest_marching_row_all_panels()
 {
-    for (byte panel = 1; panel <= NPANELS; panel++) {
+    for (byte panel = 1; panel <= displayConfig.nPanels; panel++) {
+        snprintf(outputBuf, sizeof outputBuf,
+                 "selftest: panel %u/%u",
+                 panel, displayConfig.nPanels);
+        serial_log(outputBuf);
         selftest_marching_row_in_panel(panel);
         sleep_ms(true, 500);
     }
@@ -200,14 +202,14 @@ static void selftest_marching_col(byte panel)
 
     for (byte col = 1; col <= ledWall.colsInPanel(panel); ++col) {
         for (byte row = 1; row <= ledWall.rowsInPanel(panel); ++row) {
-            const byte rc = ledWall.setPixelInPanel(1, row, col, panel);
+            const ResultIds rc = ledWall.setPixelInPanel(1, row, col, panel);
             ASSERT(rc == NO_ERROR);
         }
 
         sleep_ms(true, 300);
 
         for (byte row = 1; row <= ledWall.rowsInPanel(panel); ++row) {
-            const byte rc = ledWall.setPixelInPanel(0, row, col, panel);
+            const ResultIds rc = ledWall.setPixelInPanel(0, row, col, panel);
             ASSERT(rc == NO_ERROR);
         }
 
@@ -271,7 +273,7 @@ static void selftest_description(byte streamID,
  *
  * @returns            NO_ERROR, ERR_PANEL, or ERR_TESTNUM.
  */
-int selftest(byte streamID, byte testNumber, byte panel)
+ResultIds selftest(byte streamID, byte testNumber, byte panel)
 {
     if (panel > displayConfig.nPanels) {
         return ERR_PANEL;

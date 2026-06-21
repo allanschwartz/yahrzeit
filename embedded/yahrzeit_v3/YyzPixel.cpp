@@ -23,6 +23,14 @@
 
 #include "yahrzeit_v3.h"
 
+// ----------------------------------------------------------------------------
+//            F R A M E B U F F E R   L A Y O U T
+// ----------------------------------------------------------------------------
+
+//  We use these values, so the display buffer is dimensioned maximally
+constexpr byte MAXNROWS = 64;
+constexpr byte MAXNCOLS = 64;
+
 // Display buffer capacity: up to 64 rows x 64 columns.
 // Actual active geometry is displayConfig.nRows x displayConfig.nCols.
 static constexpr size_t kFrameBufferBytes = 
@@ -100,8 +108,9 @@ void YyzPixel::begin()
  */
 void YyzPixel::setPixel(uint16_t x, uint16_t y, uint8_t pixel)
 {
-    ASSERT(displayConfig.nCols > x);
-    ASSERT(displayConfig.nRows > y);
+    ASSERT_CONTEXT(displayConfig.nCols > x && displayConfig.nRows > y,
+                   "x=%u y=%u nCols=%u nRows=%u pixel=%u",
+                   x, y, displayConfig.nCols, displayConfig.nRows, pixel);
 
     if (x >= displayConfig.nCols || y >= displayConfig.nRows) {
         return;
@@ -131,8 +140,9 @@ void YyzPixel::setPixel(uint16_t x, uint16_t y, uint8_t pixel)
  */
 bool YyzPixel::getPixel(uint16_t x, uint16_t y)  const
 {
-    ASSERT(displayConfig.nCols > x);
-    ASSERT(displayConfig.nRows > y);
+    ASSERT_CONTEXT(displayConfig.nCols > x && displayConfig.nRows > y,
+                   "x=%u y=%u nCols=%u nRows=%u",
+                   x, y, displayConfig.nCols, displayConfig.nRows);
 
     if (x >= displayConfig.nCols || y >= displayConfig.nRows) {
         return false;
@@ -144,7 +154,6 @@ bool YyzPixel::getPixel(uint16_t x, uint16_t y)  const
 
     return ((*bytePtr & mask) != 0);
 }
-
 
 /**
  * @brief Clear the entire framebuffer.

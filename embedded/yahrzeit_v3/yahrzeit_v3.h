@@ -102,6 +102,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdarg.h>
 #include <EEPROM.h>
 #include <Ethernet.h>
 
@@ -130,26 +131,6 @@
 #endif
 
 
-#if CBS_56x40_WALL
-
-constexpr byte NPANELS = 21;                  // At Beth Sholom, we have 3 * 7 panels
-constexpr byte NROWS   = 56;                  // number of rows
-constexpr byte NCOLS   = 40;                  // a column is 56 rows of consecutive pixel data
-
-#endif
-
-#if TEST_FIXTURE
-
-constexpr byte NPANELS = 3;    // bench/test fixture panels
-constexpr byte NROWS   = 24;   // rows in the test fixture
-constexpr byte NCOLS   = 9;    // columns in the test fixture
-
-#endif
-
-//  We use these values, so the display buffer is dimensioned maximally
-constexpr byte MAXNROWS = 64;
-constexpr byte MAXNCOLS = 64;
-
 // ----------------------------------------------------------------------------
 //            M I S C   C O N S T A N T S
 // ----------------------------------------------------------------------------
@@ -157,11 +138,6 @@ constexpr byte MAXNCOLS = 64;
 constexpr byte PANEL0 = 0;
 
 enum streamIds : byte { CONSOLE = 1, SOCKET = 2 };
-
-enum ResultIds : byte {
-    NO_ERROR = 0, ERR_SYNTAX, ERR_MISSING, ERR_ROW,
-    ERR_COL, ERR_PANEL, ERR_BRIGHT, ERR_TESTNUM,
-};
 
 // ----------------------------------------------------------------------------
 //            E X T E R N S
@@ -207,6 +183,8 @@ void    sleep_ms( bool, const unsigned int ms );
 void    my_puts( byte streamID, const char *msg );
 
 [[noreturn]] void panic(const char *expr, const char *file, int line);
+[[noreturn]] void panic_context(const char *expr, const char *file, int line,
+                               const char *fmt, ...);
 
 #define ASSERT(expr) \
     do { \
@@ -215,5 +193,9 @@ void    my_puts( byte streamID, const char *msg );
         } \
     } while (0)
 
-
-
+#define ASSERT_CONTEXT(expr, fmt, ...) \
+    do { \
+        if (!(expr)) { \
+            panic_context(#expr, __FILE__, __LINE__, fmt, ##__VA_ARGS__); \
+        } \
+    } while (0)

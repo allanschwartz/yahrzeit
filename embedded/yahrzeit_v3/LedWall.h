@@ -3,6 +3,11 @@
 #include <Arduino.h>
 #include "YyzPixel.h"
 
+enum ResultIds : byte {
+    NO_ERROR = 0, ERR_SYNTAX, ERR_MISSING, ERR_ROW,
+    ERR_COL, ERR_PANEL, ERR_BRIGHT, ERR_TESTNUM,
+};
+
 /**
  * @file        LedWall.h
  *
@@ -40,7 +45,7 @@ public:
     /**
      * @brief   Set or clear one pixel in the full logical display.
      */
-    byte setPixel(bool pixelBit, byte row, byte col);
+    ResultIds setPixel(bool pixelBit, byte row, byte col);
 
     /**
      * @brief   Return one pixel value from the full logical display.
@@ -50,7 +55,7 @@ public:
     /**
      * @brief   Set or clear one pixel by panel-local coordinates.
      */
-    byte setPixelInPanel(bool pixelBit, byte row, byte col, byte panel);
+    ResultIds setPixelInPanel(bool pixelBit, byte row, byte col, byte panel);
 
     /**
      * @brief   Return one pixel value by panel-local coordinates.
@@ -75,7 +80,7 @@ public:
     /**
      * @brief   Turn all pixels on or off.
      */
-    byte allOn(bool pixelBit, byte panel);
+    ResultIds allOn(bool pixelBit, byte panel);
 
     /**
      * @brief   Return the number of rows in a panel.

@@ -56,13 +56,12 @@
 // support the physical interfaces to LED ARRAY
 
 DisplayConfig displayConfig = {
-    .nRows = NROWS,
-    .nCols = NCOLS,
+    .nRows = 0,
+    .nCols = 0,
     .brightness = 128,
-    .nPanels = NPANELS
+    .nPanels = 0
 };
 
-// create an instance of the YyzPixels class, giving us the YyzPixels primitives
 // note that YyzPixel is called with portIDs    ( DI, OE, CP, ST )
 
 // Port definitions for Controller V3: Arduino Uno R4 Minima
@@ -72,14 +71,7 @@ static constexpr byte
      CP_pin = 6,       // Clock Pulse
      ST_pin = 7;       // STORE
 
-// Port definitions for Controller V2: Arduino Mega with tail-shield 
-// static constexpr bye
-    // DI_pin = 42,     // DATA IN
-    // OE_pin = 44,     // Output Enable
-    // CP_pin = 46,     // Clock Pulse
-    // ST_pin = 48;     // Store
-
-
+// create an instance of the YyzPixels class, giving us the YyzPixels primitives
 YyzPixel yyzPixels( DI_pin, OE_pin, CP_pin, ST_pin );
 
 // create an instance of the LedWall class, giving us the LedWall primitives
@@ -131,6 +123,8 @@ char outputBuf[256] {};
 bool timingOutputEnabled = false;
 
 bool debugPixel = false;
+
+
 
 // ----------------------------------------------------------------------------
 //           M A I N
@@ -248,7 +242,7 @@ void sleep_ms( bool doRefresh, const unsigned int ms )
  */
 [[noreturn]] void panic(const char *expr, const char *file, int line)
 {
-    if (!Serial) {
+    if (Serial) {
         Serial.print("\n***PANIC***\nASSERT: ");
         Serial.println(expr);
         Serial.print("FILE: ");
@@ -256,16 +250,60 @@ void sleep_ms( bool doRefresh, const unsigned int ms )
         Serial.print("LINE: ");
         Serial.println(line);
         Serial.flush();
-        delay(1000);
     }
+
+    blink_panic_led_then_restart();
+}
+
+[[noreturn]] void panic_context(const char *expr, const char *file, int line,
+                               const char *fmt, ...)
+{
+    if (Serial) {
+        Serial.print("\n***PANIC***\nASSERT: ");
+        Serial.println(expr);
+        Serial.print("FILE: ");
+        Serial.println(file);
+        Serial.print("LINE: ");
+        Serial.println(line);
+        Serial.print("DETAIL: ");
+
+        va_list args;
+        va_start(args, fmt);
+        char buffer[128];
+        vsnprintf(buffer, sizeof buffer, fmt, args);
+        va_end(args);
+
+        Serial.println(buffer);
+        Serial.flush();
+    }
+
+    blink_panic_led_then_restart();
+}
+
+
+constexpr byte PANIC_MINUTES = 5;
+
+/**
+ * @brief   Blink the built-in LED during a panic, then reset the controller.
+ */
+[[noreturn]] static void blink_panic_led_then_restart()
+{
+    constexpr unsigned long blinkMs = 100;
+    constexpr unsigned long panicMs = PANIC_MINUTES * 60UL * 1000UL;
+    const unsigned long startedAt = millis();
 
     pinMode(LED_BUILTIN, OUTPUT);
 
-    // Stay here forever, blinking built-in LED as secondary indication.
-    while (true) {
+    while (millis() - startedAt < panicMs) {
         digitalWrite(LED_BUILTIN, HIGH);
-        delay(100);
+        delay(blinkMs);
         digitalWrite(LED_BUILTIN, LOW);
-        delay(100);
+        delay(blinkMs);
+    }
+
+    // not a standard Arduino function, but works on the Uno R4 Minima
+    NVIC_SystemReset();
+
+    while (true) {
     }
 }

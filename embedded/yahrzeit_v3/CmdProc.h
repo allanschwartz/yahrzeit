@@ -77,12 +77,12 @@ private:
      * @brief   Performs the action of the "DATA" command.
      *    The given data is decoded, stored into the led data-store
      */
-    byte console_data_cmd(byte row, byte col, char *bindata);
+    ResultIds console_data_cmd(byte row, byte col, char *bindata);
 
     /*
      * @brief   Debug function to dump the LED data 
      */
-    int console_dump( byte streamID, byte panel );
+    ResultIds console_dump( byte streamID, byte panel );
 
     /*
      * @brief   Debug function to dump the status/settings

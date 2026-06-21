@@ -30,19 +30,31 @@
 
 namespace {
 
+#if CBS_56x40_WALL
+constexpr byte nPanels = 21;  // Seven columns of three physical panels.
+constexpr byte nRows = 56;
+constexpr byte nCols = 40;
+#endif
+
+#if TEST_FIXTURE
+constexpr byte nPanels = 2;   // Two 24-row by 3-column fixture boards.
+constexpr byte nRows = 24;
+constexpr byte nCols = 6;
+#endif
+
 /**
  * @brief Starting row of each logical panel in the full LED array.
  *
  * Panel numbering is:
  *
  *      PANEL0       whole active display
- *      1..NPANELS   individual physical/logical panels
+ *      1..displayConfig.nPanels   individual physical/logical panels
  *
  * Row and column values in LedWall's public API are 1-based.  This preserves
  * the original Yahrzeit command language and makes console/debugging output
  * match human-facing row/column numbers.
  */
-static constexpr byte ledRowOfPanel[NPANELS + 1] = {
+static constexpr byte ledRowOfPanel[nPanels + 1] = {
 #if CBS_56x40_WALL
     1,
     1, 17, 39,
@@ -63,7 +75,7 @@ static constexpr byte ledRowOfPanel[NPANELS + 1] = {
 /**
  * @brief Starting column of each logical panel in the full LED array.
  */
-static constexpr byte ledColOfPanel[NPANELS + 1] = {
+static constexpr byte ledColOfPanel[nPanels + 1] = {
 #if CBS_56x40_WALL
     1,
     1, 1, 1,
@@ -84,7 +96,7 @@ static constexpr byte ledColOfPanel[NPANELS + 1] = {
 /**
  * @brief Number of rows in each panel.
  */
-static constexpr byte nRowsPerPanel[NPANELS + 1] = {
+static constexpr byte nRowsPerPanel[nPanels + 1] = {
 #if CBS_56x40_WALL
     56,     // whole display: 16 + 22 + 18
     16, 22, 18,
@@ -105,7 +117,7 @@ static constexpr byte nRowsPerPanel[NPANELS + 1] = {
 /**
  * @brief Number of columns in each panel.
  */
-static constexpr byte nColsPerPanel[NPANELS + 1] = {
+static constexpr byte nColsPerPanel[nPanels + 1] = {
 #if CBS_56x40_WALL
     40,     // whole display: 5 + 6 + 6 + 6 + 6 + 6 + 5
     5, 5, 5,
@@ -118,7 +130,7 @@ static constexpr byte nColsPerPanel[NPANELS + 1] = {
 #endif
 
 #if TEST_FIXTURE
-    9, 
+    6,
     3, 3
 #endif
 };
@@ -147,6 +159,9 @@ constexpr int eepromDisplayOffset = 0;
 LedWall::LedWall(YyzPixel& pixels)
     : pixels_(pixels)
 {
+    displayConfig.nRows = nRows;
+    displayConfig.nCols = nCols;
+    displayConfig.nPanels = nPanels;
 }
 
 // ----------------------------------------------------------------------------
@@ -175,7 +190,7 @@ void LedWall::begin()
  * @note This updates the framebuffer only.  The physical display is updated
  *       by calling refresh().
  */
-byte LedWall::setPixel(bool pixelBit, byte row, byte col)
+ResultIds LedWall::setPixel(bool pixelBit, byte row, byte col)
 {
     if (debugPixel) {
         char outputBuffer[64];
@@ -225,25 +240,50 @@ bool LedWall::pixelValue(byte row, byte col) const
  * @param pixelBit   false = off, true = on
  * @param row        panel-local row, 1-based
  * @param col        panel-local column, 1-based
- * @param panel      PANEL0 or panel number 1..NPANELS
+ * @param panel      PANEL0 or panel number 1..displayConfig.nPanels
  *
  * @returns          NO_ERROR, ERR_PANEL, ERR_ROW, or ERR_COL
  *
  * @note PANEL0 is accepted, but callers normally use setPixel() for full-wall
  *       coordinates and setPixelInPanel() for individual panels.
  */
-byte LedWall::setPixelInPanel(bool pixelBit, byte row, byte col, byte panel)
+ResultIds LedWall::setPixelInPanel(bool pixelBit, byte row, byte col, byte panel)
 {
+    char outputBuffer[96];
+
     if (debugPixel) {
-        char outputBuffer[64];
-        snprintf( outputBuffer, sizeof outputBuffer, 
+        snprintf( outputBuffer, sizeof outputBuffer,
                   "sPixInP bit %d, row %d, col %d panel %d",
-                  pixelBit,  row,  col,  panel);
+                  pixelBit, row, col, panel);
         Serial.println(outputBuffer);
     }
+
     if (panel > displayConfig.nPanels) {
-        Serial.println("setPixelInPanel: ERR_PANEL");
+        snprintf(outputBuffer, sizeof outputBuffer,
+                 "setPixelInPanel: bad panel=%d nPanels=%d",
+                 panel, displayConfig.nPanels);
+        Serial.println(outputBuffer);
         return ERR_PANEL;
+    }
+
+    if (panel == PANEL0) {
+        return setPixel(pixelBit, row, col);
+    }
+
+    if (row < 1 || row > nRowsPerPanel[panel]) {
+        snprintf(outputBuffer, sizeof outputBuffer,
+                 "setPixelInPanel: bad row=%d panel=%d maxRows=%d",
+                 row, panel, nRowsPerPanel[panel]);
+        Serial.println(outputBuffer);
+        return ERR_ROW;
+    }
+
+    if (col < 1 || col > nColsPerPanel[panel]) {
+        snprintf(outputBuffer, sizeof outputBuffer,
+                 "setPixelInPanel: bad col=%d panel=%d maxCols=%d",
+                 col, panel, nColsPerPanel[panel]);
+        Serial.println(outputBuffer);
+        return ERR_COL;
     }
 
     return setPixel(pixelBit,
@@ -256,19 +296,38 @@ byte LedWall::setPixelInPanel(bool pixelBit, byte row, byte col, byte panel)
  *
  * @param row        panel-local row, 1-based
  * @param col        panel-local column, 1-based
- * @param panel      PANEL0 or panel number 1..NPANELS
+ * @param panel      PANEL0 or panel number 1..displayConfig.nPanels
  *
  * @returns          true if the pixel is on, false otherwise
  */
 bool LedWall::pixelValueInPanel(byte row, byte col, byte panel) const
 {
+    char outputBuffer[96];
+
     if (panel > displayConfig.nPanels) {
+        snprintf(outputBuffer, sizeof outputBuffer,
+                 "pixelValueInPanel: bad panel=%d nPanels=%d",
+                 panel, displayConfig.nPanels);
+        Serial.println(outputBuffer);
         return false;
     }
+
+    if (panel == PANEL0) {
+        return pixelValue(row, col);
+    }
+
     if (row < 1 || row > nRowsPerPanel[panel]) {
+        snprintf(outputBuffer, sizeof outputBuffer,
+                 "pixelValueInPanel: bad row=%d panel=%d maxRows=%d",
+                 row, panel, nRowsPerPanel[panel]);
+        Serial.println(outputBuffer);
         return false;
     }
     if (col < 1 || col > nColsPerPanel[panel]) {
+        snprintf(outputBuffer, sizeof outputBuffer,
+                 "pixelValueInPanel: bad col=%d panel=%d maxCols=%d",
+                 col, panel, nColsPerPanel[panel]);
+        Serial.println(outputBuffer);
         return false;
     }
 
@@ -318,11 +377,11 @@ void LedWall::setBrightness(byte brightness)
  * @brief   Turn all pixels on or off.
  *
  * @param pixelBit   false = off, true = on
- * @param panel      PANEL0 for whole display, or panel number 1..NPANELS
+ * @param panel      PANEL0 for whole display, or panel number 1..displayConfig.nPanels
  *
  * @returns          NO_ERROR or ERR_PANEL
  */
-byte LedWall::allOn(bool pixelBit, byte panel)
+ResultIds LedWall::allOn(bool pixelBit, byte panel)
 {
     if (panel > displayConfig.nPanels) {
         return ERR_PANEL;
@@ -331,14 +390,14 @@ byte LedWall::allOn(bool pixelBit, byte panel)
     if (panel == PANEL0) {
         for ( byte col = 1; col <= displayConfig.nCols; ++col) {
             for ( byte row = 1; row <= displayConfig.nRows; ++row) {
-                const byte rc = setPixel(pixelBit, row, col);
+                const ResultIds rc = setPixel(pixelBit, row, col);
                 ASSERT(rc == NO_ERROR);
             }
         }
     } else {
         for ( byte col = 1; col <= nColsPerPanel[panel]; ++col) {
             for ( byte row = 1; row <= nRowsPerPanel[panel]; ++row) {
-                const byte rc = setPixelInPanel(pixelBit, row, col, panel);
+                const ResultIds rc = setPixelInPanel(pixelBit, row, col, panel);
                 ASSERT(rc == NO_ERROR);
             }
         }
@@ -350,7 +409,7 @@ byte LedWall::allOn(bool pixelBit, byte panel)
 /**
  * @brief   Return the number of rows in a panel.
  *
- * @param panel      PANEL0 or panel number 1..NPANELS
+ * @param panel      PANEL0 or panel number 1..displayConfig.nPanels
  *
  * @returns          row count, or 0 for an invalid panel
  */
@@ -365,7 +424,7 @@ byte LedWall::rowsInPanel(byte panel) const
 /**
  * @brief   Return the number of columns in a panel.
  *
- * @param panel      PANEL0 or panel number 1..NPANELS
+ * @param panel      PANEL0 or panel number 1..displayConfig.nPanels
  *
  * @returns          column count, or 0 for an invalid panel
  */
@@ -395,5 +454,3 @@ void LedWall::refresh()
 {
     pixels_.refresh();
 }
-
-

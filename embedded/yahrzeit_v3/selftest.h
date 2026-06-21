@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include "LedWall.h"
 
 /**
  * @file        selftest.h
@@ -25,10 +26,9 @@
 /**
  * @brief   Dispatch one of the LED self-test patterns.
  */
-int     selftest(byte streamID, byte testNumber, byte panel);
+ResultIds selftest(byte streamID, byte testNumber, byte panel);
 
 /**
  * @brief   SELF TEST 5: marching row pattern.
  */
 void    selftest_marching_row( byte panel );
-

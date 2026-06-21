@@ -26,14 +26,19 @@
  */
 void serial_init()
 {
-    Serial.begin(9600);
+    // Use a common monitor speed and allow time for the USB/serial port to settle.
+    Serial.begin(115200);
+    delay(100);
 
     const unsigned long start = millis();
-    // we would hope the serial port comes up in 2 seconds.
-    while (!Serial && (millis() - start < 2000)) {
+    // Some boards only become ready after the host opens the port.
+    while (!Serial && (millis() - start < 3000)) {
         delay(10);
     }
-    Serial.print("\n\n");
+
+    Serial.println();
+    Serial.println("...");
+    Serial.flush();
     serial_log( "Yahrzeit Wall Embedded Controller" );
 }
 
@@ -155,6 +160,7 @@ void serial_log( const char *msg )
         char outputBuf[80];
         snprintf( outputBuf, sizeof outputBuf, "%s | %s\n", display_uptime(), msg );
         Serial.print( outputBuf );
+        Serial.flush();
     }
 }
 

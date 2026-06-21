@@ -105,14 +105,8 @@ static constexpr Command commands[] = {
     { CMD_NOP,    0, "nop"    },
 };
 
-//  these are declared in the .h file, repeated here for documentation
-// enum ResultIds {
-//     NO_ERROR = 0, ERR_SYNTAX, ERR_MISSING, ERR_ROW, 
-//     ERR_COL, ERR_PANEL, ERR_BRIGHT, ERR_TESTNUM,
-// };
-
 // Each command returns a ResultId,
-// Here are the corresponding strings for the each of the above ResultIds:
+// defined in LedWall.h.  Here are the corresponding strings:
 const char* const resultStrings[8] = {
     "OK", "Eh?", "ERR Missing Arg", "ERR Row", 
     "ERR Col", "ERR Panel", "ERR Brightness", "ERR Test Number"
@@ -217,7 +211,7 @@ const char *CmdProc::execute( const byte streamID, char *command )
     }
 
     const CommandIds cmdId = match_cmd_verb( arg_string );
-    byte rc;                                        // result code
+    ResultIds rc;
     switch ( cmdId ) {
 
         case CMD_ALL:
@@ -406,7 +400,7 @@ bool CmdProc::onoff_bool(  const char *token ) const
  *
  * @returns        NO_ERROR or an error code
  */
-byte CmdProc::console_data_cmd( byte row, byte col, char *bindata )
+ResultIds CmdProc::console_data_cmd( byte row, byte col, char *bindata )
 {
     if ( row < 1 || row > displayConfig.nRows ) {
         return ERR_ROW;
@@ -429,7 +423,7 @@ byte CmdProc::console_data_cmd( byte row, byte col, char *bindata )
         if ( row > displayConfig.nRows ) {
             return ERR_ROW;
         }
-        const byte rc = ledWall_.setPixel(bitvalue, row, col);
+        const ResultIds rc = ledWall_.setPixel(bitvalue, row, col);
         if (rc != NO_ERROR) {
             return rc;
         }
@@ -465,11 +459,11 @@ void hexdump( byte streamID, void *addr, const unsigned int len )
 /**
  * @brief         debug function to dump the LED data 
  *
- * @param panel   panel number 0 or [1..NPANELS]
+ * @param panel   panel number 0 or [1..displayConfig.nPanels]
  *
  * @returns       NO_ERROR or ERR_PANEL
  */
-int CmdProc::console_dump( byte streamID, byte panel )
+ResultIds CmdProc::console_dump( byte streamID, byte panel )
 {    
     if (panel > displayConfig.nPanels ) {
         return ERR_PANEL;
@@ -591,4 +585,3 @@ const char * CmdProc::console_status()
 
     return outputBuf;
 }
-
