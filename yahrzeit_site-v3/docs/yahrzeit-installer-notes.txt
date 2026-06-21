@@ -1,0 +1,91 @@
+# -----------------------------------------------------------------------------
+# CBS Yahrzeit Wall Appliance Installer
+# -----------------------------------------------------------------------------
+#
+# Purpose:
+#   Install the CBS Yahrzeit Wall PHP application on a fresh Ubuntu appliance.
+#
+# Target platform:
+#   - Intel NUC or similar x86_64 machine
+#   - Fresh Ubuntu Server LTS installation
+#   - Wired Ethernet
+#   - Apache + PHP
+#   - Application served at:
+#
+#         http://<appliance-ip>/yahrzeit/
+#
+# Expected install model:
+#   This script is intended to be copied or curled onto the appliance and run
+#   locally.  It installs operating-system packages, clones or updates the
+#   public GitHub repository, configures Apache to serve the site, runs syntax
+#   checks, and prints the suggested cron entries.
+#
+#   It does not transmit commands to the physical LED controller.
+#   It does not install cron entries automatically.
+#   It does not modify memorial CSV data.
+#
+# One-time use from a fresh appliance:
+#
+#   curl -fsSL -o /tmp/install-yahrzeit-appliance \
+#     https://raw.githubusercontent.com/allanschwartz/yahrzeit/master/yahrzeit_site-v3/bin/install-yahrzeit-appliance
+#
+#   less /tmp/install-yahrzeit-appliance
+#   chmod +x /tmp/install-yahrzeit-appliance
+#   /tmp/install-yahrzeit-appliance
+#
+# Recommended preconditions:
+#   1. Install Ubuntu Server LTS.
+#   2. Enable OpenSSH during Ubuntu installation.
+#   3. Log in as the appliance administrator user.
+#   4. Confirm network access:
+#
+#        hostname
+#        hostname -I
+#        ping -c 3 github.com
+#
+# What this installer sets up:
+#   - git
+#   - Apache
+#   - PHP CLI and Apache PHP support
+#   - netcat for controller communication
+#   - coreutils timeout support
+#   - /var/www/html/yahrzeit symlink to the checked-out application
+#   - PHP PCRE JIT disabled, to avoid executable-memory warnings on hardened
+#     server environments
+#   - local syntax and audit checks
+#
+# Repository:
+#   https://github.com/allanschwartz/yahrzeit
+#
+# Application directory:
+#   ~/src/yahrzeit/yahrzeit_site-v3
+#
+# Apache URL path:
+#   /yahrzeit/
+#
+# After install:
+#   1. Open:
+#
+#        http://<appliance-ip>/yahrzeit/
+#
+#   2. Run non-transmitting tests:
+#
+#        cd ~/src/yahrzeit/yahrzeit_site-v3
+#        bin/yahrzeit --audit
+#        bin/yahrzeit --notransmit --status
+#
+#   3. Confirm controller host/port before live testing.
+#
+#   4. Install cron entries only after reviewing the suggested cron block
+#      printed at the end of this script.
+#
+# Notes:
+#   - The installer is deliberately boring and short-lived.
+#   - It is safe to rerun; it should update the repo and refresh the Apache
+#     symlink.
+#   - For production, the router should reserve a stable DHCP address for this
+#     appliance.
+#   - The production password should be changed before installation at the
+#     customer site.
+#
+# -----------------------------------------------------------------------------

@@ -1,6 +1,0 @@
-#! /bin/sh -x
-
-YAHRZEIT=/Users/allan/Sites/yahrzeit
-
-$YAHRZEIT/bin/php $YAHRZEIT/yahrzeit_engine.php  > /tmp/$$
-$YAHRZEIT/bin/yahr_conduit -i /tmp/$$ -n 192.168.2.9 -p 2001
