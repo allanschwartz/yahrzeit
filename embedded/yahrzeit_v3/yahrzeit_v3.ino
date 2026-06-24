@@ -17,35 +17,44 @@
 
 /**
  * ASSEMBLY
+ * 
+ *       The Yahrzeit Controller stack is built on an Arduino Uno R4
+ *       Minima as the base, then the Ethernet Shield 2, and finally
+ *       the Yahrzeit Controller Pixel Interface board on top.   The
+ *       Yahrzeit Controller Pixel Interface board connects with a
+ *       ribbon cable to the YYZ Pixel board(s) which drive the LED
+ *       wall.
  *
  *      Using the TEST_FIXTURE board(s)
  *          Each fixture board contains 24 rows x 3 columns of pixels.
  *
- *          TEST FIXTURE SIGNAL:    DI  OE  CP  ST
- *          Arduino Uno pin:         4   5   6   7
+ *              TEST FIXTURE SIGNAL: DI  OE  CP  ST
+ *              Arduino Uno pin:     4   5   6   7
  *
  *
  *      Using the YYZ Pixel board(s)
- *
- *          V2 system (Arduino Mega)
- *
- *              YYZ PIXEL SIGNAL:   DI  OE  CP  ST
- *              Arduino Mega pin:   42  44  46  48
- *
- *              The Ethernet shield uses pins 50, 51, 52, 53
- *              on the Arduino Mega SPI interface.
- *
+ * 	        The CBS Yahrzeit Wall is 56 rows x 40 columns of pixels.
+ * 	        Each YYZ Pixel board has 8 or 10 individual LEDs.  The
+ * 	        Wall and is built from 2 or 3 YYZ Pixel boards per panel
+ * 	        column, and 8 pixel boards per column, times 40 columns,
+ * 	        for a total of 320 boards.
+ *          
+ *          A Panel is at most 28 rows x 20 columns of pixels.
  *
  *          V3 system (Arduino Uno R4 Minima)
  *
- *              YYZ PIXEL SIGNAL:   DI  OE  CP  ST
+ *              YYZ PIXEL SIGNAL:    DI  OE  CP  ST
  *              Arduino Uno pin:     4   5   6   7
  *
- *              The Ethernet Shield 2 uses pins 10, 11, 12, 13
- *              on the Arduino Uno SPI interface.
+ *      The Ethernet Shield 2 uses the Arduino Uno SPI interface:
+ *              D10 CS, D11 CIPO, D12 COPI, D13 SCK
+ * 
+ *      The YAHRZEIT CONTROLLER PIXEL INTERFACE board has a STATUS LED
+ *      connected to pin 3.
  */
 
 #include <Arduino.h>
+#include <math.h>
 #include "yahrzeit_v3.h"
 
 
@@ -62,6 +71,12 @@ DisplayConfig displayConfig = {
     .nPanels = 0
 };
 
+// the STATUS LED is the LED on the Yahrzeit Controller Pixel Interface board,
+// connected to Arduino Uno R4 Minima, pin D3
+static constexpr byte STATUS_LED = 3;
+static constexpr byte STATUS_LED_BRIGHTNESS = 128; // 50% PWM duty cycle
+static constexpr unsigned long ALIVE_PERIOD_MS = 2560;
+
 // note that YyzPixel is called with portIDs    ( DI, OE, CP, ST )
 
 // Port definitions for Controller V3: Arduino Uno R4 Minima
@@ -70,6 +85,7 @@ static constexpr byte
      OE_pin = 5,       // Output Enable
      CP_pin = 6,       // Clock Pulse
      ST_pin = 7;       // STORE
+
 
 // create an instance of the YyzPixels class, giving us the YyzPixels primitives
 YyzPixel yyzPixels( DI_pin, OE_pin, CP_pin, ST_pin );
@@ -165,6 +181,8 @@ static void controller_begin()
  */
 void setup()
 {
+    pinMode(STATUS_LED, OUTPUT);
+    analogWrite(STATUS_LED, STATUS_LED_BRIGHTNESS);
 
     // initialize the serial console logic thread
     serial_init();
@@ -189,7 +207,24 @@ void loop()
 {
     serial_thread();
     socket_thread();
-    sleep_ms( false, 1 );       // avoid pounding the SPI bus with continuous Ethernet polling
+    breathing_led();
+
+    delay( 10 );       // avoid pounding the SPI bus with continuous Ethernet polling
+}
+
+/**
+ * @brief   Update the alive-status LED.
+ */
+static void breathing_led()
+{
+    constexpr float twoPi = 6.28318530718f;
+    constexpr float halfPi = twoPi / 2.0f;
+    const unsigned long elapsedMs = millis() % ALIVE_PERIOD_MS;
+    const float phase = twoPi * elapsedMs / ALIVE_PERIOD_MS;
+    const float intensity = (sinf(phase - halfPi) + 1.0f) / 2.0f;
+
+    analogWrite(STATUS_LED,
+                static_cast<byte>(intensity * STATUS_LED_BRIGHTNESS + 0.5f));
 }
 
 
@@ -292,12 +327,12 @@ constexpr byte PANIC_MINUTES = 5;
     constexpr unsigned long panicMs = PANIC_MINUTES * 60UL * 1000UL;
     const unsigned long startedAt = millis();
 
-    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(STATUS_LED, OUTPUT);
 
     while (millis() - startedAt < panicMs) {
-        digitalWrite(LED_BUILTIN, HIGH);
+        analogWrite(STATUS_LED, STATUS_LED_BRIGHTNESS);
         delay(blinkMs);
-        digitalWrite(LED_BUILTIN, LOW);
+        analogWrite(STATUS_LED, 0);
         delay(blinkMs);
     }
 
