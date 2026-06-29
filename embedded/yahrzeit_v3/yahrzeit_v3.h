@@ -179,11 +179,11 @@ extern bool debugPixel;
 // ----------------------------------------------------------------------------
 
 // declare as extern the public functions in yahrzeit_v3.ino
-void    sleep_ms( bool, const unsigned int ms );
-void    my_puts( byte streamID, const char *msg );
+void    sleepMs( bool, const unsigned int ms );
+void    writeOutput( byte streamID, const char *msg );
 
 [[noreturn]] void panic(const char *expr, const char *file, int line);
-[[noreturn]] void panic_context(const char *expr, const char *file, int line,
+[[noreturn]] void panicContext(const char *expr, const char *file, int line,
                                const char *fmt, ...);
 
 #define ASSERT(expr) \
@@ -196,6 +196,6 @@ void    my_puts( byte streamID, const char *msg );
 #define ASSERT_CONTEXT(expr, fmt, ...) \
     do { \
         if (!(expr)) { \
-            panic_context(#expr, __FILE__, __LINE__, fmt, ##__VA_ARGS__); \
+            panicContext(#expr, __FILE__, __LINE__, fmt, ##__VA_ARGS__); \
         } \
     } while (0)

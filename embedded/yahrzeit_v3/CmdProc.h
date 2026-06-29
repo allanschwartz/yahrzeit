@@ -55,38 +55,38 @@ public:
 
 private:
     LedWall& ledWall_;
-    static constexpr byte kMaxArgs = 5;
+    static constexpr byte MAX_ARGS = 5;
 
     /*
      * @brief   Matches command verb in the Commands table
      */
-    CommandIds match_cmd_verb(char * const argv[]) const;
+    CommandIds matchCommandVerb(char * const argv[]) const;
 
     /*
      * @brief   Parse the arguments in the command line
      */
-    void parse_command(char *command, char **argv);
+    void parseCommand(char *command, char **argv);
 
     /*
      * @brief   Convert a string representing on/off, 
      *          or true/false, or 1/0 to a bool
      */
-    bool onoff_bool(const char *token) const;
+    bool parseOnOff(const char *token) const;
 
     /*
      * @brief   Performs the action of the "DATA" command.
      *    The given data is decoded, stored into the led data-store
      */
-    ResultIds console_data_cmd(byte row, byte col, char *bindata);
+    ResultIds dataCommand(byte row, byte col, char *bindata);
 
     /*
      * @brief   Debug function to dump the LED data 
      */
-    ResultIds console_dump( byte streamID, byte panel );
+    ResultIds dumpPixels( byte streamID, byte panel );
 
     /*
      * @brief   Debug function to dump the status/settings
      */
-    const char * console_status();
+    const char * statusText();
 
 };

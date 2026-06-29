@@ -157,9 +157,9 @@ inline bool strMatch2(const char *s1, const char *s2)
  *
  * @param argv  argument array, required arguments are checked
  *
- * @returns     an commandsIDs enum representing the command identifier
+ * @returns     a CommandIds value representing the command identifier
  */
-CommandIds CmdProc::match_cmd_verb(char * const argv[]) const
+CommandIds CmdProc::matchCommandVerb(char * const argv[]) const
 {
     for ( const Command &cmd: commands) {
         if ( strMatch2( argv[0], cmd.verb ) ) {
@@ -190,9 +190,8 @@ CommandIds CmdProc::match_cmd_verb(char * const argv[]) const
  */
 const char *CmdProc::execute( const byte streamID, char *command )
 {
-    static constexpr byte kMaxArgs = 5;     // actually, right now the limit is 3
-    char *   arg_string[ kMaxArgs ] {};
-    int      arg_value[ kMaxArgs ] {};
+    char *argString[MAX_ARGS] {};
+    int argValue[MAX_ARGS] {};
 
     // the producer of commands is a process on Unix, which generates comments and blank lines
     if ( command[0] == 0 || command[0] == '#' || command[0] == '\r' || command[0] == '\n') {
@@ -200,31 +199,31 @@ const char *CmdProc::execute( const byte streamID, char *command )
     }
 
 
-    parse_command(command, arg_string);         // tokenize the command into arg_string[]
+    parseCommand(command, argString);         // tokenize the command into argString[]
 
     // as an code-size optimization, lets convert argv[1] ... argv[n] from ascii to an int
-    // we are not putting NULs into arg_string[], therefore any text argument must be last
-    for (byte i = 0; i < kMaxArgs; ++i ) {
-        if ( arg_string[i] != nullptr ) {
-            arg_value[i] = atoi( arg_string[i] );
+    // we are not putting NULs into argString[], therefore any text argument must be last
+    for (byte i = 0; i < MAX_ARGS; ++i ) {
+        if ( argString[i] != nullptr ) {
+            argValue[i] = atoi( argString[i] );
         }
     }
 
-    const CommandIds cmdId = match_cmd_verb( arg_string );
+    const CommandIds cmdId = matchCommandVerb( argString );
     ResultIds rc;
     switch ( cmdId ) {
 
         case CMD_ALL:
             // all on|off [<panel>]
             rc = ledWall_.allOn(
-                     onoff_bool( arg_string[1] ),  /* "on"|"off" or "0"|"1" */
-                     arg_value[2] );               /* <panel> */
+                     parseOnOff( argString[1] ),  /* "on"|"off" or "0"|"1" */
+                     argValue[2] );               /* <panel> */
 
             break;
 
         case CMD_BRIGHT:
             // bright <brightness>
-            ledWall_.setBrightness( arg_value[1] );
+            ledWall_.setBrightness( argValue[1] );
             rc = NO_ERROR;
             break;
 
@@ -232,21 +231,21 @@ const char *CmdProc::execute( const byte streamID, char *command )
             // clear <panel>
             rc = ledWall_.allOn(
                      0,                            /* off */
-                     arg_value[1] );               /* <panel> */
+                     argValue[1] );               /* <panel> */
             break;
 
         case CMD_DATA:
             //  data <row> <col> <binary data>
-            rc = console_data_cmd(
-                     arg_value[1],                 /* row */
-                     arg_value[2],                 /* col */
-                     arg_string[3] );              /* binary data */
+            rc = dataCommand(
+                     argValue[1],                 /* row */
+                     argValue[2],                 /* col */
+                     argString[3] );              /* binary data */
             break;
 
         case CMD_DUMP:
             // dump [<panel>]
-            rc = console_dump( streamID,
-                     arg_value[1] );               /* optional <panel> */ 
+            rc = dumpPixels( streamID,
+                     argValue[1] );               /* optional <panel> */ 
             break;
 
         case CMD_HELP:
@@ -256,18 +255,18 @@ const char *CmdProc::execute( const byte streamID, char *command )
         case CMD_PIXEL:
             // pixel 0|1 <row> <col> [<panel>]
             // if 4 arguments, the 4th is the panel number
-            if ( arg_string[4] != nullptr ) {
+            if ( argString[4] != nullptr ) {
                 rc = ledWall_.setPixelInPanel(
-                         onoff_bool( arg_string[1] ),  /* "on"|"off" or "0"|"1" */
-                         arg_value[2],              /* row */
-                         arg_value[3],              /* column */
-                         arg_value[4] );            /* panel */
+                         parseOnOff( argString[1] ),  /* "on"|"off" or "0"|"1" */
+                         argValue[2],              /* row */
+                         argValue[3],              /* column */
+                         argValue[4] );            /* panel */
             }
             else {
                 rc = ledWall_.setPixel(
-                         onoff_bool( arg_string[1] ),  /* "on"|"off" or "0"|"1" */
-                         arg_value[2],              /* row */
-                         arg_value[3] );            /* column */
+                         parseOnOff( argString[1] ),  /* "on"|"off" or "0"|"1" */
+                         argValue[2],              /* row */
+                         argValue[3] );            /* column */
             }
             break;
 
@@ -287,29 +286,29 @@ const char *CmdProc::execute( const byte streamID, char *command )
             break;
 
         case CMD_STATUS:
-            return console_status();
+            return statusText();
 
         case CMD_TEST:
         {
             // test <testnumber> [<panel>]
-            if ( arg_string[1] == nullptr ) {
+            if ( argString[1] == nullptr ) {
                 return TestMenu;
             }
             rc = selftest(
                      streamID,
-                     arg_value[1],                 /* test number */
-                     arg_value[2]);                /* optional <panel> */
+                     argValue[1],                 /* test number */
+                     argValue[2]);                /* optional <panel> */
             break;
         }
 
         case CMD_TIMING:
             // timing [on|off|0|1]
             // With no argument, toggle timing output.
-            if (arg_string[1] == nullptr) {
+            if (argString[1] == nullptr) {
                 timingOutputEnabled = !timingOutputEnabled;
             }
             else {
-                timingOutputEnabled = onoff_bool(arg_string[1]);
+                timingOutputEnabled = parseOnOff(argString[1]);
             }
             snprintf(outputBuf, sizeof outputBuf, "timing instrumentation is %s",
                      timingOutputEnabled ? "ON" : "OFF");
@@ -343,11 +342,11 @@ const char *CmdProc::execute( const byte streamID, char *command )
  * @param command   the unparsed command
  * @param argv      the resulting argument vector
  */
-void  CmdProc::parse_command( char *command, char **argv )
+void  CmdProc::parseCommand( char *command, char **argv )
 {
     char *p = command;
 
-    for ( byte i = 0; i < kMaxArgs; ++i ) {
+    for ( byte i = 0; i < MAX_ARGS; ++i ) {
         // skip white space
         while ( *p && isspace(*p) ) {
             p++;
@@ -372,7 +371,7 @@ void  CmdProc::parse_command( char *command, char **argv )
  *
  * @returns     true or false
  */
-bool CmdProc::onoff_bool(  const char *token ) const
+bool CmdProc::parseOnOff(  const char *token ) const
 {
     if ( token == nullptr )
         return false;
@@ -400,7 +399,7 @@ bool CmdProc::onoff_bool(  const char *token ) const
  *
  * @returns        NO_ERROR or an error code
  */
-ResultIds CmdProc::console_data_cmd( byte row, byte col, char *bindata )
+ResultIds CmdProc::dataCommand( byte row, byte col, char *bindata )
 {
     if ( row < 1 || row > displayConfig.nRows ) {
         return ERR_ROW;
@@ -409,13 +408,13 @@ ResultIds CmdProc::console_data_cmd( byte row, byte col, char *bindata )
         return ERR_COL;
     }
 
-    bool bitvalue;
+    bool bitValue;
     for ( char *p = bindata; *p; ++p, ++row ) {
         if ( *p == '0' ) {
-            bitvalue = 0;
+            bitValue = 0;
         }
         else if (*p == '1' ) {
-            bitvalue = 1;
+            bitValue = 1;
         }
         else {
             continue;
@@ -423,7 +422,7 @@ ResultIds CmdProc::console_data_cmd( byte row, byte col, char *bindata )
         if ( row > displayConfig.nRows ) {
             return ERR_ROW;
         }
-        const ResultIds rc = ledWall_.setPixel(bitvalue, row, col);
+        const ResultIds rc = ledWall_.setPixel(bitValue, row, col);
         if (rc != NO_ERROR) {
             return rc;
         }
@@ -446,12 +445,12 @@ void hexdump( byte streamID, void *addr, const unsigned int len )
     for ( unsigned int offset = 0; offset < len; ++offset ) {
         if ( (offset & 31 )  == 0 )  {
             sprintf( outputBuf, "\r\n%04x: ", offset );
-            my_puts( streamID, outputBuf );
+            writeOutput( streamID, outputBuf );
         }
         sprintf ( outputBuf, "%02x ", p[offset] );
-        my_puts( streamID, outputBuf );
+        writeOutput( streamID, outputBuf );
     }
-    my_puts( streamID, "\n" );
+    writeOutput( streamID, "\n" );
 }
 #endif
 
@@ -463,7 +462,7 @@ void hexdump( byte streamID, void *addr, const unsigned int len )
  *
  * @returns       NO_ERROR or ERR_PANEL
  */
-ResultIds CmdProc::console_dump( byte streamID, byte panel )
+ResultIds CmdProc::dumpPixels( byte streamID, byte panel )
 {    
     if (panel > displayConfig.nPanels ) {
         return ERR_PANEL;
@@ -471,7 +470,7 @@ ResultIds CmdProc::console_dump( byte streamID, byte panel )
     
     if ( panel == PANEL0 ) {
         
-        my_puts( streamID, "Dump of Pixel Data\n" );
+        writeOutput( streamID, "Dump of Pixel Data\n" );
         for ( byte row = 1; row <= displayConfig.nRows; row++ ) {
             snprintf(outputBuf, sizeof outputBuf, "%02d:  ", row);
             for ( byte col = 1; col <= displayConfig.nCols; ++col ) {
@@ -484,23 +483,23 @@ ResultIds CmdProc::console_dump( byte streamID, byte panel )
                 strcat( outputBuf, pixel ? "1 " : "0 " );
             }
             strcat( outputBuf, "\n" );
-            my_puts( streamID, outputBuf );
+            writeOutput( streamID, outputBuf );
             #if CBS_56x40_WALL
             if ( row == 16 || row == 38 ) {
-                my_puts( streamID,  "    .........     ...........     ...........     ...........     ...........     ...........     .........\n" );
+                writeOutput( streamID,  "    .........     ...........     ...........     ...........     ...........     ...........     .........\n" );
             }
             #else
             if ( row == 8 || row == 16 || row == 24) {
-                my_puts( streamID, "     - - - \n");
+                writeOutput( streamID, "     - - - \n");
             }
             #endif
         }
-        my_puts( streamID, "\n" );   
+        writeOutput( streamID, "\n" );   
     }
     else {
 
         snprintf(outputBuf, sizeof outputBuf, "Dump of Pixel Data - panel %d\n", panel );
-        my_puts( streamID, outputBuf);
+        writeOutput( streamID, outputBuf);
         outputBuf[0] = '\0';
         for ( byte row = 1; row <= ledWall_.rowsInPanel(panel); ++row ) {
             for ( byte col = 1; col <= ledWall_.colsInPanel(panel); ++col ) {
@@ -508,10 +507,10 @@ ResultIds CmdProc::console_dump( byte streamID, byte panel )
                 strcat( outputBuf, pixel ? "1 " : "0 " );
             }
             strcat( outputBuf, "\n" );
-            my_puts( streamID, outputBuf );
+            writeOutput( streamID, outputBuf );
             outputBuf[0] = '\0';
         }
-        my_puts( streamID, "\n" ); 
+        writeOutput( streamID, "\n" ); 
     }
     return NO_ERROR;
 }
@@ -521,7 +520,7 @@ ResultIds CmdProc::console_dump( byte streamID, byte panel )
  *
  * @returns       pointer to formatted status string
  */
-const char * CmdProc::console_status()
+const char * CmdProc::statusText()
 {
     const EthernetHardwareStatus hardwareStatus = Ethernet.hardwareStatus();
     const EthernetLinkStatus linkStatus = Ethernet.linkStatus();
@@ -544,7 +543,7 @@ const char * CmdProc::console_status()
              displayConfig.nPanels,
 
              Serial ? "true" : "false",
-             ethernet_is_ready() ? "true" : "false",
+             ethernetIsReady() ? "true" : "false",
              (socketClient && socketClient.connected()) ? "true" : "false",
 
              networkConfig.ipAddr[0],

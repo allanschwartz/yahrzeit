@@ -26,28 +26,28 @@
 /**
  * @brief   Initialize the UART or Serial class
  */
-void    serial_init();
+void    serialInit();
 
 /**
  * @brief   Serial input main loop thread
  */
-void    serial_thread();
+void    serialThread();
 
 /**
  * @brief   Read a single line from the serial UART, (similar to fgets())
  */
-bool    serial_gets(char inputBuf[], const unsigned maxsize, unsigned &index);
+bool    serialGets(char inputBuf[], const unsigned maxsize, unsigned &index);
 
 /**
  * @brief   Displays a time-stamped line, typically a diagnostic line
  *          on the serial console.  A trailing newline is also written.
  *          Used in both serial_thread.ino and socket_thread.ino
  */
-void    serial_log( const char *msg );
+void    serialLog( const char *msg );
 
 
 /**
  * @brief   Displays the uptime, in the format hh:mm:ss.mmm  (with millisecond precision)
  *          Used in both serial_thread.ino and socket_thread.ino
  */
-const char *display_uptime();
+const char *displayUptime();

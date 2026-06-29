@@ -37,7 +37,7 @@
  * @note This is the first bring-up test because it verifies both ends of
  *       the logical addressing range without lighting every pixel.
  */
-static void selftest_corners(byte panel)
+static void selftestCorners(byte panel)
 {
     ASSERT(panel <= displayConfig.nPanels);
 
@@ -57,7 +57,7 @@ static void selftest_corners(byte panel)
     }
 
     // intentional visible pacing for operator observation
-    sleep_ms(true, 500);
+    sleepMs(true, 500);
 }
 
 /**
@@ -66,7 +66,7 @@ static void selftest_corners(byte panel)
  * @param pixelBit   false = off, true = on.
  * @param panel      PANEL0 for the whole display, or panel number 1..displayConfig.nPanels.
  */
-static void selftest_all_on(bool pixelBit, byte panel)
+static void selftestAllOn(bool pixelBit, byte panel)
 {
     ASSERT(panel <= displayConfig.nPanels);
 
@@ -87,7 +87,7 @@ static void selftest_all_on(bool pixelBit, byte panel)
     }
 
     // intentional visible pacing for operator observation
-    sleep_ms(true, 500);
+    sleepMs(true, 500);
 }
 
 /**
@@ -102,7 +102,7 @@ static void selftest_all_on(bool pixelBit, byte panel)
  * @note This test is useful for finding row/column swaps, off-by-one mapping
  *       errors, and adjacent-bit coupling or ghosting.
  */
-static void selftest_checkerboard(byte panel)
+static void selftestCheckerboard(byte panel)
 {
     ASSERT(panel <= displayConfig.nPanels);
 
@@ -127,7 +127,7 @@ static void selftest_checkerboard(byte panel)
     }
 
     // intentional visible pacing for operator observation
-    sleep_ms(true, 500);
+    sleepMs(true, 500);
 }
 
 /**
@@ -139,7 +139,7 @@ static void selftest_checkerboard(byte panel)
  * @param panel   PANEL0 for the whole display, or panel number 1..displayConfig.nPanels.
  */
 
-void selftest_marching_row_in_panel(byte panel)
+void selftestMarchingRowInPanel(byte panel)
 {
     ASSERT(panel >= 1);
     ASSERT(panel <= displayConfig.nPanels);
@@ -153,7 +153,7 @@ void selftest_marching_row_in_panel(byte panel)
     snprintf(outputBuf, sizeof outputBuf,
              "selftest: marching row panel=%u rows=%u cols=%u",
              panel, nRows, nCols);
-    serial_log(outputBuf);
+    serialLog(outputBuf);
 
     for (byte row = 1; row <= nRows; ++row) {
         for (byte col = 1; col <= nCols; ++col) {
@@ -161,31 +161,31 @@ void selftest_marching_row_in_panel(byte panel)
             ASSERT(rc == NO_ERROR);
         }
 
-        sleep_ms(true, 300);
+        sleepMs(true, 300);
 
         for (byte col = 1; col <= nCols; ++col) {
             const ResultIds rc = ledWall.setPixelInPanel(0, row, col, panel);
             ASSERT(rc == NO_ERROR);
         }
 
-        sleep_ms(true, 1);
+        sleepMs(true, 1);
     }
 }
 
-void    selftest_marching_row_all_panels()
+void    selftestMarchingRowAllPanels()
 {
     for (byte panel = 1; panel <= displayConfig.nPanels; panel++) {
         snprintf(outputBuf, sizeof outputBuf,
                  "selftest: panel %u/%u",
                  panel, displayConfig.nPanels);
-        serial_log(outputBuf);
-        selftest_marching_row_in_panel(panel);
-        sleep_ms(true, 500);
+        serialLog(outputBuf);
+        selftestMarchingRowInPanel(panel);
+        sleepMs(true, 500);
     }
 }
 
-void    selftest_marching_row( byte panel ) {
-    selftest_marching_row_all_panels();
+void    selftestMarchingRow( byte panel ) {
+    selftestMarchingRowAllPanels();
 }
 
 /**
@@ -196,7 +196,7 @@ void    selftest_marching_row( byte panel ) {
  *
  * @param panel   PANEL0 for the whole display, or panel number 1..displayConfig.nPanels.
  */
-static void selftest_marching_col(byte panel)
+static void selftestMarchingCol(byte panel)
 {
     ASSERT(panel <= displayConfig.nPanels);
 
@@ -206,18 +206,18 @@ static void selftest_marching_col(byte panel)
             ASSERT(rc == NO_ERROR);
         }
 
-        sleep_ms(true, 300);
+        sleepMs(true, 300);
 
         for (byte row = 1; row <= ledWall.rowsInPanel(panel); ++row) {
             const ResultIds rc = ledWall.setPixelInPanel(0, row, col, panel);
             ASSERT(rc == NO_ERROR);
         }
 
-        sleep_ms(true, 1);
+        sleepMs(true, 1);
     }
 
     // intentional visible pacing for operator observation
-    sleep_ms(true, 500);
+    sleepMs(true, 500);
 }
 
 
@@ -229,7 +229,7 @@ static void selftest_marching_col(byte panel)
  * @param testDescription   human-readable test description.
  * @param panel             PANEL0 for whole display, or panel number 1..displayConfig.nPanels.
  */
-static void selftest_description(byte streamID,
+static void selftestDescription(byte streamID,
                                  byte testNumber,
                                  const char *testDescription,
                                  byte panel)
@@ -244,7 +244,7 @@ static void selftest_description(byte streamID,
                  testNumber, testDescription);
     }
 
-    my_puts(streamID, outputBuf);
+    writeOutput(streamID, outputBuf);
 }
 
 
@@ -281,39 +281,39 @@ ResultIds selftest(byte streamID, byte testNumber, byte panel)
 
     switch (testNumber) {
         case 1:
-            selftest_description(streamID, testNumber,
+            selftestDescription(streamID, testNumber,
                                     "corner pixels on", panel);
-            selftest_corners(panel);
+            selftestCorners(panel);
             break;
 
         case 2:
-            selftest_description(streamID, testNumber,
+            selftestDescription(streamID, testNumber,
                                     "turn pixels ON", panel);
-            selftest_all_on(1, panel);
+            selftestAllOn(1, panel);
             break;
 
         case 3:
-            selftest_description(streamID, testNumber,
+            selftestDescription(streamID, testNumber,
                                     "turn pixels OFF", panel);
-            selftest_all_on(0, panel);
+            selftestAllOn(0, panel);
             break;
 
         case 4:
-            selftest_description(streamID, testNumber,
+            selftestDescription(streamID, testNumber,
                                     "checkerboard pattern", panel);
-            selftest_checkerboard(panel);
+            selftestCheckerboard(panel);
             break;
 
         case 5:
-            selftest_description(streamID, testNumber,
+            selftestDescription(streamID, testNumber,
                                     "marching row pattern", panel);
-            selftest_marching_row(panel);
+            selftestMarchingRow(panel);
             break;
 
         case 6:
-            selftest_description(streamID, testNumber,
+            selftestDescription(streamID, testNumber,
                                     "marching column pattern", panel);
-            selftest_marching_col(panel);
+            selftestMarchingCol(panel);
             break;
 
         default:

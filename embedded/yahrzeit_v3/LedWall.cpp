@@ -31,15 +31,15 @@
 namespace {
 
 #if CBS_56x40_WALL
-constexpr byte nPanels = 21;  // Seven columns of three physical panels.
-constexpr byte nRows = 56;
-constexpr byte nCols = 40;
+constexpr byte N_PANELS = 21;  // Seven columns of three physical panels.
+constexpr byte N_ROWS = 56;
+constexpr byte N_COLS = 40;
 #endif
 
 #if TEST_FIXTURE
-constexpr byte nPanels = 2;   // Two 24-row by 3-column fixture boards.
-constexpr byte nRows = 24;
-constexpr byte nCols = 6;
+constexpr byte N_PANELS = 2;   // Two 24-row by 3-column fixture boards.
+constexpr byte N_ROWS = 24;
+constexpr byte N_COLS = 6;
 #endif
 
 /**
@@ -54,7 +54,7 @@ constexpr byte nCols = 6;
  * the original Yahrzeit command language and makes console/debugging output
  * match human-facing row/column numbers.
  */
-static constexpr byte ledRowOfPanel[nPanels + 1] = {
+static constexpr byte LED_ROW_OF_PANEL[N_PANELS + 1] = {
 #if CBS_56x40_WALL
     1,
     1, 17, 39,
@@ -75,7 +75,7 @@ static constexpr byte ledRowOfPanel[nPanels + 1] = {
 /**
  * @brief Starting column of each logical panel in the full LED array.
  */
-static constexpr byte ledColOfPanel[nPanels + 1] = {
+static constexpr byte LED_COL_OF_PANEL[N_PANELS + 1] = {
 #if CBS_56x40_WALL
     1,
     1, 1, 1,
@@ -96,7 +96,7 @@ static constexpr byte ledColOfPanel[nPanels + 1] = {
 /**
  * @brief Number of rows in each panel.
  */
-static constexpr byte nRowsPerPanel[nPanels + 1] = {
+static constexpr byte N_ROWS_PER_PANEL[N_PANELS + 1] = {
 #if CBS_56x40_WALL
     56,     // whole display: 16 + 22 + 18
     16, 22, 18,
@@ -117,7 +117,7 @@ static constexpr byte nRowsPerPanel[nPanels + 1] = {
 /**
  * @brief Number of columns in each panel.
  */
-static constexpr byte nColsPerPanel[nPanels + 1] = {
+static constexpr byte N_COLS_PER_PANEL[N_PANELS + 1] = {
 #if CBS_56x40_WALL
     40,     // whole display: 5 + 6 + 6 + 6 + 6 + 6 + 5
     5, 5, 5,
@@ -140,7 +140,7 @@ static constexpr byte nColsPerPanel[nPanels + 1] = {
  *
  * Future configuration/preferences can be placed at later fixed offsets. 
  */
-constexpr int eepromDisplayOffset = 0;
+constexpr int EEPROM_DISPLAY_OFFSET = 0;
 
 }
 
@@ -159,9 +159,9 @@ constexpr int eepromDisplayOffset = 0;
 LedWall::LedWall(YyzPixel& pixels)
     : pixels_(pixels)
 {
-    displayConfig.nRows = nRows;
-    displayConfig.nCols = nCols;
-    displayConfig.nPanels = nPanels;
+    displayConfig.nRows = N_ROWS;
+    displayConfig.nCols = N_COLS;
+    displayConfig.nPanels = N_PANELS;
 }
 
 // ----------------------------------------------------------------------------
@@ -270,25 +270,25 @@ ResultIds LedWall::setPixelInPanel(bool pixelBit, byte row, byte col, byte panel
         return setPixel(pixelBit, row, col);
     }
 
-    if (row < 1 || row > nRowsPerPanel[panel]) {
+    if (row < 1 || row > N_ROWS_PER_PANEL[panel]) {
         snprintf(outputBuffer, sizeof outputBuffer,
                  "setPixelInPanel: bad row=%d panel=%d maxRows=%d",
-                 row, panel, nRowsPerPanel[panel]);
+                 row, panel, N_ROWS_PER_PANEL[panel]);
         Serial.println(outputBuffer);
         return ERR_ROW;
     }
 
-    if (col < 1 || col > nColsPerPanel[panel]) {
+    if (col < 1 || col > N_COLS_PER_PANEL[panel]) {
         snprintf(outputBuffer, sizeof outputBuffer,
                  "setPixelInPanel: bad col=%d panel=%d maxCols=%d",
-                 col, panel, nColsPerPanel[panel]);
+                 col, panel, N_COLS_PER_PANEL[panel]);
         Serial.println(outputBuffer);
         return ERR_COL;
     }
 
     return setPixel(pixelBit,
-                    ledRowOfPanel[panel] + row - 1,
-                    ledColOfPanel[panel] + col - 1);
+                    LED_ROW_OF_PANEL[panel] + row - 1,
+                    LED_COL_OF_PANEL[panel] + col - 1);
 }
 
 /**
@@ -316,23 +316,23 @@ bool LedWall::pixelValueInPanel(byte row, byte col, byte panel) const
         return pixelValue(row, col);
     }
 
-    if (row < 1 || row > nRowsPerPanel[panel]) {
+    if (row < 1 || row > N_ROWS_PER_PANEL[panel]) {
         snprintf(outputBuffer, sizeof outputBuffer,
                  "pixelValueInPanel: bad row=%d panel=%d maxRows=%d",
-                 row, panel, nRowsPerPanel[panel]);
+                 row, panel, N_ROWS_PER_PANEL[panel]);
         Serial.println(outputBuffer);
         return false;
     }
-    if (col < 1 || col > nColsPerPanel[panel]) {
+    if (col < 1 || col > N_COLS_PER_PANEL[panel]) {
         snprintf(outputBuffer, sizeof outputBuffer,
                  "pixelValueInPanel: bad col=%d panel=%d maxCols=%d",
-                 col, panel, nColsPerPanel[panel]);
+                 col, panel, N_COLS_PER_PANEL[panel]);
         Serial.println(outputBuffer);
         return false;
     }
 
-    return pixelValue(ledRowOfPanel[panel] + row - 1,
-                      ledColOfPanel[panel] + col - 1);
+    return pixelValue(LED_ROW_OF_PANEL[panel] + row - 1,
+                      LED_COL_OF_PANEL[panel] + col - 1);
 }
 
 /**
@@ -342,7 +342,7 @@ bool LedWall::pixelValueInPanel(byte row, byte col, byte panel) const
  */
 void LedWall::savePixels()
 {
-    pixels_.savePixels(eepromDisplayOffset);
+    pixels_.savePixels(EEPROM_DISPLAY_OFFSET);
 }
 
 /**
@@ -352,7 +352,7 @@ void LedWall::savePixels()
  */
 void LedWall::loadPixels()
 {
-    pixels_.loadPixels(eepromDisplayOffset);
+    pixels_.loadPixels(EEPROM_DISPLAY_OFFSET);
 }
 
 /**
@@ -395,8 +395,8 @@ ResultIds LedWall::allOn(bool pixelBit, byte panel)
             }
         }
     } else {
-        for ( byte col = 1; col <= nColsPerPanel[panel]; ++col) {
-            for ( byte row = 1; row <= nRowsPerPanel[panel]; ++row) {
+        for ( byte col = 1; col <= N_COLS_PER_PANEL[panel]; ++col) {
+            for ( byte row = 1; row <= N_ROWS_PER_PANEL[panel]; ++row) {
                 const ResultIds rc = setPixelInPanel(pixelBit, row, col, panel);
                 ASSERT(rc == NO_ERROR);
             }
@@ -418,7 +418,7 @@ byte LedWall::rowsInPanel(byte panel) const
     if (panel > displayConfig.nPanels) {
         return 0;
     }
-    return nRowsPerPanel[panel];
+    return N_ROWS_PER_PANEL[panel];
 }
 
 /**
@@ -433,7 +433,7 @@ byte LedWall::colsInPanel(byte panel) const
     if (panel > displayConfig.nPanels) {
         return 0;
     }
-    return nColsPerPanel[panel];
+    return N_COLS_PER_PANEL[panel];
 }
 
 /**

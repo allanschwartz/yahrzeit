@@ -28,16 +28,16 @@
 // ----------------------------------------------------------------------------
 
 //  We use these values, so the display buffer is dimensioned maximally
-constexpr byte MAXNROWS = 64;
-constexpr byte MAXNCOLS = 64;
+constexpr byte MAX_N_ROWS = 64;
+constexpr byte MAX_N_COLS = 64;
 
 // Display buffer capacity: up to 64 rows x 64 columns.
 // Actual active geometry is displayConfig.nRows x displayConfig.nCols.
-static constexpr size_t kFrameBufferBytes = 
-    (static_cast<size_t>(MAXNROWS * MAXNCOLS) / 8);
+static constexpr size_t FRAME_BUFFER_BYTES = 
+    (static_cast<size_t>(MAX_N_ROWS * MAX_N_COLS) / 8);
 
 struct FrameBuffer {
-    byte pixelBits_[kFrameBufferBytes] {};
+    byte pixelBits_[FRAME_BUFFER_BYTES] {};
 };
 
 static FrameBuffer frameBuffer_;

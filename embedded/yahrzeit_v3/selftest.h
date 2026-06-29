@@ -31,4 +31,4 @@ ResultIds selftest(byte streamID, byte testNumber, byte panel);
 /**
  * @brief   SELF TEST 5: marching row pattern.
  */
-void    selftest_marching_row( byte panel );
+void    selftestMarchingRow( byte panel );

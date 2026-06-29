@@ -31,19 +31,24 @@
 /**
  * @brief    Is the Ethernet ready for a socket connection
  */
-bool    ethernet_is_ready();
+bool    ethernetIsReady();
+
+/**
+ * @brief    Initialize Ethernet with the configured network settings
+ */
+void    ethernetInit();
 
 /**
  * @brief    Initialize and setup the Socket-based input 
  */
-void    socket_init();
+void    socketInit();
 
 /**
  * @brief    Socket-based input main loop thread
  */
-void    socket_thread();
+void    socketThread();
 
-// socket_gets can return the following, representing connection state:
+// socketGets can return the following, representing connection state:
 enum GetsReturns: byte {
     GETS_NOCONNECTION,
     GETS_NOCHAR,
@@ -54,5 +59,4 @@ enum GetsReturns: byte {
 /**
  * @brief    Read a line from socket input
  */
-GetsReturns  socket_gets(char inputBuf[], const unsigned maxsize, unsigned &index);
-
+GetsReturns  socketGets(char inputBuf[], const unsigned maxsize, unsigned &index);

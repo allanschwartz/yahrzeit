@@ -71,24 +71,23 @@ DisplayConfig displayConfig = {
     .nPanels = 0
 };
 
-// the STATUS LED is the LED on the Yahrzeit Controller Pixel Interface board,
+// The STATUS LED is the LED on the Yahrzeit Controller Pixel Interface board,
 // connected to Arduino Uno R4 Minima, pin D3
-static constexpr byte STATUS_LED = 3;
+static constexpr byte STATUS_LED_PIN = 3;
 static constexpr byte STATUS_LED_BRIGHTNESS = 128; // 50% PWM duty cycle
 static constexpr unsigned long ALIVE_PERIOD_MS = 2560;
 
-// note that YyzPixel is called with portIDs    ( DI, OE, CP, ST )
-
-// Port definitions for Controller V3: Arduino Uno R4 Minima
+// Controller V3 pin definitions: Arduino Uno R4 Minima.
+// Names match the YYZ Pixel Interface board silkscreen: DI, OE, CP, ST.
 static constexpr byte
-     DI_pin = 4,       // DATA IN
-     OE_pin = 5,       // Output Enable
-     CP_pin = 6,       // Clock Pulse
-     ST_pin = 7;       // STORE
+     DI_PIN = 4,       // Data input
+     OE_PIN = 5,       // Output enable, active LOW
+     CP_PIN = 6,       // Clock pulse
+     ST_PIN = 7;       // Store/latch pulse
 
 
 // create an instance of the YyzPixels class, giving us the YyzPixels primitives
-YyzPixel yyzPixels( DI_pin, OE_pin, CP_pin, ST_pin );
+YyzPixel yyzPixels( DI_PIN, OE_PIN, CP_PIN, ST_PIN );
 
 // create an instance of the LedWall class, giving us the LedWall primitives
 LedWall ledWall(yyzPixels);
@@ -121,9 +120,10 @@ NetworkConfig networkConfig = {
     #endif
 };
 
-// telnet defaults to port 23, however we will listen on port 2001
+// telnet defaults to port 23, however we listen on a less-common control port.
 //   as port 23 would be too easily "hacked".
-EthernetServer socket(2001);
+static constexpr uint16_t SOCKET_LISTEN_PORT = 2001;
+EthernetServer socket(SOCKET_LISTEN_PORT);
 EthernetClient socketClient;
 
 // ----------------------------------------------------------------------------
@@ -140,6 +140,8 @@ bool timingOutputEnabled = false;
 
 bool debugPixel = false;
 
+static void breathingLed();
+[[noreturn]] static void blinkPanicLedThenRestart();
 
 
 // ----------------------------------------------------------------------------
@@ -149,23 +151,23 @@ bool debugPixel = false;
 /**
  * @brief   application startup, called at the end of setup()
  */
-static void controller_begin()
+static void controllerBegin()
 {
     yyzPixels.begin();
     ledWall.begin();
-    serial_log( "LED wall up\n" );
+    serialLog( "LED wall up\n" );
 
     // splash
-    my_puts( CONSOLE, versionString );
+    writeOutput( CONSOLE, versionString );
 
     // some initial pattern, on power-up (as a self-test)
-    serial_log( "light test" );
+    serialLog( "light test" );
     (void)ledWall.allOn( 1, PANEL0 );
-    sleep_ms(true, 1500);
+    sleepMs(true, 1500);
     (void)ledWall.allOn( 0, PANEL0 );
-    sleep_ms(true, 1500);
-    selftest_marching_row( PANEL0 );
-    sleep_ms(true, 1500);
+    sleepMs(true, 1500);
+    selftestMarchingRow( PANEL0 );
+    sleepMs(true, 1500);
 
     // restore the last pattern stored yesterday
     ledWall.loadPixels();
@@ -173,68 +175,64 @@ static void controller_begin()
     // and refresh
     ledWall.refresh();
 
-    serial_log( "ready >" );
+    serialLog( "ready >" );
 }
 
 /**
- * @brief   setup ... initializatin code, to run once:
+ * @brief   setup ... initialization code, to run once:
  */
 void setup()
 {
-    pinMode(STATUS_LED, OUTPUT);
-    analogWrite(STATUS_LED, STATUS_LED_BRIGHTNESS);
+    pinMode(STATUS_LED_PIN, OUTPUT);
+    analogWrite(STATUS_LED_PIN, STATUS_LED_BRIGHTNESS);
 
     // initialize the serial console logic thread
-    serial_init();
-    serial_log( "Serial up" );
+    serialInit();
+    serialLog( "Serial up" );
     
     // initialize the Ethernet
-    ethernet_init();
-    serial_log( "Ethernet up" );
+    ethernetInit();
+    serialLog( "Ethernet up" );
 
     // start listening for socket clients to connect
-    socket_init();
-    controller_begin();
+    socketInit();
+    controllerBegin();
 }
-
-
-
 
 /**
  * @brief   loop ... main code, to run repeatedly:
  */
 void loop()
 {
-    serial_thread();
-    socket_thread();
-    breathing_led();
+    serialThread();
+    socketThread();
+    breathingLed();
 
-    delay( 10 );       // avoid pounding the SPI bus with continuous Ethernet polling
+    delay(10);          // pause 10ms, to avoid pounding the SPI bus with continuous Ethernet polling
 }
 
 /**
  * @brief   Update the alive-status LED.
  */
-static void breathing_led()
+static void breathingLed()
 {
-    constexpr float twoPi = 6.28318530718f;
-    constexpr float halfPi = twoPi / 2.0f;
-    const unsigned long elapsedMs = millis() % ALIVE_PERIOD_MS;
-    const float phase = twoPi * elapsedMs / ALIVE_PERIOD_MS;
-    const float intensity = (sinf(phase - halfPi) + 1.0f) / 2.0f;
+    constexpr float TWO_pi = 6.28318530718f;                    /* keep phase math in float */
+    unsigned long elapsedMs = millis() % ALIVE_PERIOD_MS;       /* time:    [0..Period)  */
+    float phase = TWO_pi * (float)elapsedMs / ALIVE_PERIOD_MS;  /* radians: [0.0 .. 2π) */
+    float sinePhase = sinf(phase);                              /* plotted as a sine wave */
+    float intensity = (sinePhase + 1.0f) / 2.0f;                /* scaled to [0.0 .. 1.0] */
+    int pwmValue = intensity * STATUS_LED_BRIGHTNESS;           /* int:     [0 .. 255] */
 
-    analogWrite(STATUS_LED,
-                static_cast<byte>(intensity * STATUS_LED_BRIGHTNESS + 0.5f));
+    analogWrite(STATUS_LED_PIN, pwmValue);
 }
 
-
 /**
- * @brief   my_puts ... prints a single string to the stream
+ * @brief   writeOutput ... prints a single string to the stream
  *
  * @param streamID    display output on the SOCKET or CONSOLE
  * @param msg         the line to display, a C string
  */
-void my_puts( byte streamID, const char *msg )
+void writeOutput( byte streamID, const char *msg )
 {
     switch ( streamID ) {
         case SOCKET:
@@ -252,15 +250,13 @@ void my_puts( byte streamID, const char *msg )
 }
 
 /** 
- * @brief   sleep_ms ... delays the specified number of milliseconds
+ * @brief   sleepMs ... delays the specified number of milliseconds
  *
  * @param doRefresh   should we do a refresh, before we start the sleep?
  * @param ms          number of milliseconds to delay
  */
-void sleep_ms( bool doRefresh, const unsigned int ms )
+void sleepMs( bool doRefresh, const unsigned int ms )
 {
-    const unsigned long t0 = millis();
-
     if ( doRefresh) {
         ledWall.refresh();
     }
@@ -287,10 +283,10 @@ void sleep_ms( bool doRefresh, const unsigned int ms )
         Serial.flush();
     }
 
-    blink_panic_led_then_restart();
+    blinkPanicLedThenRestart();
 }
 
-[[noreturn]] void panic_context(const char *expr, const char *file, int line,
+[[noreturn]] void panicContext(const char *expr, const char *file, int line,
                                const char *fmt, ...)
 {
     if (Serial) {
@@ -312,7 +308,7 @@ void sleep_ms( bool doRefresh, const unsigned int ms )
         Serial.flush();
     }
 
-    blink_panic_led_then_restart();
+    blinkPanicLedThenRestart();
 }
 
 
@@ -321,19 +317,19 @@ constexpr byte PANIC_MINUTES = 5;
 /**
  * @brief   Blink the built-in LED during a panic, then reset the controller.
  */
-[[noreturn]] static void blink_panic_led_then_restart()
+[[noreturn]] static void blinkPanicLedThenRestart()
 {
-    constexpr unsigned long blinkMs = 100;
-    constexpr unsigned long panicMs = PANIC_MINUTES * 60UL * 1000UL;
+    constexpr unsigned long BLINK_MS = 100;
+    constexpr unsigned long PANIC_MS = PANIC_MINUTES * 60UL * 1000UL;
     const unsigned long startedAt = millis();
 
-    pinMode(STATUS_LED, OUTPUT);
+    pinMode(STATUS_LED_PIN, OUTPUT);
 
-    while (millis() - startedAt < panicMs) {
-        analogWrite(STATUS_LED, STATUS_LED_BRIGHTNESS);
-        delay(blinkMs);
-        analogWrite(STATUS_LED, 0);
-        delay(blinkMs);
+    while (millis() - startedAt < PANIC_MS) {
+        analogWrite(STATUS_LED_PIN, STATUS_LED_BRIGHTNESS);
+        delay(BLINK_MS);
+        analogWrite(STATUS_LED_PIN, 0);
+        delay(BLINK_MS);
     }
 
     // not a standard Arduino function, but works on the Uno R4 Minima

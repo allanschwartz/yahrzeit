@@ -24,7 +24,7 @@
 /**
  * @brief   Initializes the USB Serial port, which becomes our console
  */
-void serial_init()
+void serialInit()
 {
     // Use a common monitor speed and allow time for the USB/serial port to settle.
     Serial.begin(115200);
@@ -39,7 +39,7 @@ void serial_init()
     Serial.println();
     Serial.println("...");
     Serial.flush();
-    serial_log( "Yahrzeit Wall Embedded Controller" );
+    serialLog( "Yahrzeit Wall Embedded Controller" );
 }
 
 
@@ -56,8 +56,8 @@ void serial_init()
 static void prompt( byte streamID )
 {
     char promptLine[32];
-    snprintf(promptLine, sizeof promptLine, "%s >", display_uptime());
-    my_puts(streamID, promptLine);
+    snprintf(promptLine, sizeof promptLine, "%s >", displayUptime());
+    writeOutput(streamID, promptLine);
 }
 
 
@@ -65,33 +65,33 @@ static void prompt( byte streamID )
  * @brief   Console main loop handling serial input
  *
  *      Implements the console I/O gets(), puts() loop.
- *      in each call to console_thread, we either read one line, and execute one command.
+ *      In each call to serialThread, we either read one line and execute one command,
  *      or, if the line is not present, we return immediately, but keep state so we can
  *      resume reading the line
  */
-void  serial_thread()
+void  serialThread()
 {
     // the command from the host
-    constexpr unsigned MAXINPUTLINE = 64;
-    static    char     inputBuf[ MAXINPUTLINE ] {};
-    static    unsigned inputBufPos = 0;               // 0..MAXINPUTLINE-1
+    constexpr unsigned MAX_INPUT_LINE = 64;
+    static    char     inputBuf[ MAX_INPUT_LINE ] {};
+    static    unsigned inputBufPos = 0;               // 0..MAX_INPUT_LINE-1
 
-    if ( serial_gets( inputBuf, sizeof inputBuf, inputBufPos ) ) {
+    if ( serialGets( inputBuf, sizeof inputBuf, inputBufPos ) ) {
         char uptimeLine[80];
 
         if ( inputBuf[0] != '\0' ) {
             const char *result = cmdProc.execute( CONSOLE, inputBuf );
             snprintf( uptimeLine, sizeof uptimeLine, "%s | %s\n",
-                      display_uptime(), inputBuf );
-            my_puts( CONSOLE, uptimeLine );
+                      displayUptime(), inputBuf );
+            writeOutput( CONSOLE, uptimeLine );
             if (result != nullptr) {
-                my_puts( CONSOLE, result );
-                my_puts( CONSOLE, "\n");
+                writeOutput( CONSOLE, result );
+                writeOutput( CONSOLE, "\n");
             }
         }
         else {
-            snprintf( uptimeLine, sizeof uptimeLine, "%s |\n", display_uptime() );
-            my_puts( CONSOLE, uptimeLine );
+            snprintf( uptimeLine, sizeof uptimeLine, "%s |\n", displayUptime() );
+            writeOutput( CONSOLE, uptimeLine );
         }
         inputBufPos = 0;            // reset to the beginning of the inputBuf
         inputBuf[0] = '\0';
@@ -103,13 +103,13 @@ void  serial_thread()
 /**
  * @brief   Reads a single line from the Serial UART, (similar to fgets())
  *
- *    console_gets() reads in at most one less than size characters from the
- *    serial UART stream and and stores them into the buffer pointed to by str.
+ *    serialGets() reads in at most one less than size characters from the
+ *    serial UART stream and stores them into the buffer pointed to by inputBuf.
  *    Reading stops after a newline or cr or the str is filled.
  *    If a newline or cr is read, it is not stored into the buffer.
  *    A terminating null byte ('\0') is stored after the last character.
  *
- *    This non-threaded version of console_gets() does not block, rather it
+ *    This non-threaded version of serialGets() does not block, rather it
  *    returns immediately, that is returns each character as read.
  *    The bool result code indicates whether a full line was read
  *
@@ -119,7 +119,7 @@ void  serial_thread()
  *
  * @returns bool, true: a full line was read; false: if not
  */
-bool serial_gets( char inputBuf[], const unsigned maxsize, unsigned &index )
+bool serialGets( char inputBuf[], const unsigned maxsize, unsigned &index )
 {
     while ( Serial.available() > 0 ) {
         const int c = Serial.read();
@@ -154,11 +154,11 @@ bool serial_gets( char inputBuf[], const unsigned maxsize, unsigned &index )
  *
  * @param msg      the line to display, a C string
  */
-void serial_log( const char *msg )
+void serialLog( const char *msg )
 {
     if (Serial) {
         char outputBuf[80];
-        snprintf( outputBuf, sizeof outputBuf, "%s | %s\n", display_uptime(), msg );
+        snprintf( outputBuf, sizeof outputBuf, "%s | %s\n", displayUptime(), msg );
         Serial.print( outputBuf );
         Serial.flush();
     }
@@ -171,7 +171,7 @@ void serial_log( const char *msg )
  *
  * @param uptime    number of milliseconds since the arduino microcontroller was booted
  */
-const char *display_uptime()
+const char *displayUptime()
 {
     unsigned long msec = millis();
     unsigned long seconds = msec / 1000;
@@ -183,4 +183,3 @@ const char *display_uptime()
     snprintf(displayBuf, sizeof displayBuf, "%02d:%02d:%02d.%03d", hh, mm, ss, imsec );
     return displayBuf;
 }
-
