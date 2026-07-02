@@ -49,7 +49,6 @@ public:
      */
     bool getPixel(uint16_t x, uint16_t y) const;
 
-
     /**
      * @brief   Clear the framebuffer.
      */
