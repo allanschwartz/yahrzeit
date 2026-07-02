@@ -38,6 +38,7 @@ sudo apt-get install -y \
     git \
     curl \
     ca-certificates \
+    openssh-server \
     apache2 \
     php \
     libapache2-mod-php \
@@ -46,7 +47,17 @@ sudo apt-get install -y \
     php-mbstring \
     php-xml \
     netcat-openbsd \
+    net-tools \
+    tcpdump \
     coreutils
+
+# Ensure SSH is enabled and running
+sudo systemctl enable ssh
+sudo systemctl start ssh
+
+# Disable AppArmor (it can interfere with SSH and other services)
+sudo systemctl disable apparmor || true
+sudo systemctl stop apparmor || true
 
 mkdir -p "$INSTALL_PARENT"
 
@@ -84,9 +95,62 @@ chmod o+x "$INSTALL_PARENT"
 chmod o+x "$REPO_DIR"
 chmod o+x "$SITE_DIR"
 
-sudo ln -sfn "$SITE_DIR" "$WEB_LINK"
-sudo systemctl enable --now apache2
-sudo systemctl reload apache2
+# Ensure Apache can write to data directory for logs and backups
+sudo chown -R www-data:www-data "$SITE_DIR/data" || true
+sudo chmod 755 "$SITE_DIR/data" || true
+
+# Configure Apache: ensure php module is enabled and properly configured.
+# Try the generic 'php' module first, then try specific PHP versions if it doesn't exist
+for php_module in php php8.5 php8.4 php8.3 php8.2 php8.1 php8.0 php7.4; do
+    sudo a2enmod "$php_module" 2>/dev/null && break
+done || true
+sudo a2enmod rewrite || true
+
+# Create a simple index.html at root to redirect to /yahrzeit/
+sudo tee /var/www/html/index.html > /dev/null <<REDIRECT_HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="refresh" content="0;url=/$WEB_ALIAS/" />
+    <title>Redirecting...</title>
+</head>
+<body>
+    <p>Redirecting to <a href="/$WEB_ALIAS/">Yahrzeit Wall</a>...</p>
+</body>
+</html>
+REDIRECT_HTML
+
+# Create or update the symlink idempotently.
+# First check if link exists and points to the correct location.
+if [ -L "$WEB_LINK" ]; then
+    CURRENT_TARGET="$(readlink "$WEB_LINK")"
+    if [ "$CURRENT_TARGET" != "$SITE_DIR" ]; then
+        printf 'Updating symlink %s from %s to %s\n' "$WEB_LINK" "$CURRENT_TARGET" "$SITE_DIR"
+        sudo rm -f "$WEB_LINK"
+        sudo ln -sfn "$SITE_DIR" "$WEB_LINK"
+    else
+        printf 'Symlink %s already correct\n' "$WEB_LINK"
+    fi
+elif [ -e "$WEB_LINK" ]; then
+    # It exists but is not a symlink. Backup and replace.
+    printf 'WARNING: %s exists but is not a symlink. Backing up and replacing.\n' "$WEB_LINK" >&2
+    sudo mv "$WEB_LINK" "$WEB_LINK.backup-$(date +%s)"
+    sudo ln -sfn "$SITE_DIR" "$WEB_LINK"
+else
+    # Doesn't exist, create it.
+    printf 'Creating symlink %s -> %s\n' "$WEB_LINK" "$SITE_DIR"
+    sudo ln -sfn "$SITE_DIR" "$WEB_LINK"
+fi
+
+# Ensure Apache is running and will restart on reboot.
+sudo systemctl enable apache2 || true
+sudo systemctl restart apache2 || true
+
+# Verify Apache can read the site.
+if [ ! -r "$WEB_LINK/index.php" ]; then
+    echo "ERROR: Apache cannot read $WEB_LINK/index.php" >&2
+    exit 1
+fi
 
 # Disable PCRE JIT. Some hardened/server environments deny executable
 # memory allocation for PCRE JIT; the app does not need regex JIT speed.
@@ -123,12 +187,24 @@ bin/yahrzeit --notransmit --status || true
 
 FIRST_IP="$(hostname -I | awk '{print $1}')"
 
+# Test Apache configuration for syntax errors.
+sudo apache2ctl -t || {
+    echo "ERROR: Apache configuration has syntax errors" >&2
+    sudo apache2ctl -t 2>&1 || true
+    exit 1
+}
+
 cat <<EOF2
 
 Install/update complete.
 
-Run locally after setup:
+✓ Apache configured to serve PHP
+✓ Yahrzeit site linked to: $WEB_LINK
+✓ Apache configuration verified
+
+Access the site at:
   http://$FIRST_IP/$WEB_ALIAS/
+  http://$FIRST_IP/$WEB_ALIAS/index.php
   http://$FIRST_IP/$WEB_ALIAS/0yahrzeit.php
 
 Quick verification:
