@@ -25,9 +25,8 @@
  *      Normal batch CSV maintenance belongs on the Reports screen.
  *
  * NOTES
- *      This screen currently preserves some older edit/save behavior. Any
- *      future cleanup should either make this page read-only or replace broad
- *      editing with narrow, safe operations.
+ *      This page edits memorial facts and automatic observance settings. It
+ *      does not provide a per-record manual lighting override.
  *
  *      This page should not calculate scheduled lighting, generate controller
  *      commands, or define panel geometry.
@@ -64,9 +63,15 @@
         return isset($_POST[$name]) ? $_POST[$name] : $default;
     }
 
-    // Replace exactly one valid memorial-record line while preserving every
-    // other line in the live CSV byte-for-byte.  The record index is the same
-    // zero-based index used by yahrzeit_readDB() and yahrzeit_getObj().
+    /**
+     * Replace one memorial record while preserving all other CSV lines.
+     *
+     * Creates a timestamped backup before atomically replacing the live file.
+     * The record index is the zero-based index used by yahrzeit_readDB().
+     *
+     * @return array{0: bool, 1: string, 2: string}
+     *     Success, result message, and backup filename.
+     */
     function single_name_write_one_csv_record($recordIndex, $person)
     {
         $filename = site_root() . "/data/yahrzeits-rev4.csv";
@@ -122,11 +127,9 @@
                 $replacement[4] = $rawrecord[4] ?? "";
                 $replacement[6] = $rawrecord[6] ?? "";
 
-                // Keep unrecognized legacy option tokens on this record.  The
-                // form owns the known options; ONNOW is also retained when the
-                // manual-on radio button is selected.
+                // Keep unrecognized legacy option tokens on this record. The
+                // form owns only the options represented by its fields.
                 $knownOptions = array_values(YAHRZEIT_OPTION_FIELDS);
-                $knownOptions[] = "ONNOW";
                 $unknownOptions = [];
 
                 foreach (preg_split('/[\s,]+/', $rawrecord[5] ?? "") as $option) {
@@ -136,9 +139,6 @@
                 }
 
                 $options = yahrzeit_person_options_text($person);
-                if (!empty($person['onnow'])) {
-                    $options = trim($options . " ONNOW");
-                }
                 $replacement[5] = trim($options . " " . implode(" ", $unknownOptions));
 
                 // Rev4 uses the first eight fields.  Preserve any trailing
@@ -394,18 +394,9 @@
             </td>
             <td class="text" valign="top">
                 <input type="radio" name="yzmode" value="auto" 
-                    <?php echo (empty($person['manual']) && empty($person['reserved']) ? "checked" : "") ?> >
+                    <?php echo (empty($person['reserved']) ? "checked" : "") ?> >
                     <b>Automatic</b> or calendar driven.<br>
-                    &nbsp; &nbsp; &nbsp; &nbsp; Per the observances above.  <br>
-                &nbsp; <br>
-                <input type="radio" name="yzmode" value="manual"
-                    <?php echo (!empty($person['manual']) ? "checked" : "") ?> >
-                    <b>Manually</b> turn this light on/off.  <br>
-                    &nbsp; &nbsp; &nbsp; &nbsp; turn light 
-                    <input type="radio" name="onoff" value="on"
-                        <?php echo (!empty($person['onnow']) ? "checked" : "") ?> >on
-                    <input type="radio" name="onoff" value="off"
-                        <?php echo (empty($person['onnow']) ? "checked" : "") ?> >off
+                    &nbsp; &nbsp; &nbsp; &nbsp; Per the observances above.
                 <br>
                 &nbsp; <br>
                 <input type="radio" name="yzmode" value="reserved"
@@ -459,9 +450,7 @@
             'yomhashoah'        => (post_value('yomhashoah') == "TRUE"),
             'yomhazikaron'      => (post_value('yomhazikaron') == "TRUE"),
 
-            'onnow'             => (post_value('onoff') == "on"),
             'reserved'          => ($yzmode == "reserved"),
-            'manual'            => ($yzmode == "manual"),
 
             'panelId'           => post_value('panelId'),
             'row'               => post_value('row'),

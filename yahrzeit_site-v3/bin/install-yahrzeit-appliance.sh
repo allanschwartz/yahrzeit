@@ -62,7 +62,7 @@ sudo systemctl stop apparmor || true
 mkdir -p "$INSTALL_PARENT"
 
 if [ ! -d "$REPO_DIR/.git" ]; then
-    git clone --filter=blob:none --sparse "$REPO_URL" "$REPO_DIR"
+    git clone --filter=blob:none --no-checkout "$REPO_URL" "$REPO_DIR"
     cd "$REPO_DIR"
     git sparse-checkout init --cone
     git sparse-checkout set "$SITE_SUBDIR"
@@ -70,9 +70,9 @@ if [ ! -d "$REPO_DIR/.git" ]; then
 else
     cd "$REPO_DIR"
     git fetch origin
-    git checkout "$BRANCH"
     git sparse-checkout init --cone || true
     git sparse-checkout set "$SITE_SUBDIR"
+    git checkout "$BRANCH"
     git pull --ff-only origin "$BRANCH"
 fi
 

@@ -43,8 +43,7 @@ global $tab;
 
 
 
-// Absolute filesystem path to yahrzeit_site-v3.
-// Because this file lives in include/, dirname(__DIR__) is the site root.
+// Absolute filesystem path to yahrzeit_site-v3. This file lives in include/.
 function site_root()
 {
     return dirname(__DIR__);
@@ -61,9 +60,14 @@ function site_url($path)
     return site_url_prefix() . ltrim($path, "/");
 }
 
-// Read data/minhag.ini and merge it with defaults.
-// The defaults make the application tolerant of older or partially edited
-// configuration files. Boolean-like values are normalized to "YES" or "NO".
+/**
+ * Read data/minhag.ini and supply defaults for missing configuration keys.
+ *
+ * Boolean-like Yizkor settings are normalized to "YES" or "NO". An invalid
+ * yahrzeitObservance value is replaced with the default.
+ *
+ * @return array<string, string>
+ */
 function read_minhag_ini()
 {
     $filename = site_root() . "/data/minhag.ini";
@@ -80,8 +84,7 @@ function read_minhag_ini()
         'yahrzeitLightTime' => "atSunset",
         'yahrzeitMinBefore' => "18",
         'yahrzeitMinAfter' => "72",
-        'yahrzeitPlusShabbat' => "YES",
-        'yahrzeitFullWeek' => "YES",
+        'yahrzeitObservance' => "week",
         'yizkorYomKippur' => "YES",
         'yizkorShmini' => "YES",
         'yizkorPesach' => "YES",
@@ -110,16 +113,18 @@ function read_minhag_ini()
         $minhag = $minhagDefault;
     }
 
-    // deal with missing lines in the minhag.ini file
+    // Keep partially edited configuration files usable.
     foreach ( $minhagDefault as $key => $value ) {
         if ( !isset($minhag[$key]) ) {
             $minhag[$key] = $minhagDefault[$key];
         }
     }
 
-    // translate booleans to "myBools"
-    $minhag['yahrzeitPlusShabbat'] = myBool( $minhag['yahrzeitPlusShabbat'] );
-    $minhag['yahrzeitFullWeek'] = myBool( $minhag['yahrzeitFullWeek'] );
+    if (!in_array($minhag['yahrzeitObservance'], ['day', 'week'], true)) {
+        $minhag['yahrzeitObservance'] = $minhagDefault['yahrzeitObservance'];
+    }
+
+    // Normalize the remaining checkbox-style settings.
     $minhag['yizkorYomKippur'] = myBool( $minhag['yizkorYomKippur'] );
     $minhag['yizkorShmini'] = myBool( $minhag['yizkorShmini'] );
     $minhag['yizkorPesach'] = myBool( $minhag['yizkorPesach'] );
@@ -129,6 +134,12 @@ function read_minhag_ini()
     return $minhag;
 }
 
+/**
+ * Replace data/minhag.ini with the supplied configuration values.
+ *
+ * @param array<string, mixed> $assoc_arr
+ * @return int 1 after a successful write; write failures terminate the request.
+ */
 function write_minhag_ini( $assoc_arr) 
 {
 
@@ -161,7 +172,7 @@ function write_minhag_ini( $assoc_arr)
     return 1;
 }
 
-//     this is for numbers 1..30
+// Emit numeric <option> elements for an inclusive range.
 function print_option_n1n2($selected, $n1, $n2, $fmt) 
 {
 
@@ -175,7 +186,7 @@ function print_option_n1n2($selected, $n1, $n2, $fmt)
 } 
 
 
-// $options is a simple array  ('apple', 'orange', 'pear')
+// Emit <option> elements from a list of display values.
 function print_option1($selected, $options) 
 {
     if ( $selected == "" ) {
@@ -188,7 +199,7 @@ function print_option1($selected, $options)
 } 
 
 
-// $options is a hash array  ('macintosh' => 'apple', 'navel' => 'orange', 'bartlett' => 'pear')
+// Emit <option> elements from value => display-text pairs.
 function print_option2($selected, $options) 
 {
     foreach ($options as $value => $text) {
@@ -197,7 +208,7 @@ function print_option2($selected, $options)
     }
 } 
 
-// normalize PHP bools and texts representing bools into YES or NO
+// Normalize PHP booleans and common textual forms to "YES" or "NO".
 function myBool($v)
 {
     if (is_bool($v)) {
@@ -224,6 +235,12 @@ function h($s)
 }
 
 
+/**
+ * Emit the standard result-message panel.
+ *
+ * $message and $click_here_msg may contain trusted application HTML. The link
+ * URL is converted to a site-relative URL and escaped here.
+ */
 function emitMessagePage( $message, $click_here_msg, $click_here_url ) 
 {
 
@@ -275,6 +292,9 @@ ENDOFTEXT;
 }
 
 
+/**
+ * Emit a screen title, trusted HTML description, and optional page-help link.
+ */
 function emitTopOfScreen($title, $description, $helpfile = "")
 {
     $transGif = h(site_url("images/trans.gif"));
@@ -322,6 +342,7 @@ ENDOFTEXT;
 }
 
 
+// Emit one navigation tab in the legacy table-based page shell.
 function toptab ( $selected, $fileref, $tabname ) 
 {
     $fileUrl = h(site_url($fileref));
@@ -336,10 +357,12 @@ function toptab ( $selected, $fileref, $tabname )
     ($selected ? '"tabSelectedEnd"' : '"tabUnselectedEnd"' )."> &nbsp; </td>\n";
 }
 
-// Emit the common page shell: HTML head, CBS logo, top tabs, left spacer,
-// and the opening table structure used by the legacy screens.
-// Each screen is responsible for its own main content and then calls
-// emitFooter() to close the structure.
+/**
+ * Emit the common HTML head, navigation, and opening page-shell markup.
+ *
+ * Each screen emits its main content and then calls emitFooter() to close the
+ * table structure and document.
+ */
 function emitHeader( $title, $tab )
 {
 
@@ -359,12 +382,10 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
 </head>
 <body class="bgNone">
 
-<!-- BEG entire screen table -->
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr> 
     <td valign="top" class="tabsBg">
 
-<!-- BEG top pane table -->
 <table width="99%" border="0" cellspacing="0" class="tabsBg" cellpadding="0">
   <tr height="48">
     <td valign="middle" width="380">
@@ -374,7 +395,6 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
     </td>
 
     <td valign="middle" align="center">
-        <!-- BEG top tabs table -->
         <table border="0" cellspacing="0" cellpadding="0" align="center">
           <tr>
             <?php  toptab ($tab == 1, "0yahrzeit.php", "Yahrzeit" ); ?>
@@ -384,7 +404,6 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
             <?php  toptab ($tab == 5, "7minhag.php", "Minhag" ); ?>
           </tr>
         </table>
-        <!-- END top tabs table -->
     </td>
 
     <td align="right" valign="middle" width="180">
@@ -402,12 +421,10 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
   </tr>
   <tr>
     <td>
-        <!-- BEG outer table around left nav pane and primary pane -->
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr>
             <td valign="top" width="180">
 
-                <!-- BEG inner table around left nav pane -->
                 <table width="100%" border="0" cellspacing="0" cellpadding="0">
                   <tr align="left" valign="top"> 
                     <td height="5" align="right">
@@ -421,17 +438,13 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
                         <table width="98%" border="0" align="center" class=botBorder cellpadding="1" cellspacing="1">
                           <tr>
                             <td>
-                        <!-- left nav bar goes in here-->
-
                     </td>
                   </tr>
                 </table>
-                <!-- END inner table around left nav pane -->
 
             </td>
           </tr>
         </table>
-        <!-- END outer table around left nav pane -->
 
     </td>
     <td width="2"><img src="<?php echo h(site_url('images/trans.gif')); ?>" width=1 height=1></td>
@@ -442,7 +455,6 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
 
     <td valign="top">
 
-        <!-- BEG inner table around left nav pane -->
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
             <td>
@@ -459,6 +471,7 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
 }
 
 
+/** Close the page-shell markup opened by emitHeader(). */
 function emitFooter()
 {
 ?>
@@ -480,7 +493,7 @@ function emitFooter()
 <?php
 }
 
-// Footer row used inside the main screen content tables.
+// Emit the copyright rows used inside a screen's main content table.
 function emitCopyright()
 {
 ?>
@@ -502,6 +515,7 @@ function emitCopyright()
 <?php
 }
 
+// Emit the standalone div-based copyright block used by help pages.
 function emitPageCopyright2()
 {
 ?>

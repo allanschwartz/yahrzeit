@@ -637,7 +637,6 @@ function yz_process_person($person, $timestamp)
         debug_log( 40,
             "yz_process_person: name='$name' location='$location' reserved=" .
             (!empty($person['reserved']) ? "YES" : "NO") .
-            " manual=" . (!empty($person['manual']) ? "YES" : "NO") .
             " should_light=" . ($should_light ? "YES" : "NO") .
             " reason='$reason'",
             __LINE__

@@ -1,31 +1,72 @@
 # CBS Yahrzeit Wall Appliance
 
-This repository contains the PHP web application, scheduler, and installer for the Congregation Beth Sholom Yahrzeit Wall appliance.
+This directory contains the PHP web application, scheduler, command-line
+engine, and installer for the Congregation Beth Sholom Yahrzeit Wall
+appliance.
 
-## What this project does
+This README is intended for future maintainers of the appliance, including
+people who did not build the original system.
+
+The top-level repository README explains the whole Yahrzeit project: embedded
+firmware, hardware, panel assets, and historical versions. This README is only
+about the `yahrzeit_site-v3` appliance software.
+
+## What This Appliance Does
 
 The appliance is responsible for:
 
 - displaying the current Yahrzeit wall status,
 - rendering memorial/name views and reports,
-- applying synagogue lighting policy,
-- running scheduled yahrzeit and Yizkor phases,
-- and preparing controller command streams for the physical wall.
+- maintaining the memorial CSV database,
+- applying synagogue lighting policy from `data/minhag.ini`,
+- running scheduled Yahrzeit and Yizkor phases,
+- generating controller command streams,
+- and transmitting those commands to the Arduino-based wall controller.
 
-## Repository layout
+## System Shape
 
-- `bin/` — command-line tools and scheduler/engine entry points
-- `include/` — shared PHP helpers for dates, names, panels, lighting policy, and page layout
-- `data/` — CSV data and configuration such as `minhag.ini`
-- `help/` — help pages for the web UI
-- `docs/` — notes and project documentation
-- `js/` — legacy browser-side helper scripts used by the screen templates
+The usual control path is:
+
+```text
+cron
+  -> bin/yahrzeit_scheduler
+    -> bin/yahrzeit
+      -> bin/yahrzeit_engine.php
+        -> controller command stream
+          -> nc TCP connection
+            -> Arduino V3 controller
+```
+
+The web screens use the same underlying code where possible. Reports, audits,
+and command previews are intended to be safe; live wall operations call
+`bin/yahrzeit` and may transmit to the controller.
+
+## Directory Layout
+
+- `bin/` - command-line tools, scheduler, engine, and installer.
+- `include/` - shared PHP helpers for dates, names, panels, LED mapping,
+  lighting policy, and page layout.
+- `data/` - live CSV data, `minhag.ini`, backups, and scheduler log.
+- `help/` - help pages shown by the web UI.
+- `docs/` - project notes and generated/internal documentation.
+- `css/`, `images/`, `js/` - legacy browser-side assets used by the screen
+  templates.
+
+## Important Files
+
+- `data/yahrzeits-rev4.csv` - memorial database.
+- `data/minhag.ini` - synagogue lighting policy and display settings.
+- `bin/yahrzeit` - main command wrapper and controller transport.
+- `bin/yahrzeit_engine.php` - decides what should be lit or reported.
+- `bin/yahrzeit_scheduler` - cron-facing scheduled phase runner.
+- `include/panels.inc.php` - static wall/panel geometry.
+- `include/leds.inc.php` - maps panel/person locations to controller commands.
 
 ## Installation
 
-For a fresh Ubuntu/Debian appliance, run the installer script from the project root or download it directly:
+For a fresh Ubuntu/Debian appliance, run:
 
-```bash
+```sh
 curl -fsSL https://raw.githubusercontent.com/allanschwartz/yahrzeit/master/yahrzeit_site-v3/bin/install-yahrzeit-appliance.sh -o /tmp/install-yahrzeit-appliance.sh
 chmod +x /tmp/install-yahrzeit-appliance.sh
 /tmp/install-yahrzeit-appliance.sh
@@ -34,19 +75,177 @@ chmod +x /tmp/install-yahrzeit-appliance.sh
 The installer:
 
 - installs required packages,
-- clones or updates the repository,
+- enables SSH,
+- disables AppArmor,
+- clones or updates only `yahrzeit_site-v3` using Git sparse checkout,
 - configures Apache to serve the site,
-- runs PHP syntax checks and basic runtime sanity checks,
+- runs PHP and shell syntax checks,
+- runs non-transmitting sanity checks,
 - and prints suggested cron entries.
 
-It does not install cron automatically and does not transmit commands to the controller during tests.
+The installer does not install cron automatically and does not transmit commands
+to the physical controller during its tests.
 
-## Notes
+By default, the installer places the sparse checkout under:
 
-- The scheduler logic is intentionally separate from screen rendering.
-- The shared lighting policy logic is used by both the engine and the GUI views.
-- For production deployment, review the cron suggestions shown by the installer before enabling scheduled runs.
+```text
+~/src/yahrzeit/yahrzeit_site-v3
+```
 
-## License and maintenance
+and links it into Apache as:
 
-This project is maintained for the CBS Yahrzeit Wall appliance workflow. For deployment questions, review the installer script and the documentation in `docs/`.
+```text
+/var/www/html/yahrzeit
+```
+
+## Network Configuration
+
+There are two fixed-address concerns:
+
+- the appliance/server address, used by operators browsing to the web UI,
+- the Arduino controller address, used by `bin/yahrzeit` when transmitting
+  commands.
+
+The installer does not configure a static appliance/server IP address. On a
+fresh Ubuntu appliance, configure that on-site using the local network policy,
+usually in `/etc/netplan/*.yaml`.
+
+Do not commit site-specific `/etc/netplan/*.yaml` files to this repository.
+If an example is added later, it should be clearly marked as an example.
+
+## Controller Address
+
+The default controller target is in `bin/yahrzeit`:
+
+```sh
+CONTROLLER_HOST="${CONTROLLER_HOST:-192.168.13.9}"
+CONTROLLER_PORT="${CONTROLLER_PORT:-2001}"
+```
+
+The Arduino V3 firmware must be configured to use the matching IP address and
+listen port. Before deployment, confirm that any lab-only override has been
+removed from the web application.
+
+You can override the controller target for a single command:
+
+```sh
+bin/yahrzeit --host 192.168.13.9 --port 2001 --status
+```
+
+or through the environment:
+
+```sh
+CONTROLLER_HOST=192.168.13.9 CONTROLLER_PORT=2001 bin/yahrzeit --status
+```
+
+## Safe Validation
+
+From this directory, syntax-check the PHP and shell files with:
+
+```sh
+for f in [0-9]*.php include/*.inc.php help/*.php bin/yahrzeit_engine.php bin/yahrzeit_scheduler; do
+    php -l "$f"
+done
+
+bash -n bin/yahrzeit
+bash -n bin/install-yahrzeit-appliance.sh
+```
+
+Run data/audit checks that do not transmit:
+
+```sh
+bin/yahrzeit --audit
+bin/yahrzeit --notransmit --status
+bin/yahrzeit --notransmit
+```
+
+## Live Controller Checks
+
+Only run these when the controller IP is correct and it is safe to talk to the
+wall:
+
+```sh
+bin/yahrzeit --status
+bin/yahrzeit --version
+bin/yahrzeit --help-controller
+```
+
+Manual wall-wide operations are live operations:
+
+```sh
+bin/yahrzeit --all-off
+bin/yahrzeit --all-on
+bin/yahrzeit --yizkor
+```
+
+Use them carefully.
+
+## Scheduled Operation
+
+The installer prints suggested cron entries similar to:
+
+```cron
+0 16 * * 5 cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yahrzeit   >> data/scheduler.log 2>&1
+0 11 * * * cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yizkor-on  >> data/scheduler.log 2>&1
+0 13 * * * cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yizkor-off >> data/scheduler.log 2>&1
+```
+
+Review the times and policy before enabling cron on the installed appliance.
+
+## Data Backup And Restore
+
+The most important live data file is:
+
+```text
+data/yahrzeits-rev4.csv
+```
+
+The web Reports page can export and import this CSV. The upload path creates a
+backup under `data/backups/` and runs an audit afterward.
+
+Before replacing the appliance or doing major maintenance, copy:
+
+```text
+data/yahrzeits-rev4.csv
+data/minhag.ini
+data/backups/
+```
+
+## Updating The Appliance
+
+The preferred one-person engineering workflow is:
+
+1. Make production changes in the master repository on the development Mac.
+2. Commit the changes.
+3. Tag the installation version.
+4. Push `master` and the tag.
+5. On the installed appliance, rerun `bin/install-yahrzeit-appliance.sh`.
+
+The installer updates with:
+
+```sh
+git pull --ff-only origin master
+```
+
+This is deliberately conservative. It will not silently merge or overwrite
+local changes.
+
+## What Not To Change Casually
+
+- Do not change the CSV schema without a migration plan.
+- Do not change controller protocol commands unless the embedded firmware is
+  updated at the same time.
+- Do not edit panel geometry without running audits and checking reports.
+- Do not depend on lab IP addresses in production.
+- Do not add live controller commands to install-time tests.
+
+## Related Documentation
+
+- `../README.md` - top-level map of the full Yahrzeit project.
+- `docs/yahrzeit-installer-notes.txt` - installer notes.
+- `docs/php-internal-map.html` - internal map of the PHP code.
+- `docs/todo.md` - working punch list.
+- `AGENTS.md` - coding guidance for AI/code-assistant work in this directory.
+
+For embedded controller firmware and hardware design files, see the top-level
+repository README and the sibling `embedded/` and `Hardware/` directories.

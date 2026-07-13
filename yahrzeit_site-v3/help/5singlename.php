@@ -53,8 +53,10 @@ audit from the Reports page.
 <h3>Editing</h3>
 
 <p>
-This page preserves some legacy editing behavior. Use caution before saving
-changes here. For normal database maintenance, use the Reports page to
+Use this page to correct one memorial record and its automatic observance
+settings. Individual lights are not manually controlled from a memorial
+record. Routine lighting is calculated automatically from the saved dates and
+synagogue policy. For batch database maintenance, use the Reports page to
 download, edit, upload, and audit the CSV memorial database.
 </p>
 

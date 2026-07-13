@@ -13,7 +13,7 @@
  *
  *          - whether yahrzeits follow the English or Hebrew date
  *          - whether English-date yahrzeits begin at nightfall
- *          - whether lights remain on through Shabbat or through the week
+ *          - whether each yahrzeit is observed for one day or a full week
  *          - Yizkor start/end times
  *          - which Yizkor holidays are observed
  *          - whether Pesach and Shavuot Yizkor are observed on day 1/2/7/8
@@ -71,6 +71,12 @@ function minhag_post_value($key, $default = "")
     return $_POST[$key] ?? $default;
 }
 
+function minhag_observance_from_post()
+{
+    $observance = minhag_post_value('yahrzeitObservance', 'week');
+    return in_array($observance, ['day', 'week'], true) ? $observance : 'week';
+}
+
 function minhag_build_from_post()
 {
     return [
@@ -87,8 +93,7 @@ function minhag_build_from_post()
             'yahrzeitLightTime'    => minhag_post_value('yahrzeitLightTime'),
             'yahrzeitMinBefore'    => minhag_post_value('yahrzeitMinBefore'),
             'yahrzeitMinAfter'     => minhag_post_value('yahrzeitMinAfter'),
-            'yahrzeitPlusShabbat'  => myBool(minhag_post_value('yahrzeitPlusShabbat')),
-            'yahrzeitFullWeek'     => myBool(minhag_post_value('yahrzeitFullWeek')),
+            'yahrzeitObservance'   => minhag_observance_from_post(),
 
             'yizkorYomKippur'      => myBool(minhag_post_value('yizkorYomKippur')),
             'yizkorShmini'         => myBool(minhag_post_value('yizkorShmini')),
@@ -228,17 +233,17 @@ function minhag_render_form($minhag)
 
         <tr>
             <td height="25" align="left" valign="top">
-                <span class="text">Extra Lighting Options</span>
+                <span class="text">Lighting Option</span>
                 <br>
-                <span class="textSmall">You may choose to extend the yahrzeit lights for more than 24 hours.</span>
+                <span class="textSmall">Choose whether each Yahrzeit is lit for its observance day or for the full Shabbat-to-Shabbat week.</span>
             </td>
             <td colspan="2" class="text">
-                <input type="checkbox" name="yahrzeitPlusShabbat" value="YES"
-                       <?php echo ($minhag['yahrzeitPlusShabbat'] == "YES" ? "checked" : ""); ?> >
-                       Include the Shabbat before <br>
-                <input type="checkbox" name="yahrzeitFullWeek" value="YES"
-                       <?php echo ($minhag['yahrzeitFullWeek'] == "YES" ? "checked" : ""); ?> >
-                       Include the full week from Erev Shabbat before to Erev Shabbat after
+                <input type="radio" name="yahrzeitObservance" value="day"
+                       <?php echo ($minhag['yahrzeitObservance'] == "day" ? "checked" : ""); ?> >
+                       Observe the Yahrzeit day only <br>
+                <input type="radio" name="yahrzeitObservance" value="week"
+                       <?php echo ($minhag['yahrzeitObservance'] == "week" ? "checked" : ""); ?> >
+                       Observe the full week, from Erev Shabbat through the following Erev Shabbat
             </td>
         </tr>
 

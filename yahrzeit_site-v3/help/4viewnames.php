@@ -17,7 +17,7 @@ require_once "../include/misc.inc.php";
 // help/4viewnames.php
 $title = "View Names Help";
 $description = "Help for searching and reviewing memorial records.";
-$tab = 3;         // Reports
+$tab = 3;         // Names
 $helpfile = "";  // no nested page-help link on a help page
 
 emitHeader($title, $tab);
@@ -38,8 +38,22 @@ database.
 <h3>Searching</h3>
 
 <p>
-Use the search box to find memorial records by name or other displayed text.
-Leave the search box empty to show all records.
+Use the search box to find memorial records by name, English or Hebrew date,
+observance option, or panel location. Searching is not case-sensitive.
+</p>
+
+<p>
+You may enter more than one search term. Only records containing all of the
+terms are displayed; the terms may match different fields and may be entered
+in any order. For example, <code>Cohen 1945</code> finds records containing
+both &ldquo;Cohen&rdquo; and &ldquo;1945,&rdquo; while
+<code>Tishri col2b</code> finds records containing both &ldquo;Tishri&rdquo;
+and the panel location &ldquo;col2b.&rdquo;
+</p>
+
+<p>
+Select <strong>Clear</strong>, or leave the search box empty, to display all
+records again.
 </p>
 
 <h3>Displayed Information</h3>
@@ -47,7 +61,9 @@ Leave the search box empty to show all records.
 <p>
 Each row shows the memorialized person, the stored English/Gregorian date,
 the stored Hebrew date, any special options, and the physical panel location
-assigned to that person.
+assigned to that person. The Lit column indicates whether the memorial light
+should currently be lit according to the memorial record and synagogue
+lighting policy. It is not a live electrical reading from the controller.
 </p>
 
 <h3>Editing Records</h3>

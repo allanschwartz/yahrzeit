@@ -20,9 +20,16 @@
  *      modernization in 2026.
  */
 
-// Return the active normal-lighting week as midnight timestamps.  The week is
-// anchored to the sunset-based erev_shabbat_to_erev_shabbat cycle, so the
-// boundary is evaluated at sunset rather than assuming a fixed midnight day.
+/**
+ * Return the active Saturday-through-Friday lighting window.
+ *
+ * A Friday preparation run is treated as though Shabbat has begun, regardless
+ * of its clock time, and therefore selects tomorrow through the following
+ * Friday. Returned timestamps represent local midnight at both inclusive
+ * endpoints.
+ *
+ * @return array{0: int, 1: int}
+ */
 function yahrzeit_lighting_week_range($timestamp = null)
 {
     if ($timestamp === null) {
@@ -33,10 +40,7 @@ function yahrzeit_lighting_week_range($timestamp = null)
     $weekday = (int)date("N", $timestamp);
 
     if ($weekday == 5) {
-        $sunset = cbs_sunset_timestamp($timestamp);
-        $start = ($sunset !== false && $timestamp >= $sunset)
-            ? strtotime("+1 day", $today)
-            : strtotime("-6 days", $today);
+        $start = strtotime("+1 day", $today);
     } else {
         // ISO weekday: Saturday is 6, Sunday is 7, and Monday is 1.
         $days_since_saturday = ($weekday + 1) % 7;
@@ -46,6 +50,11 @@ function yahrzeit_lighting_week_range($timestamp = null)
     return [$start, strtotime("+6 days", $start)];
 }
 
+/**
+ * Return whether a Gregorian month/day falls within the lighting week.
+ *
+ * A February 29 observance falls on February 28 in a non-leap year.
+ */
 function yahrzeit_english_day_is_in_lighting_week($month, $day, $timestamp)
 {
     $month = english_month_number($month);
@@ -71,9 +80,15 @@ function yahrzeit_english_day_is_in_lighting_week($month, $day, $timestamp)
     return false;
 }
 
-// Does this person match the current yahrzeit "today" or "week" window?
-// Date context globals must already have been populated with
-// set_yahrzeit_date_context().
+/**
+ * Match one memorial against the requested "today" or "week" window.
+ *
+ * The date-context globals must first be populated for $timestamp. Hebrew
+ * dates are converted to their civil occurrence, including the Elul/Tishri
+ * year boundary, before the selected window is tested.
+ *
+ * @param string $window "today" or "week"
+ */
 function yahrzeit_person_matches_observance_window($person, $window, $timestamp = null)
 {
     global $minhag;
@@ -166,8 +181,13 @@ function yahrzeit_person_is_observed_this_week($person, $timestamp = null)
     return yahrzeit_person_matches_observance_window($person, "week", $timestamp);
 }
 
-// Return the normal yahrzeit-mode decision and its existing audit reason.
-// This sets the legacy date-context globals to the supplied timestamp.
+/**
+ * Decide whether one memorial should be lit in normal automatic operation.
+ *
+ * This sets the legacy date-context globals to the supplied timestamp.
+ *
+ * @return array{should_light: bool, reason: string}
+ */
 function yahrzeit_person_lighting_decision($person, $timestamp = null)
 {
     global $minhag;
@@ -182,35 +202,19 @@ function yahrzeit_person_lighting_decision($person, $timestamp = null)
         return ['should_light' => false, 'reason' => 'reserved'];
     }
 
-    if (!empty($person['manual'])) {
-        return ['should_light' => true, 'reason' => 'manual'];
-    }
+    $observance = $minhag['yahrzeitObservance'] ?? "week";
 
-    if (yahrzeit_person_is_observed_today($person)) {
-        return ['should_light' => true, 'reason' => 'yahrzeit today'];
-    }
-
-    if (
-        isset($minhag['yahrzeitPlusShabbat']) &&
-        $minhag['yahrzeitPlusShabbat'] == "YES" &&
-        is_erev_shabbat_for_lighting() &&
-        yahrzeit_person_is_observed_this_week($person, $timestamp)
-    ) {
-        return ['should_light' => true, 'reason' => 'plus-Shabbat weekly yahrzeit'];
-    }
-
-    if (
-        isset($minhag['yahrzeitFullWeek']) &&
-        $minhag['yahrzeitFullWeek'] == "YES" &&
-        yahrzeit_person_is_observed_this_week($person, $timestamp)
-    ) {
+    if ($observance == "week" && yahrzeit_person_is_observed_this_week($person, $timestamp)) {
         return ['should_light' => true, 'reason' => 'full-week yahrzeit'];
+    }
+
+    if ($observance == "day" && yahrzeit_person_is_observed_today($person)) {
+        return ['should_light' => true, 'reason' => 'yahrzeit today'];
     }
 
     return ['should_light' => false, 'reason' => 'not active'];
 }
 
-// Public convenience helper for screens and reports.
 function yahrzeit_person_should_light_now($person, $timestamp = null)
 {
     $decision = yahrzeit_person_lighting_decision($person, $timestamp);
@@ -218,8 +222,9 @@ function yahrzeit_person_should_light_now($person, $timestamp = null)
     return $decision['should_light'];
 }
 
-// Count how many memorial records should be lit at the supplied timestamp.
-// This uses the shared policy helper so screens do not duplicate date logic.
+/**
+ * Load the memorial database and count records lit at the supplied timestamp.
+ */
 function yahrzeit_lit_person_count($timestamp = null)
 {
     if ($timestamp === null) {
@@ -238,5 +243,3 @@ function yahrzeit_lit_person_count($timestamp = null)
 
     return $count;
 }
-
-?>

@@ -3,7 +3,8 @@
 # -----------------------------------------------------------------------------
 #
 # Purpose:
-#   Install the CBS Yahrzeit Wall PHP application on a fresh Ubuntu appliance.
+#   Install the CBS Yahrzeit Wall PHP application on a fresh Ubuntu/Debian
+#   appliance.
 #
 # Target platform:
 #   - Intel NUC or similar x86_64 machine
@@ -16,9 +17,10 @@
 #
 # Expected install model:
 #   This script is intended to be copied or curled onto the appliance and run
-#   locally.  It installs operating-system packages, clones or updates the
-#   public GitHub repository, configures Apache to serve the site, runs syntax
-#   checks, and prints the suggested cron entries.
+#   locally.  It installs operating-system packages, clones or updates only the
+#   yahrzeit_site-v3 subdirectory using Git sparse checkout, configures Apache
+#   to serve the site, runs syntax checks, and prints the suggested cron
+#   entries.
 #
 #   It does not transmit commands to the physical LED controller.
 #   It does not install cron entries automatically.
@@ -26,12 +28,12 @@
 #
 # One-time use from a fresh appliance:
 #
-#   curl -fsSL -o /tmp/install-yahrzeit-appliance \
-#     https://raw.githubusercontent.com/allanschwartz/yahrzeit/master/yahrzeit_site-v3/bin/install-yahrzeit-appliance
+#   curl -fsSL -o /tmp/install-yahrzeit-appliance.sh \
+#     https://raw.githubusercontent.com/allanschwartz/yahrzeit/master/yahrzeit_site-v3/bin/install-yahrzeit-appliance.sh
 #
-#   less /tmp/install-yahrzeit-appliance
-#   chmod +x /tmp/install-yahrzeit-appliance
-#   /tmp/install-yahrzeit-appliance
+#   less /tmp/install-yahrzeit-appliance.sh
+#   chmod +x /tmp/install-yahrzeit-appliance.sh
+#   /tmp/install-yahrzeit-appliance.sh
 #
 # Recommended preconditions:
 #   1. Install Ubuntu Server LTS.
@@ -44,11 +46,12 @@
 #        ping -c 3 github.com
 #
 # What this installer sets up:
-#   - git
+#   - git, using sparse checkout for yahrzeit_site-v3
 #   - Apache
 #   - PHP CLI and Apache PHP support
 #   - netcat for controller communication
 #   - coreutils timeout support
+#   - OpenSSH server enabled and started
 #   - /var/www/html/yahrzeit symlink to the checked-out application
 #   - PHP PCRE JIT disabled, to avoid executable-memory warnings on hardened
 #     server environments
@@ -83,8 +86,9 @@
 #   - The installer is deliberately boring and short-lived.
 #   - It is safe to rerun; it should update the repo and refresh the Apache
 #     symlink.
-#   - For production, the router should reserve a stable DHCP address for this
-#     appliance.
+#   - For production, the appliance should have a stable address, either by
+#     router DHCP reservation or site-local Ubuntu network configuration such
+#     as /etc/netplan/*.yaml.
 #   - The production password should be changed before installation at the
 #     customer site.
 #

@@ -66,58 +66,49 @@ const HEBREW_MONTH_MAPPING = [
 const CBS_LATITUDE = 37.78259;
 const CBS_LONGITUDE = -122.47324;
 
-// Normalize Hebrew month text from older CSV data or user input.
-// This preserves common Adar I / Adar II spellings and uses a small
-// Levenshtein fallback for minor spelling differences.
+/**
+ * Normalize a Hebrew month from legacy CSV text or form input.
+ *
+ * Common Adar I/II spellings are handled explicitly; other minor misspellings
+ * use the closest known month name.
+ */
 function closest_hebrew_month( $str )
 {
-    $target = ucfirst( strtolower( $str ));;
+    $target = ucfirst( strtolower( $str ));
 
-    // special case for ""
     if ( $target == "" ) {
         return "";
     }
-    // special case for "Adar II"
+
     if ( $target == "Adar 2" || $target == "Adar2" || $target == "Adar II" || $target == "AdarII" ) {
         return "AdarII";
     }
-    // special case for "Adar I"
+
     if ( $target == "Adar 1" || $target == "Adar1" || $target == "Adar I" || $target == "AdarI" ) {
         return "AdarI";
     }
 
-    // no shortest distance found, yet
+    $closest = "";
     $shortest = -1;
 
-    // loop through words to find the closest
     foreach (HEBREW_MONTH_NAMES as $word) {
-
-        // calculate the distance between the input word,
-        // and the current word
         $lev = levenshtein($target, $word);
 
-        // check for an exact match
         if ($lev == 0) {
-
-            // closest word is this one (exact match)
             $closest = $word;
-            $shortest = 0;
-
-            // break out of the loop; we've found an exact match
             break;
         }
 
-        // if this distance is less than the next found shortest
-        // distance, OR if a next shortest word has not yet been found
         if ($lev <= $shortest || $shortest < 0) {
-            // set the closest match, and shortest distance
             $closest  = $word;
             $shortest = $lev;
         }
     }
+
     return( $closest );
 }
 
+/** Return sunset at CBS for the supplied timestamp, or false if unavailable. */
 function cbs_sunset_timestamp($timestamp)
 {
     $sun = date_sun_info($timestamp, CBS_LATITUDE, CBS_LONGITUDE);
@@ -126,6 +117,7 @@ function cbs_sunset_timestamp($timestamp)
 }
 
 
+/** Return CBS sunset as a display time such as "7:42 pm". */
 function cbs_sunset_time_string($timestamp)
 {
     $sunset = cbs_sunset_timestamp($timestamp);
@@ -138,7 +130,7 @@ function cbs_sunset_time_string($timestamp)
 }
 
 
-// Return the next Erev Shabbat marker used to anchor the weekly lighting window.
+// Return midnight on today when today is Friday, otherwise next Friday.
 function next_erev_shabbat_timestamp()
 {
     $today = strtotime("today");
@@ -151,12 +143,14 @@ function next_erev_shabbat_timestamp()
 }
 
 
+/** Return whether a Hebrew year is one of the seven leap years in its cycle. */
 function is_hebrew_leap_year($year)
 {
     return ((7 * (int)$year + 1) % 19) < 7;
 }
 
 
+/** Return today's civil-date Hebrew equivalent as "day month year". */
 function current_hebrew_date_string()
 {
     $jdDate = gregoriantojd((int)date('n'), (int)date('j'), (int)date('Y'));
@@ -173,6 +167,12 @@ function current_hebrew_date_string()
     return $hebrewDay . " " . $hebrewMonthName . " " . $hebrewYear;
 }
 
+/**
+ * Populate the legacy Gregorian and Hebrew date-context globals.
+ *
+ * Policy helpers that consume those globals must call this first for the
+ * timestamp being evaluated.
+ */
 function set_yahrzeit_date_context($timestamp)
 {
     global $today_month;
@@ -194,6 +194,7 @@ function set_yahrzeit_date_context($timestamp)
     list($hebrewMonth, $hebrewDay, $hebrewYear) = explode('/', $hebrewDate);
 }
 
+/** Return the Hebrew calendar year containing the supplied civil timestamp. */
 function hebrew_year_for_timestamp($timestamp)
 {
     $jd = gregoriantojd(date('n', $timestamp), date('j', $timestamp), date('Y', $timestamp));
@@ -203,19 +204,17 @@ function hebrew_year_for_timestamp($timestamp)
     return isset($parts[2]) ? (int)$parts[2] : 0;
 }
 
-// Boolean: does the given MONTH/DAY match today or tomorrow?
-//
-// This function is used after yahrzeit dates have been converted to a
-// Gregorian month/day for the current Hebrew/civil year.  The daemon is
-// normally run late in the day, so "today or tomorrow" is intentional:
-// after sunset, tomorrow's yahrzeit may already be the active observance.
+/**
+ * Return whether a Gregorian month/day matches today or tomorrow.
+ *
+ * The scheduled engine runs late in the civil day, when tomorrow's date may
+ * already be the active Hebrew observance after sunset.
+ */
 function english_day_matches_today_or_tomorrow($month, $day)
 {
     global $today_month;
     global $today_day;
     global $today_year;
-    global $options;
-
     $result_code = false;
 
     if ($month == "" || $day == "") {
@@ -254,67 +253,6 @@ function english_day_matches_today_or_tomorrow($month, $day)
     return $result_code;
 }
 
-// Boolean: is this month/day sometime this coming week?
-function english_day_matches_yahrzeit_week($month, $day)
-{
-    global $today_month;
-    global $today_day;
-    global $today_year;
-
-    $result_code = false;
-
-    if ($month == "" || $day == "") {
-        return false;
-    }
-
-    // Convert month names such as "Feb" or "May" to month numbers.
-    if (!is_numeric($month)) {
-        if (!isset(ENGLISH_MONTH_MAPPING[$month])) {
-            return false;
-        }
-        $month = ENGLISH_MONTH_MAPPING[$month];
-    }
-
-    $month = (int)$month;
-    $day   = (int)$day;
-    $year  = (int)$today_year;
-
-    if ($month < 1 || $month > 12 || $day < 1 || $day > 31) {
-        return false;
-    }
-
-    // Special case for Feb 29 in non-leap years.
-    if ($month == 2 && $day == 29 && !is_english_leap_year($year)) {
-        $day = 28;
-    }
-
-    $yz_date = mktime(0, 0, 0, $month,       $day,       $year);
-    $today   = mktime(0, 0, 0, $today_month, $today_day, $today_year);
-
-    // We assume this daemon is normally run in the late afternoon,
-    // computing yahrzeits for tomorrow / after sunset.
-    //
-    // If today is Erev Shabbat, the window runs through the next Erev Shabbat.
-    // Otherwise, compute the current erev_shabbat_to_erev_shabbat week window.
-    if (is_erev_shabbat_for_lighting()) {
-        $first_date  = strtotime("today", $today);
-        $second_date = strtotime("next friday", $today);
-    } else {
-        $second_date = strtotime("next friday", $today);
-        $first_date  = strtotime("-7 days", $second_date);
-    }
-
-    if ($first_date === false || $second_date === false || $yz_date === false) {
-        return false;
-    }
-
-    if (($first_date <= $yz_date) && ($yz_date <= $second_date)) {
-        $result_code = true;
-    }
-
-    return $result_code;
-}
-
 function english_month_number($month)
 {
 
@@ -335,11 +273,12 @@ function is_english_leap_year($year)
            ((($year % 100) != 0) || (($year % 400) == 0));
 }
 
-// Boolean: is the current late-afternoon boundary the start of Erev Shabbat?
-//
-// This returns true on Friday afternoon, because the daemon is normally run
-// in the late afternoon to compute the lights for the coming evening / Shabbat.
-
+/**
+ * Return whether the established date context is Friday.
+ *
+ * The historical name reflects the scheduled Friday preparation run. This
+ * helper does not inspect the actual time of day or calculate sunset.
+ */
 function is_erev_shabbat_for_lighting()
 {
     global $today_month;

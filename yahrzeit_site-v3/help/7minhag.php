@@ -50,11 +50,13 @@ lighting, the start time may instead be based on candle-lighting time,
 such as 18 minutes before sunset.
 </p>
 
-<h3>Shabbat and Weekly Lighting</h3>
+<h3>Yahrzeit Lighting Option</h3>
 
 <p>
-These options control whether yahrzeit lights remain on through Shabbat or
-through a longer weekly observance window.
+Choose whether each memorial is lit for its Yahrzeit day only or for the full
+week from Erev Shabbat through the following Erev Shabbat. The weekly option
+prepares the wall on Friday for Yahrzeits occurring from Shabbat through the
+following Friday.
 </p>
 
 <h3>Yizkor Lighting</h3>

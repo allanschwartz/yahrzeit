@@ -7,36 +7,12 @@
  * DESCRIPTION
  *      Panel geometry definitions for the CBS Yahrzeit Wall.
  *
- *      This file defines the physical wall layout: panel IDs, panel names,
- *      and the number of LED rows and columns on each panel.  The rest of
- *      the application uses this information to validate memorial locations,
- *      draw panel views, and translate a person's stored location into a
- *      controller command.
- *
- *      The original application treated panel data much like the memorial
- *      name database, with a small procedural object-store API:
- *
- *          panel_readDB()
- *          panel_numrows()
- *          panel_getObj($i)
- *          panel_getObj_byId($panelId)
- *
- *      In modern terms, this file combines the roles of a Panel record class
- *      and a PanelGeometry repository.  The panel_ prefix acts as a small
- *      module namespace.
+ *      The static panel IDs and dimensions are used to validate memorial
+ *      locations, render panel views, and map locations to controller LEDs.
  *
  * NOTES
- *      Panel geometry is now static application data, not an editable CSV
- *      file.  The old panel add/modify/delete workflow was removed because
- *      the physical wall layout is fixed.
- *
- *      Valid panel IDs are part of the memorial database contract.  The
- *      audit report uses this file to detect invalid panel IDs, out-of-range
- *      row/column values, and duplicate LED locations.
- *
- *      This file should know the wall geometry only.  It should not contain
- *      Yahrzeit date logic, Minhag policy, name-database parsing, or LED
- *      command transmission.
+ *      These values must remain synchronized with the physical wall and the
+ *      locations stored in data/yahrzeits-rev4.csv.
  *
  * HISTORY
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
@@ -50,9 +26,6 @@
  *      All rights reserved.
  */
 
-// Static CBS wall geometry.
-// These panel IDs and dimensions must match the physical wall and the
-// locations stored in data/yahrzeits-rev4.csv.
 const PANEL_STATIC_GEOMETRY = [
     ['panelId' => 'col1a', 'nRows' => 16, 'nCols' => 5, 'nNames' => 80],
     ['panelId' => 'col1b', 'nRows' => 22, 'nCols' => 5, 'nNames' => 110],
@@ -83,11 +56,13 @@ const PANEL_STATIC_GEOMETRY = [
     ['panelId' => 'col7c', 'nRows' => 18, 'nCols' => 5, 'nNames' => 90],
 ];
 
-// Load the static CBS panel geometry into memory.
-// Returns the number of panels defined.
+/**
+ * Return the panel count through the legacy database-loading API.
+ *
+ * Geometry is now static, so no load operation is required.
+ */
 function panel_readDB()
 {
-    // Compatibility shim. Geometry is now static and already loaded.
     return count(PANEL_STATIC_GEOMETRY);
 }
 
@@ -111,5 +86,3 @@ function panel_getObj_byId($panelId)
 
     return null;
 }
-
-?>
