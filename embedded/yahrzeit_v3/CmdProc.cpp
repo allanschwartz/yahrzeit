@@ -127,6 +127,7 @@ const char HelpText[]  =
     "\tSAve\n"
     "\tSTatus\n"
     "\tTEst <testnumber> [<panel>]\n"
+    "\tTIming on|off\n"
     "\tVErsion\n";
     
 // displayed with the "test" command

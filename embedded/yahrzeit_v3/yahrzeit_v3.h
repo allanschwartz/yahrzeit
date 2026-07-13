@@ -22,6 +22,7 @@
  *
  * @notes       This file defines project-wide constants, configuration
  *              structures, global externs, and shared utility declarations.
+ *              See also 'README.md' in this directory, for more detail.
  */
 
 /**
@@ -93,6 +94,7 @@
 	        SAve
 	        STatus
 	        TEst <testnumber> [<panel>]
+            TIming on|off
 	        VErsion
  */
 
