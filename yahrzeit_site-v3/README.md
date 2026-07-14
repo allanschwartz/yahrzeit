@@ -59,6 +59,7 @@ and command previews are intended to be safe; live wall operations call
 - `bin/yahrzeit` - main command wrapper and controller transport.
 - `bin/yahrzeit_engine.php` - decides what should be lit or reported.
 - `bin/yahrzeit_scheduler` - cron-facing scheduled phase runner.
+- `bin/fix-up-crontab` - installs the policy-derived managed cron block.
 - `include/panels.inc.php` - static wall/panel geometry.
 - `include/leds.inc.php` - maps panel/person locations to controller commands.
 
@@ -81,10 +82,10 @@ The installer:
 - configures Apache to serve the site,
 - runs PHP and shell syntax checks,
 - runs non-transmitting sanity checks,
-- and prints suggested cron entries.
+- and installs or repairs the managed cron schedule.
 
-The installer does not install cron automatically and does not transmit commands
-to the physical controller during its tests.
+The installer does not transmit commands to the physical controller during
+its tests.
 
 By default, the installer places the sparse checkout under:
 
@@ -182,15 +183,21 @@ Use them carefully.
 
 ## Scheduled Operation
 
-The installer prints suggested cron entries similar to:
+`bin/fix-up-crontab` reads `data/minhag.ini` and manages only the marked
+Yahrzeit block in the installation account's crontab. It preserves unrelated
+cron jobs. Weekly observance schedules normal lighting on Friday; day-only
+observance schedules it daily. Fixed times remain stable, while sunset-based
+times are recalculated automatically.
 
-```cron
-0 16 * * 5 cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yahrzeit   >> data/scheduler.log 2>&1
-0 11 * * * cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yizkor-on  >> data/scheduler.log 2>&1
-0 13 * * * cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yizkor-off >> data/scheduler.log 2>&1
+```sh
+bin/fix-up-crontab --preview
+sudo bin/fix-up-crontab
 ```
 
-Review the times and policy before enabling cron on the installed appliance.
+The installer records the intended cron account in
+`/etc/yahrzeit-cron-user` and authorizes the Minhag page to invoke only this
+repair helper. Rerun the installer, or the helper directly, after an operating
+system upgrade or appliance migration if scheduled operation needs repair.
 
 ## Data Backup And Restore
 

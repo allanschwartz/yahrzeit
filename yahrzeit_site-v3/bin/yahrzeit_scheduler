@@ -7,14 +7,13 @@
  * DESCRIPTION
  *      Scheduled phase runner for the CBS Yahrzeit Wall.
  *
- *      This script is intended to be run from cron at a few fixed times each
- *      day.  Cron decides when each phase runs; this script decides whether
+ *      This script is intended to be run from cron at policy-derived times.
+ *      Cron decides when each phase runs; this script decides whether
  *      the requested phase applies today.
  *
- *      The weekly normal-yahrzeit phase is intended to be invoked from cron
- *      on Friday at 4:00 PM.  This is deliberately before Erev Shabbat sunset,
- *      but not too far before, and the engine still decides the actual
- *      lighting state for the current window.
+ *      The normal-yahrzeit phase is invoked either every Friday or every day,
+ *      according to yahrzeitObservance. bin/fix-up-crontab derives its clock
+ *      time from the saved fixed-time or sunset-based policy.
  *
  *      Supported phases:
  *
@@ -85,10 +84,7 @@ function scheduler_usage()
     echo "                        Test as if the current time were the supplied time.\n";
     echo "  --verbose             Print non-action diagnostics.\n";
     echo "  -h, --help            Show this help.\n\n";
-    echo "Typical cron entries:\n";
-    echo "  0 11 * * * cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yizkor-on  >> data/scheduler.log 2>&1\n";
-    echo "  0 13 * * * cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yizkor-off >> data/scheduler.log 2>&1\n";
-    echo "  0 16 * * * cd /path/to/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yahrzeit   >> data/scheduler.log 2>&1\n";
+    echo "Cron entries are generated from data/minhag.ini by bin/fix-up-crontab.\n";
 }
 
 function fail($message)
@@ -298,6 +294,25 @@ function run_yahrzeit_command($args, $reason, $opts)
     return $rc;
 }
 
+/** Refresh moving sunset-based cron times after a successful normal run. */
+function refresh_sunset_crontab($minhag, $opts)
+{
+    if ($opts['dry_run'] || ($minhag['yahrzeitLightTime'] ?? 'setTime') != 'atSunset') {
+        return 0;
+    }
+
+    $command = escapeshellarg(__DIR__ . '/fix-up-crontab');
+    timestamp_line("ACTION: refresh next sunset-based cron schedule");
+    timestamp_line("COMMAND: $command");
+    passthru($command, $status);
+
+    if ($status != 0) {
+        timestamp_line("ERROR: crontab refresh exited with status $status");
+    }
+
+    return $status;
+}
+
 function main($argv)
 {
     $opts = parse_options($argv);
@@ -310,7 +325,11 @@ function main($argv)
     $phase = $opts['phase'];
 
     if ($phase == 'yahrzeit') {
-        return run_yahrzeit_command(array(), "normal yahrzeit lighting", $opts);
+        $status = run_yahrzeit_command(array(), "normal yahrzeit lighting", $opts);
+        if ($status != 0) {
+            return $status;
+        }
+        return refresh_sunset_crontab($minhag, $opts);
     }
 
     $reasons = yizkor_reasons_today($minhag, $now);

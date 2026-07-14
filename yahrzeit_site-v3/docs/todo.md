@@ -44,37 +44,18 @@ Priority markers:
   - `--phase yizkor-off`
   - `--phase yahrzeit`
 - **[B] (at CBS)** Confirm CBS Yizkor service timing and decide whether the scheduler remains three-phase or simplifies to two-phase.
-- **[A]** Add the erev_shabbat_to_erev_shabbat weekly lighting transition.
-  - When `yahrzeitLightTime = atSunset`, each successful scheduled Friday run
-    calls `bin/fix-up-crontab` to calculate and install the following Friday's
-    run time.
-  - Keep the recurring Friday entry as a fail-safe: if rescheduling fails, the
-    previous time remains and cron still attempts the next Friday run.
-  - A fixed-time policy does not require weekly crontab rewriting.
-
-### Cron installation helper
-
-- **[A]** Replace the obsolete `bin/add-to-vixie-crontab` with an idempotent
-  `bin/fix-up-crontab` for the phase-based scheduler.
-  - Read the saved policy from `data/minhag.ini`; do not accept shell text
-    constructed from POST values.
-  - Manage only a clearly marked Yahrzeit block and preserve unrelated cron
-    entries.
-  - Provide a preview mode and print the resulting managed cron lines.
-  - Generate the normal-Yahrzeit entry from `yahrzeitObservance`:
-    - `week`: run Friday only.
-    - `day`: run every day.
-  - For a fixed lighting time, emit a stable weekly or daily entry.
-  - When `yahrzeitLightTime = atSunset`, calculate the next occurrence's time
-    and refresh the entry after each successful scheduled run.
-  - Make failures explicit and do not transmit to the controller.
-- **[A]** After a successful Minhag save, call `bin/fix-up-crontab`, capture its
-  output, and show the installed cron lines or a clear failure on the result page.
-- **[A]** Ensure the deployed web-server account updates the intended appliance
-  crontab rather than accidentally creating a separate web-server-user crontab.
-- **[A]** Call the same helper at the end of appliance installation so cron can
-  be installed or repaired without using the web screen.
-- **[A]** Document that OS upgrades or appliance migration may require rerunning it.
+- **[B]** Add installer-managed rotation for `data/scheduler.log`, retaining
+  approximately three months of compressed weekly logs without emailing
+  routine cron output.
+- **[B]** Audit end-to-end scheduled-operation logging before deployment.
+  - Keep scheduler decisions, generated actions, cron-repair results, wrapper
+    failures, controller address/port, and final exit status in the same log.
+  - Confirm that timeout, connection-refused, broken-pipe, and other failures
+    from the `slowcat | nc` transport conduit are visible and unambiguous.
+  - Avoid logging the complete normal controller command stream unless a debug
+    mode is deliberately enabled; record a useful summary instead.
+  - Review the accumulated log after approximately three months and after the
+    next Yizkor observance.
 
 ---
 
@@ -115,18 +96,9 @@ Priority markers:
 
 ### `7minhag.php`
 
-- **[A]** Complete the remaining Minhag policies through the engine, scheduler,
-  help, and installed cron configuration.
-  - The fixed-time/sunset controls are saved but are not currently consumed by
-    the scheduler. Either implement them completely or remove them cleanly.
-  - Audit every Yahrzeit and Yizkor control from the form through the policy
-    engine, scheduler, help, and installed cron configuration. Do not display
-    a control that merely saves an unused setting.
-  - Review the simplified policy with the rabbi or Ritual Committee, favoring
-    reliable automatic operation over unnecessary configurability.
-- **[A]** After saving, invoke `bin/fix-up-crontab` and display its escaped output.
-- **[A]** Distinguish "configuration saved" from "cron update failed" rather than
-  silently leaving the old schedule installed.
+- **[A] (at CBS)** Review the simplified policy with the rabbi or Ritual
+  Committee, favoring reliable automatic operation over unnecessary
+  configurability.
 
 ---
 
@@ -161,7 +133,7 @@ Priority markers:
 ### `help/7minhag.php`
 
 - OK.
-- Updated for phase-based scheduler and crontab-advisory model.
+- Updated for the installed, policy-derived cron schedule.
 
 ### `help/user_guide.php`
 
@@ -210,15 +182,10 @@ Priority markers:
 
 ---
 
-## Platform / Installation
-
-### Installation
-
-- **[A]** Install/update crontab entries for phase-based scheduler.
-
----
-
 ## Data / Deployment Issues
 
+- **[A] (on code-spare NUC)** Rerun the updated installer and verify that both
+  the installer and a Minhag save update the same appliance-account crontab
+  while preserving an unrelated test entry.
 - **[A] (at CBS)** Fix known audit defect: Emile Kingsley uses unknown panel `col58`.
 - **[B]** Decide whether any login/security support is needed on the deployed appliance.

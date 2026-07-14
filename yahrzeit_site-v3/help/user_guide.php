@@ -88,8 +88,8 @@ reported.
 
 <p>
 Normal yahrzeit and Yizkor lighting is automatic. Cron runs a small number of
-named scheduler phases at fixed times. Each scheduler phase either performs
-one action or does nothing.
+named scheduler phases at the times saved on the Minhag page. Each scheduler
+phase either performs one action or does nothing.
 </p>
 
 <pre>
@@ -99,13 +99,14 @@ one action or does nothing.
 1:00 PM    yahrzeit_scheduler --phase yizkor-off
            If today is a configured Yizkor day, restore normal yahrzeit lighting.
 
-4:00 PM    yahrzeit_scheduler --phase yahrzeit
-           Run normal yahrzeit lighting.
+Friday near sunset (weekly observance), or daily (day-only observance):
+           yahrzeit_scheduler --phase yahrzeit
 </pre>
 
 <p>
-The exact times may be adjusted in the appliance cron table to match
-Congregation Beth Sholom practice.
+The application maintains its own marked block in the appliance crontab.
+Fixed times remain stable. Sunset-based times are recalculated automatically
+as sunset changes through the year.
 </p>
 
 <p>

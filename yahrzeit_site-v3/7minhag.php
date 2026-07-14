@@ -14,7 +14,7 @@
  *          - whether yahrzeits follow the English or Hebrew date
  *          - whether English-date yahrzeits begin at nightfall
  *          - whether each yahrzeit is observed for one day or a full week
- *          - Yizkor start/end times
+ *          - normal-Yahrzeit run time and Yizkor start/end times
  *          - which Yizkor holidays are observed
  *          - whether Pesach and Shavuot Yizkor are observed on day 1/2/7/8
  *          - optional Yizkor-style lighting for another Hebrew date
@@ -87,12 +87,8 @@ function minhag_build_from_post()
             'yahrzeitLightOnHH'    => minhag_post_value('yahrzeitLightOnHH'),
             'yahrzeitLightOnMM'    => minhag_post_value('yahrzeitLightOnMM'),
             'yahrzeitLightOnAmPm'  => minhag_post_value('yahrzeitLightOnAmPm'),
-            'yahrzeitLightOffHH'   => minhag_post_value('yahrzeitLightOffHH'),
-            'yahrzeitLightOffMM'   => minhag_post_value('yahrzeitLightOffMM'),
-            'yahrzeitLightOffAmPm' => minhag_post_value('yahrzeitLightOffAmPm'),
             'yahrzeitLightTime'    => minhag_post_value('yahrzeitLightTime'),
             'yahrzeitMinBefore'    => minhag_post_value('yahrzeitMinBefore'),
-            'yahrzeitMinAfter'     => minhag_post_value('yahrzeitMinAfter'),
             'yahrzeitObservance'   => minhag_observance_from_post(),
 
             'yizkorYomKippur'      => myBool(minhag_post_value('yizkorYomKippur')),
@@ -188,13 +184,12 @@ function minhag_render_form($minhag)
 
         <tr>
             <td height="25" align="left" valign="top" class="text">
-                Yahrzeit Light On/Off Times:
+                Yahrzeit Scheduled Run Time:
             </td>
             <td colspan="2" class="text">
                 <input type="radio" name="yahrzeitLightTime" value="setTime"
                        <?php echo ($minhag['yahrzeitLightTime'] == 'setTime' ? "checked" : ""); ?> >
-                       Set time<br>
-                &nbsp; &nbsp; &nbsp; &nbsp; <b>On at</b>
+                       Run at
                 <select name="yahrzeitLightOnHH" style="width:40" class="formStyleSmall">
                     <?php print_option_n1n2($minhag['yahrzeitLightOnHH'], 1, 12, "%02d"); ?>
                 </select>
@@ -205,29 +200,12 @@ function minhag_render_form($minhag)
                     <?php print_option1($minhag['yahrzeitLightOnAmPm'], array('am', 'pm')); ?>
                 </select>
                 <br>
-
-                &nbsp; &nbsp; &nbsp; &nbsp; <b>Off at</b>
-                <select name="yahrzeitLightOffHH" style="width:40" class="formStyleSmall">
-                    <?php print_option_n1n2($minhag['yahrzeitLightOffHH'], 1, 12, "%02d"); ?>
-                </select>
-                <select name="yahrzeitLightOffMM" style="width:40" class="formStyleSmall">
-                    <?php print_option_n1n2($minhag['yahrzeitLightOffMM'], 0, 59, "%02d"); ?>
-                </select>
-                <select name="yahrzeitLightOffAmPm" style="width:40" class="formStyleSmall">
-                    <?php print_option1($minhag['yahrzeitLightOffAmPm'], array('am', 'pm')); ?>
-                </select>
-                <br>
-
                 <input type="radio" name="yahrzeitLightTime" value="atSunset"
                        <?php echo ($minhag['yahrzeitLightTime'] == 'atSunset' ? "checked" : ""); ?> >
                 <input type="text" name="yahrzeitMinBefore" maxlength="3" size="3" class="formStyle" style="width:25"
                        value="<?php echo h($minhag['yahrzeitMinBefore']); ?>"
                        onchange="validateNumber(this, 'dateErr', false);" >
-                       min. before Sunset to
-                <input type="text" name="yahrzeitMinAfter" maxlength="3" size="3" class="formStyle" style="width:25"
-                       value="<?php echo h($minhag['yahrzeitMinAfter']); ?>"
-                       onchange="validateNumber(this, 'dateErr', false);" >
-                       min. after sunset
+                       minutes before sunset
             </td>
         </tr>
 
@@ -385,25 +363,48 @@ function minhag_render_main_page()
     emitFooter();
 }
 
-function minhag_render_save_result($ok)
+/** Run the privileged appliance cron repair command and capture its output. */
+function minhag_update_crontab()
+{
+    $wrapper = '/usr/local/sbin/yahrzeit-fix-crontab';
+    $command = 'sudo -n ' . escapeshellarg($wrapper) . ' 2>&1';
+    exec($command, $output, $status);
+
+    return [
+        'ok' => ($status === 0),
+        'output' => implode("\n", $output),
+    ];
+}
+
+function minhag_render_save_result($config_ok, $cron_result = null)
 {
     emitHeader(MINHAG_TITLE, MINHAG_TAB);
 
-    if (!$ok) {
+    if (!$config_ok) {
         emitMessagePage(
             "Config write failure: minhag.ini",
             "click here to return to Minhag",
             "7minhag.php"
         );
-    } else {
+    } elseif ($cron_result !== null && $cron_result['ok']) {
         emitMessagePage(
             "Configuration Saved<br><br>" .
-            "If you changed Yizkor service times or other scheduled-lighting times, " .
-            "review the Minhag page help for the corresponding crontab entries. " .
-            "This page saves <code>data/minhag.ini</code>, but it does not install " .
-            "or modify cron jobs.",
+            "Scheduled lighting was installed successfully:<br>" .
+            "<pre>" . h($cron_result['output']) . "</pre>",
             "click here to continue",
             "0yahrzeit.php"
+        );
+    } else {
+        $detail = $cron_result['output'] ?? 'Cron helper was not run.';
+        emitMessagePage(
+            "Configuration Saved<br><br>" .
+            "<b>Scheduled-lighting update failed.</b> The new Minhag is saved, " .
+            "but the previous cron schedule may still be installed.<br><br>" .
+            "A technical maintainer should rerun the appliance installer or " .
+            "<code>sudo bin/fix-up-crontab</code>.<br>" .
+            "<pre>" . h($detail) . "</pre>",
+            "click here to return to Minhag",
+            "7minhag.php"
         );
     }
 
@@ -413,7 +414,9 @@ function minhag_render_save_result($ok)
 function minhag_handle_post()
 {
     $new_minhag = minhag_build_from_post();
-    minhag_render_save_result(write_minhag_ini($new_minhag) >= 0);
+    $config_ok = write_minhag_ini($new_minhag) >= 0;
+    $cron_result = $config_ok ? minhag_update_crontab() : null;
+    minhag_render_save_result($config_ok, $cron_result);
 }
 
 // -----------------------------------------------------------------------------

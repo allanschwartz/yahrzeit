@@ -19,11 +19,10 @@
 #   This script is intended to be copied or curled onto the appliance and run
 #   locally.  It installs operating-system packages, clones or updates only the
 #   yahrzeit_site-v3 subdirectory using Git sparse checkout, configures Apache
-#   to serve the site, runs syntax checks, and prints the suggested cron
-#   entries.
+#   to serve the site, runs syntax checks, and installs the managed cron
+#   schedule.
 #
 #   It does not transmit commands to the physical LED controller.
-#   It does not install cron entries automatically.
 #   It does not modify memorial CSV data.
 #
 # One-time use from a fresh appliance:
@@ -56,6 +55,7 @@
 #   - PHP PCRE JIT disabled, to avoid executable-memory warnings on hardened
 #     server environments
 #   - local syntax and audit checks
+#   - policy-derived cron entries owned by the appliance administrator account
 #
 # Repository:
 #   https://github.com/allanschwartz/yahrzeit
@@ -79,8 +79,8 @@
 #
 #   3. Confirm controller host/port before live testing.
 #
-#   4. Install cron entries only after reviewing the suggested cron block
-#      printed at the end of this script.
+#   4. Review the managed cron block printed by the installer. Save the Minhag
+#      page, or run sudo bin/fix-up-crontab, whenever the schedule changes.
 #
 # Notes:
 #   - The installer is deliberately boring and short-lived.

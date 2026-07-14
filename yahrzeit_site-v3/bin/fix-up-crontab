@@ -1,0 +1,416 @@
+#!/usr/bin/env php
+<?php
+/*
+ * Install the managed CBS Yahrzeit Wall block in the appliance crontab.
+ *
+ * The target account is recorded by the appliance installer in
+ * /etc/yahrzeit-cron-user. Unrelated crontab entries are preserved. This
+ * command never invokes bin/yahrzeit and therefore never contacts the wall
+ * controller.
+ */
+
+require_once dirname(__DIR__) . "/include/misc.inc.php";
+require_once dirname(__DIR__) . "/include/date_support.inc.php";
+
+const CRON_BEGIN = "# BEGIN CBS YAHRZEIT WALL - managed by bin/fix-up-crontab";
+const CRON_END = "# END CBS YAHRZEIT WALL";
+const CRON_USER_FILE = "/etc/yahrzeit-cron-user";
+
+date_default_timezone_set("America/Los_Angeles");
+
+function cron_fail($message)
+{
+    fwrite(STDERR, "fix-up-crontab: $message\n");
+    exit(1);
+}
+
+function cron_usage()
+{
+    echo "Usage: fix-up-crontab [--preview] [--now 'YYYY-MM-DD HH:MM']\n";
+    echo "                        [--crontab-file FILE] [--minhag-file FILE]\n\n";
+    echo "  --preview         Print the proposed crontab without installing it.\n";
+    echo "  --now TIME        Calculate moving sunset times as of TIME.\n";
+    echo "  --crontab-file    Read/write FILE instead of the system crontab (test use).\n";
+    echo "  --minhag-file     Read policy overrides from FILE (preview/test use).\n";
+}
+
+function cron_options($argv)
+{
+    $options = [
+        'preview' => false,
+        'now' => time(),
+        'crontab_file' => '',
+        'minhag_file' => '',
+    ];
+
+    for ($i = 1; $i < count($argv); $i++) {
+        switch ($argv[$i]) {
+        case '-h':
+        case '--help':
+            cron_usage();
+            exit(0);
+
+        case '--preview':
+            $options['preview'] = true;
+            break;
+
+        case '--now':
+            if (++$i >= count($argv)) {
+                cron_fail("--now requires a date and time");
+            }
+            $timestamp = strtotime($argv[$i]);
+            if ($timestamp === false) {
+                cron_fail("invalid --now value: " . $argv[$i]);
+            }
+            $options['now'] = $timestamp;
+            break;
+
+        case '--crontab-file':
+            if (++$i >= count($argv)) {
+                cron_fail("--crontab-file requires a path");
+            }
+            $options['crontab_file'] = $argv[$i];
+            break;
+
+        case '--minhag-file':
+            if (++$i >= count($argv)) {
+                cron_fail("--minhag-file requires a path");
+            }
+            $options['minhag_file'] = $argv[$i];
+            break;
+
+        default:
+            cron_fail("unknown option: " . $argv[$i]);
+        }
+    }
+
+    return $options;
+}
+
+function cron_clock_fields($hour, $minute, $ampm)
+{
+    if (!preg_match('/^\d{1,2}$/', trim((string)$hour)) ||
+        !preg_match('/^\d{1,2}$/', trim((string)$minute))) {
+        cron_fail("invalid clock time in data/minhag.ini");
+    }
+    $hour = (int)$hour;
+    $minute = (int)$minute;
+    $ampm = strtolower(trim((string)$ampm));
+
+    if ($hour < 1 || $hour > 12 || $minute < 0 || $minute > 59 ||
+        !in_array($ampm, ['am', 'pm'], true)) {
+        cron_fail("invalid clock time in data/minhag.ini");
+    }
+
+    if ($hour == 12) {
+        $hour = 0;
+    }
+    if ($ampm == 'pm') {
+        $hour += 12;
+    }
+
+    return [$minute, $hour];
+}
+
+function cron_sunset_fields($now, $minutes, $repeat)
+{
+    if (!preg_match('/^-?\d{1,3}$/', trim((string)$minutes))) {
+        cron_fail("invalid sunset offset in data/minhag.ini");
+    }
+    $minutes = (int)$minutes;
+    if ($minutes < -720 || $minutes > 720) {
+        cron_fail("invalid sunset offset in data/minhag.ini");
+    }
+
+    $candidate = strtotime('today', $now);
+    if ($repeat == 'weekly') {
+        while ((int)date('w', $candidate) != 5) {
+            $candidate = strtotime('+1 day', $candidate);
+        }
+    }
+
+    while (true) {
+        $sunset = cbs_sunset_timestamp($candidate);
+        if ($sunset === false) {
+            cron_fail("could not calculate sunset for " . date('Y-m-d', $candidate));
+        }
+
+        $scheduled = $sunset + ($minutes * 60);
+        if ($scheduled > $now) {
+            return [(int)date('i', $scheduled), (int)date('G', $scheduled)];
+        }
+
+        $candidate = strtotime($repeat == 'weekly' ? '+7 days' : '+1 day', $candidate);
+    }
+}
+
+function cron_shell_quote($value)
+{
+    return "'" . str_replace("'", "'\\''", $value) . "'";
+}
+
+function cron_scheduler_line($minute, $hour, $days, $phase, $site_dir)
+{
+    return sprintf(
+        "%d %d %s cd %s && bin/yahrzeit_scheduler --phase %s >> data/scheduler.log 2>&1",
+        $minute,
+        $hour,
+        $days,
+        cron_shell_quote($site_dir),
+        $phase
+    );
+}
+
+/** Return the complete managed cron block for the saved Minhag policy. */
+function cron_managed_block($minhag, $now)
+{
+    $site_dir = realpath(dirname(__DIR__));
+    if ($site_dir === false) {
+        cron_fail("could not resolve the site directory");
+    }
+
+    $dynamic_sunset = false;
+    $lines = [CRON_BEGIN];
+
+    $yizkor_time_policy = $minhag['yizkorLightTime'] ?? 'setTime';
+    if (!in_array($yizkor_time_policy, ['setTime', 'atSunset'], true)) {
+        cron_fail("invalid yizkorLightTime in data/minhag.ini");
+    }
+    if ($yizkor_time_policy == 'atSunset') {
+        [$on_minute, $on_hour] = cron_sunset_fields(
+            $now,
+            '-' . ltrim((string)($minhag['yizkorMinBefore'] ?? 0), '+-'),
+            'daily'
+        );
+        [$off_minute, $off_hour] = cron_sunset_fields(
+            $now,
+            $minhag['yizkorMinAfter'] ?? 0,
+            'daily'
+        );
+        $dynamic_sunset = true;
+    } else {
+        [$on_minute, $on_hour] = cron_clock_fields(
+            $minhag['yizkorLightOnHH'] ?? '',
+            $minhag['yizkorLightOnMM'] ?? '',
+            $minhag['yizkorLightOnAmPm'] ?? ''
+        );
+        [$off_minute, $off_hour] = cron_clock_fields(
+            $minhag['yizkorLightOffHH'] ?? '',
+            $minhag['yizkorLightOffMM'] ?? '',
+            $minhag['yizkorLightOffAmPm'] ?? ''
+        );
+    }
+
+    $lines[] = cron_scheduler_line($on_minute, $on_hour, '* * *', 'yizkor-on', $site_dir);
+    $lines[] = cron_scheduler_line($off_minute, $off_hour, '* * *', 'yizkor-off', $site_dir);
+
+    $observance = $minhag['yahrzeitObservance'] ?? 'week';
+    if (!in_array($observance, ['day', 'week'], true)) {
+        cron_fail("invalid yahrzeitObservance in data/minhag.ini");
+    }
+    $repeat = ($observance == 'week') ? 'weekly' : 'daily';
+    $days = ($observance == 'week') ? '* * 5' : '* * *';
+
+    $yahrzeit_time_policy = $minhag['yahrzeitLightTime'] ?? 'setTime';
+    if (!in_array($yahrzeit_time_policy, ['setTime', 'atSunset'], true)) {
+        cron_fail("invalid yahrzeitLightTime in data/minhag.ini");
+    }
+    if ($yahrzeit_time_policy == 'atSunset') {
+        [$yz_minute, $yz_hour] = cron_sunset_fields(
+            $now,
+            '-' . ltrim((string)($minhag['yahrzeitMinBefore'] ?? 0), '+-'),
+            $repeat
+        );
+        $dynamic_sunset = true;
+    } else {
+        [$yz_minute, $yz_hour] = cron_clock_fields(
+            $minhag['yahrzeitLightOnHH'] ?? '',
+            $minhag['yahrzeitLightOnMM'] ?? '',
+            $minhag['yahrzeitLightOnAmPm'] ?? ''
+        );
+    }
+
+    $lines[] = cron_scheduler_line($yz_minute, $yz_hour, $days, 'yahrzeit', $site_dir);
+
+    if ($dynamic_sunset) {
+        $lines[] = sprintf(
+            "5 0 * * * cd %s && bin/fix-up-crontab >> data/scheduler.log 2>&1",
+            cron_shell_quote($site_dir)
+        );
+    }
+
+    $lines[] = CRON_END;
+    return implode("\n", $lines);
+}
+
+function cron_replace_managed_block($current, $managed)
+{
+    $output = [];
+    $inside = false;
+    $found_begin = false;
+    $found_end = false;
+
+    foreach (preg_split('/\R/', rtrim($current, "\r\n")) as $line) {
+        if ($line === CRON_BEGIN) {
+            if ($inside || $found_begin) {
+                cron_fail("the existing crontab contains duplicate managed blocks");
+            }
+            $inside = true;
+            $found_begin = true;
+            $output[] = $managed;
+            continue;
+        }
+        if ($line === CRON_END) {
+            if (!$inside) {
+                cron_fail("the existing crontab has an unmatched managed-block end marker");
+            }
+            $inside = false;
+            $found_end = true;
+            continue;
+        }
+        if (!$inside) {
+            $output[] = $line;
+        }
+    }
+
+    if ($inside || $found_begin != $found_end) {
+        cron_fail("the existing crontab has an incomplete managed block");
+    }
+
+    if (!$found_begin && count($output) > 0 && implode('', $output) !== '') {
+        $output[] = '';
+        $output[] = $managed;
+    }
+    if (!$found_begin && (count($output) == 0 || implode('', $output) === '')) {
+        $output = [$managed];
+    }
+    return rtrim(implode("\n", $output), "\r\n") . "\n";
+}
+
+function cron_target_user($allow_missing)
+{
+    if (!is_readable(CRON_USER_FILE)) {
+        if ($allow_missing) {
+            return cron_current_account();
+        }
+        cron_fail(CRON_USER_FILE . " is missing; rerun the appliance installer");
+    }
+
+    $user = trim((string)file_get_contents(CRON_USER_FILE));
+    if (!preg_match('/^[a-z_][a-z0-9_-]*[$]?$/i', $user)) {
+        cron_fail("invalid account name in " . CRON_USER_FILE);
+    }
+    return $user;
+}
+
+function cron_current_account()
+{
+    if (function_exists('posix_geteuid') && function_exists('posix_getpwuid')) {
+        $account = posix_getpwuid(posix_geteuid());
+        if (is_array($account) && isset($account['name'])) {
+            return $account['name'];
+        }
+    }
+
+    $user = getenv('USER');
+    if ($user !== false && preg_match('/^[a-z_][a-z0-9_-]*[$]?$/i', $user)) {
+        return $user;
+    }
+
+    cron_fail("could not determine the current account");
+}
+
+function cron_system_command($target_user, $temporary_file = '')
+{
+    $command = ['crontab'];
+    if (function_exists('posix_geteuid') && posix_geteuid() === 0) {
+        $command[] = '-u';
+        $command[] = $target_user;
+    } elseif (cron_current_account() !== $target_user) {
+        cron_fail("run this command as root or as the configured cron account: $target_user");
+    }
+
+    if ($temporary_file !== '') {
+        $command[] = $temporary_file;
+    } else {
+        $command[] = '-l';
+    }
+
+    return implode(' ', array_map('escapeshellarg', $command));
+}
+
+function cron_read_current($options, $target_user)
+{
+    if ($options['crontab_file'] !== '') {
+        return is_file($options['crontab_file'])
+            ? (string)file_get_contents($options['crontab_file'])
+            : '';
+    }
+
+    exec(cron_system_command($target_user) . ' 2>&1', $output, $status);
+    if ($status !== 0) {
+        $text = implode("\n", $output);
+        if (stripos($text, 'no crontab') !== false) {
+            return '';
+        }
+        cron_fail("could not read the crontab: " . ($text ?: "exit status $status"));
+    }
+    return implode("\n", $output) . (count($output) ? "\n" : '');
+}
+
+function cron_install($content, $options, $target_user)
+{
+    if ($options['crontab_file'] !== '') {
+        if (file_put_contents($options['crontab_file'], $content) === false) {
+            cron_fail("could not write " . $options['crontab_file']);
+        }
+        return;
+    }
+
+    $temporary = tempnam(sys_get_temp_dir(), 'yahrzeit-cron-');
+    if ($temporary === false || file_put_contents($temporary, $content) === false) {
+        cron_fail("could not create a temporary crontab");
+    }
+
+    exec(cron_system_command($target_user, $temporary) . ' 2>&1', $output, $status);
+    unlink($temporary);
+    if ($status !== 0) {
+        cron_fail("could not install the crontab: " . implode("\n", $output));
+    }
+}
+
+function cron_main($argv)
+{
+    $options = cron_options($argv);
+    $file_mode = ($options['crontab_file'] !== '');
+    if ($options['minhag_file'] !== '' && !$file_mode) {
+        cron_fail("--minhag-file may be used only with --crontab-file");
+    }
+    $target_user = cron_target_user($options['preview'] || $file_mode);
+    $minhag = read_minhag_ini();
+    if ($options['minhag_file'] !== '') {
+        $overrides = parse_ini_file($options['minhag_file']);
+        if ($overrides === false) {
+            cron_fail("could not read " . $options['minhag_file']);
+        }
+        $minhag = array_replace($minhag, $overrides);
+    }
+    $managed = cron_managed_block($minhag, $options['now']);
+    $current = cron_read_current($options, $target_user);
+    $proposed = cron_replace_managed_block($current, $managed);
+
+    if ($options['preview']) {
+        echo $proposed;
+        return 0;
+    }
+
+    cron_install($proposed, $options, $target_user);
+    echo "Installed Yahrzeit cron schedule";
+    if ($target_user !== '') {
+        echo " for $target_user";
+    }
+    echo ":\n$managed\n";
+    return 0;
+}
+
+exit(cron_main($argv));

@@ -44,10 +44,9 @@ the English/Gregorian date stored for each memorial record.
 </p>
 
 <p>
-Yahrzeit lighting may begin at a fixed clock time, such as 7:00 AM or
-5:00 PM. If the wall is configured for Erev Shabbat to Erev Shabbat
-lighting, the start time may instead be based on candle-lighting time,
-such as 18 minutes before sunset.
+The normal Yahrzeit update may run at a fixed clock time. It may instead run
+a selected number of minutes before sunset. Because sunset changes through
+the year, the appliance automatically refreshes that cron time.
 </p>
 
 <h3>Yahrzeit Lighting Option</h3>
@@ -75,14 +74,8 @@ Sholom practice — that is, the day on which Yizkor services are held.
 
 <p>
 The Minhag page determines which holidays and observances are treated as
-Yizkor days. It does not directly edit the appliance cron table or install
-scheduled jobs.
-</p>
-
-<p>
-The actual scheduled run times, such as when Yizkor lighting begins or when
-normal yahrzeit lighting is restored, are maintained separately in the
-appliance cron configuration by a technical maintainer.
+Yizkor days. The Yizkor on and off times become the run times of the two
+Yizkor scheduler phases. On other dates those phases do nothing.
 </p>
 
 <h3>Other Yizkor Date</h3>
@@ -97,37 +90,37 @@ include Yom HaZikaron or Yom HaShoah, depending on local practice.
 
 <p>
 Press Save to write the updated settings to <code>data/minhag.ini</code>.
-After changing Yizkor or timing settings, run the report or audit screen if
-you want to confirm the current configuration.
+After the configuration is saved, the appliance regenerates its managed cron
+block and displays the installed lines.
 </p>
 
 <p>
-After saving, the application may display suggested cron entries for the
-technical maintainer to review and copy manually. These entries are advisory;
-the web page does not install them automatically.
+If the configuration is saved but cron installation fails, the result page
+says so explicitly. The previous schedule may remain active until a technical
+maintainer reruns the appliance installer or runs
+<code>sudo bin/fix-up-crontab</code>.
 </p>
 
-<h3>Suggested Cron Entries</h3>
+<h3>Managed Cron Schedule</h3>
 
 <p>
-The suggested cron entries show the command lines that a technical maintainer
-may copy into the appliance crontab. In the simplified scheduler model, cron
-runs named phases at fixed times. The scheduler decides whether the requested
-phase applies on that date.
+<code>bin/fix-up-crontab</code> manages only the block between its Yahrzeit
+markers and preserves unrelated jobs. Weekly observance installs the normal
+Yahrzeit phase on Friday; day-only observance installs it every day. Sunset
+policies retain those recurring patterns as a fail-safe while refreshing the
+clock time automatically.
 </p>
 
 <pre>
-# CBS Yahrzeit Wall scheduled lighting
-# Review path and times before installing with crontab -e.
-
-0 11 * * * cd /home/pi/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yizkor-on  >> data/scheduler.log 2>&1
-0 13 * * * cd /home/pi/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yizkor-off >> data/scheduler.log 2>&1
-0 16 * * * cd /home/pi/yahrzeit_site-v3 && bin/yahrzeit_scheduler --phase yahrzeit   >> data/scheduler.log 2>&1
+cd /path/to/yahrzeit_site-v3
+bin/fix-up-crontab --preview
+sudo bin/fix-up-crontab
 </pre>
 
 <p>
-The times above are examples. Adjust them to match Congregation Beth Sholom
-practice before installing them.
+The installer records the intended appliance account in
+<code>/etc/yahrzeit-cron-user</code>. This prevents the web server from
+accidentally creating a separate <code>www-data</code> crontab.
 </p>
 
     </div>  <!-- end of helpbody div -->

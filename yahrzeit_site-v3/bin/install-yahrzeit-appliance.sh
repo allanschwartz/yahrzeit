@@ -9,8 +9,8 @@ set -euo pipefail
 #   /tmp/install-yahrzeit-appliance.sh
 #
 # This script installs packages, clones or updates the repo, configures Apache,
-# runs syntax/audit checks, and prints suggested cron entries.
-# It does not install cron automatically and does not transmit to the controller.
+# runs syntax/audit checks, and installs the managed lighting schedule.
+# It does not transmit to the controller.
 
 REPO_URL="${REPO_URL:-https://github.com/allanschwartz/yahrzeit.git}"
 BRANCH="${BRANCH:-master}"
@@ -20,6 +20,8 @@ REPO_DIR="${REPO_DIR:-$INSTALL_PARENT/yahrzeit}"
 SITE_DIR="${SITE_DIR:-$REPO_DIR/$SITE_SUBDIR}"
 WEB_ALIAS="${WEB_ALIAS:-yahrzeit}"
 WEB_LINK="${WEB_LINK:-/var/www/html/$WEB_ALIAS}"
+CRON_USER="${YAHRZEIT_CRON_USER:-${SUDO_USER:-$(id -un)}}"
+CRON_WRAPPER="/usr/local/sbin/yahrzeit-fix-crontab"
 
 printf 'Installing/updating CBS Yahrzeit appliance software\n\n'
 printf 'Repo:       %s\n' "$REPO_URL"
@@ -27,6 +29,7 @@ printf 'Branch:     %s\n' "$BRANCH"
 printf 'Repo dir:   %s\n' "$REPO_DIR"
 printf 'Site dir:   %s\n' "$SITE_DIR"
 printf 'Web link:   %s\n\n' "$WEB_LINK"
+printf 'Cron user:  %s\n\n' "$CRON_USER"
 
 if ! command -v apt-get >/dev/null 2>&1; then
     echo "ERROR: this installer expects an Ubuntu/Debian apt-based system" >&2
@@ -49,11 +52,15 @@ sudo apt-get install -y \
     netcat-openbsd \
     net-tools \
     tcpdump \
-    coreutils
+    coreutils \
+    cron \
+    sudo
 
 # Ensure SSH is enabled and running
 sudo systemctl enable ssh
 sudo systemctl start ssh
+sudo systemctl enable cron
+sudo systemctl start cron
 
 # Disable AppArmor (it can interfere with SSH and other services)
 sudo systemctl disable apparmor || true
@@ -84,9 +91,39 @@ fi
 cd "$SITE_DIR"
 
 mkdir -p data/backups
-: > data/scheduler.log
+touch data/scheduler.log
 
-chmod 755 bin/yahrzeit bin/yahrzeit_scheduler bin/yahrzeit_engine.php
+chmod 755 bin/yahrzeit bin/yahrzeit_scheduler bin/yahrzeit_engine.php bin/fix-up-crontab
+
+if ! id "$CRON_USER" >/dev/null 2>&1; then
+    echo "ERROR: configured cron account does not exist: $CRON_USER" >&2
+    exit 1
+fi
+
+# Record one authoritative crontab owner.
+printf '%s\n' "$CRON_USER" | sudo tee /etc/yahrzeit-cron-user >/dev/null
+sudo chmod 644 /etc/yahrzeit-cron-user
+
+# The web server may invoke only this root-owned wrapper. It immediately drops
+# privileges to the configured account, so the repository helper can modify
+# only that account's own crontab.
+WRAPPER_TMP="$(mktemp)"
+trap 'rm -f "$WRAPPER_TMP"' EXIT
+cat > "$WRAPPER_TMP" <<EOF_WRAPPER
+#!/bin/sh
+exec /usr/bin/sudo -u '$CRON_USER' '$SITE_DIR/bin/fix-up-crontab'
+EOF_WRAPPER
+sudo install -o root -g root -m 0755 "$WRAPPER_TMP" "$CRON_WRAPPER"
+rm -f "$WRAPPER_TMP"
+trap - EXIT
+
+SUDOERS_TMP="$(mktemp)"
+trap 'rm -f "$SUDOERS_TMP"' EXIT
+printf 'www-data ALL=(root) NOPASSWD: %s\n' "$CRON_WRAPPER" > "$SUDOERS_TMP"
+sudo visudo -cf "$SUDOERS_TMP"
+sudo install -o root -g root -m 0440 "$SUDOERS_TMP" /etc/sudoers.d/yahrzeit-fix-crontab
+rm -f "$SUDOERS_TMP"
+trap - EXIT
 
 # Apache follows the symlink only if it can traverse the parent directories.
 # This grants execute/traverse only, not broad read access to the home tree.
@@ -98,6 +135,9 @@ chmod o+x "$SITE_DIR"
 # Ensure Apache can write to data directory for logs and backups
 sudo chown -R www-data:www-data "$SITE_DIR/data" || true
 sudo chmod 755 "$SITE_DIR/data" || true
+sudo touch "$SITE_DIR/data/scheduler.log"
+sudo chown "$CRON_USER":www-data "$SITE_DIR/data/scheduler.log"
+sudo chmod 664 "$SITE_DIR/data/scheduler.log"
 
 # Configure Apache: ensure php module is enabled and properly configured.
 # Try the generic 'php' module first, then try specific PHP versions if it doesn't exist
@@ -170,6 +210,7 @@ php -l 7minhag.php
 php -l include/yahrzeit_policy.inc.php
 php -l bin/yahrzeit_scheduler
 php -l bin/yahrzeit_engine.php
+php -l bin/fix-up-crontab
 bash -n bin/yahrzeit
 
 # Runtime checks. These are not exhaustive, but they catch some common misconfigurations.
@@ -184,6 +225,10 @@ fi
 
 bin/yahrzeit --audit || true
 bin/yahrzeit --notransmit --status || true
+
+# Install or repair only the marked Yahrzeit block in the intended appliance
+# account's crontab. This command does not transmit to the controller.
+sudo "$CRON_WRAPPER"
 
 FIRST_IP="$(hostname -I | awk '{print $1}')"
 
@@ -201,6 +246,7 @@ Install/update complete.
 ✓ Apache configured to serve PHP
 ✓ Yahrzeit site linked to: $WEB_LINK
 ✓ Apache configuration verified
+✓ Scheduled lighting installed for: $CRON_USER
 
 Access the site at:
   http://$FIRST_IP/$WEB_ALIAS/
@@ -212,13 +258,9 @@ Quick verification:
   bin/yahrzeit --audit
   bin/yahrzeit --notransmit --status
 
-Suggested cron entries for this host:
-  0 16 * * 5 cd $SITE_DIR && bin/yahrzeit_scheduler --phase yahrzeit   >> data/scheduler.log 2>&1
-  0 11 * * * cd $SITE_DIR && bin/yahrzeit_scheduler --phase yizkor-on  >> data/scheduler.log 2>&1
-  0 13 * * * cd $SITE_DIR && bin/yahrzeit_scheduler --phase yizkor-off >> data/scheduler.log 2>&1
-
 Notes:
-  - This script does not install cron automatically.
+  - Cron is generated from data/minhag.ini. Save the Minhag screen or run
+    sudo $SITE_DIR/bin/fix-up-crontab to repair it after an OS migration.
   - This script does not transmit to the physical controller during tests.
   - If the repo becomes private later, configure SSH/deploy-key access before
     relying on git pull from this appliance.
