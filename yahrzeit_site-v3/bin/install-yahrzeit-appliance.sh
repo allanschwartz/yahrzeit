@@ -82,11 +82,46 @@ else
     sudo chown -R "$INSTALL_USER:$INSTALL_GROUP" "$REPO_DIR"
 
     cd "$REPO_DIR"
-    git fetch origin
+
+    # The appliance checkout is a deployment, not a development worktree.
+    # Preserve its two live tracked data files, repair interrupted/dirty code
+    # updates by matching origin exactly, and then restore the live data.
+    LIVE_DATA_TMP="$(mktemp -d)"
+    restore_live_data() {
+        for relative_path in \
+            "$SITE_SUBDIR/data/minhag.ini" \
+            "$SITE_SUBDIR/data/yahrzeits-rev4.csv"; do
+            backup_path="$LIVE_DATA_TMP/$relative_path"
+            if [ -f "$backup_path" ]; then
+                mkdir -p "$(dirname "$REPO_DIR/$relative_path")"
+                cp -p "$backup_path" "$REPO_DIR/$relative_path"
+            fi
+        done
+    }
+    trap 'restore_live_data' EXIT
+
+    for relative_path in \
+        "$SITE_SUBDIR/data/minhag.ini" \
+        "$SITE_SUBDIR/data/yahrzeits-rev4.csv"; do
+        if [ -f "$REPO_DIR/$relative_path" ]; then
+            mkdir -p "$(dirname "$LIVE_DATA_TMP/$relative_path")"
+            cp -p "$REPO_DIR/$relative_path" "$LIVE_DATA_TMP/$relative_path"
+        fi
+    done
+
+    git fetch origin "$BRANCH"
+    if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+        git checkout -f "$BRANCH"
+    else
+        git checkout -f -b "$BRANCH" "origin/$BRANCH"
+    fi
     git sparse-checkout init --cone || true
     git sparse-checkout set "$SITE_SUBDIR"
-    git checkout "$BRANCH"
-    git pull --ff-only origin "$BRANCH"
+    git reset --hard "origin/$BRANCH"
+
+    restore_live_data
+    trap - EXIT
+    rm -rf -- "${LIVE_DATA_TMP:?}"
 fi
 
 if [ ! -d "$SITE_DIR" ]; then
