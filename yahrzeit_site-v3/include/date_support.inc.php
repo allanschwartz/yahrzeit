@@ -204,6 +204,191 @@ function hebrew_year_for_timestamp($timestamp)
     return isset($parts[2]) ? (int)$parts[2] : 0;
 }
 
+/** Return a display spelling for a Hebrew month stored by the application. */
+function hebrew_month_display_name($month)
+{
+    return ($month == 'Tishri') ? 'Tishrei' : $month;
+}
+
+/** Return whether a YES/NO-style Minhag setting is enabled. */
+function yizkor_setting_enabled($value)
+{
+    return strtoupper(trim((string)$value)) == 'YES';
+}
+
+/**
+ * Return the civil timestamp for an exact Hebrew date, or false if invalid.
+ *
+ * Noon avoids daylight-saving ambiguity at midnight. The round-trip check
+ * rejects dates such as Adar II in a non-leap Hebrew year.
+ */
+function civil_timestamp_for_hebrew_date($month, $day, $year)
+{
+    $jd = jewishtojd((int)$month, (int)$day, (int)$year);
+    $round_trip = array_map('intval', explode('/', jdtojewish($jd)));
+
+    if (count($round_trip) != 3 ||
+        $round_trip[0] != (int)$month ||
+        $round_trip[1] != (int)$day ||
+        $round_trip[2] != (int)$year) {
+        return false;
+    }
+
+    $gregorian = array_map('intval', explode('/', jdtogregorian($jd)));
+    if (count($gregorian) != 3 ||
+        !checkdate($gregorian[0], $gregorian[1], $gregorian[2])) {
+        return false;
+    }
+
+    return mktime(12, 0, 0, $gregorian[0], $gregorian[1], $gregorian[2]);
+}
+
+/** Return the next civil occurrence of a Hebrew month/day, including today. */
+function next_hebrew_date_timestamp($month, $day, $timestamp)
+{
+    $today = strtotime('today', $timestamp);
+    $hebrew_year = hebrew_year_for_timestamp($timestamp);
+
+    for ($year = $hebrew_year; $year <= $hebrew_year + 3; $year++) {
+        $candidate = civil_timestamp_for_hebrew_date($month, $day, $year);
+        if ($candidate !== false && $candidate >= $today) {
+            return $candidate;
+        }
+    }
+
+    return false;
+}
+
+/** Return the next civil occurrence of an English month/day, including today. */
+function next_english_date_timestamp($month, $day, $timestamp)
+{
+    $today = strtotime('today', $timestamp);
+    $month = (int)$month;
+    $day = (int)$day;
+    $start_year = (int)date('Y', $timestamp);
+
+    for ($year = $start_year; $year <= $start_year + 4; $year++) {
+        if (!checkdate($month, $day, $year)) {
+            continue;
+        }
+        $candidate = mktime(12, 0, 0, $month, $day, $year);
+        if ($candidate >= $today) {
+            return $candidate;
+        }
+    }
+
+    return false;
+}
+
+/** Add one display/scheduling row for a valid upcoming Yizkor observance. */
+function add_next_yizkor_row(&$rows, $name, $observance_date, $timestamp)
+{
+    if ($timestamp === false) {
+        return;
+    }
+
+    $rows[] = [
+        'name' => $name,
+        'observance_date' => $observance_date,
+        'next_date' => date('l, F j, Y', $timestamp),
+        'timestamp' => $timestamp,
+        'date_key' => date('Y-m-d', $timestamp),
+    ];
+}
+
+/**
+ * Return enabled Yizkor observances with their next civil dates.
+ *
+ * Rows are sorted by upcoming date and contain name, observance_date,
+ * next_date, timestamp, and date_key. The calculation follows the choices in
+ * data/minhag.ini, including Pesach/Shavuot day and the optional Other date.
+ *
+ * @param array<string, mixed> $minhag
+ * @return array<int, array{name:string, observance_date:string,
+ *     next_date:string, timestamp:int, date_key:string}>
+ */
+function next_yizkor_observances($minhag, $timestamp = null)
+{
+    if ($timestamp === null) {
+        $timestamp = time();
+    }
+
+    $rows = [];
+
+    if (yizkor_setting_enabled($minhag['yizkorYomKippur'] ?? 'NO')) {
+        add_next_yizkor_row(
+            $rows,
+            'Yom Kippur',
+            '10 Tishrei',
+            next_hebrew_date_timestamp(1, 10, $timestamp)
+        );
+    }
+
+    if (yizkor_setting_enabled($minhag['yizkorShmini'] ?? 'NO')) {
+        add_next_yizkor_row(
+            $rows,
+            'Shemini Atzeret',
+            '22 Tishrei',
+            next_hebrew_date_timestamp(1, 22, $timestamp)
+        );
+    }
+
+    if (yizkor_setting_enabled($minhag['yizkorPesach'] ?? 'NO')) {
+        $pesach_day = ((int)($minhag['yizkorPesachDay'] ?? 8) == 7) ? 7 : 8;
+        $nisan_day = ($pesach_day == 7) ? 21 : 22;
+        add_next_yizkor_row(
+            $rows,
+            'Passover',
+            $nisan_day . ' Nisan',
+            next_hebrew_date_timestamp(8, $nisan_day, $timestamp)
+        );
+    }
+
+    if (yizkor_setting_enabled($minhag['yizkorShavuot'] ?? 'NO')) {
+        $shavuot_day = ((int)($minhag['yizkorShavuotDay'] ?? 2) == 1) ? 1 : 2;
+        $sivan_day = ($shavuot_day == 1) ? 6 : 7;
+        add_next_yizkor_row(
+            $rows,
+            'Shavuot',
+            $sivan_day . ' Sivan',
+            next_hebrew_date_timestamp(10, $sivan_day, $timestamp)
+        );
+    }
+
+    if (yizkor_setting_enabled($minhag['yizkorOther'] ?? 'NO')) {
+        if (($minhag['otherEngOrHeb'] ?? 'eng') == 'heb') {
+            $month_name = closest_hebrew_month($minhag['otherHebMM'] ?? '');
+            $month = HEBREW_MONTH_MAPPING[$month_name] ?? 0;
+            $day = (int)($minhag['otherHebDD'] ?? 0);
+            add_next_yizkor_row(
+                $rows,
+                'Other',
+                $day . ' ' . hebrew_month_display_name($month_name),
+                next_hebrew_date_timestamp($month, $day, $timestamp)
+            );
+        } else {
+            $month_name = $minhag['otherEngMM'] ?? '';
+            $month = ENGLISH_MONTH_MAPPING[$month_name] ?? 0;
+            $day = (int)($minhag['otherEngDD'] ?? 0);
+            add_next_yizkor_row(
+                $rows,
+                'Other',
+                $month_name . ' ' . $day . ' (English date)',
+                next_english_date_timestamp($month, $day, $timestamp)
+            );
+        }
+    }
+
+    usort($rows, function ($left, $right) {
+        $date_comparison = $left['timestamp'] <=> $right['timestamp'];
+        return ($date_comparison != 0)
+            ? $date_comparison
+            : strcmp($left['name'], $right['name']);
+    });
+
+    return $rows;
+}
+
 /**
  * Return whether a Gregorian month/day matches today or tomorrow.
  *

@@ -43,6 +43,12 @@ time, and upcoming Shabbat-related times. These values help explain the
 current scheduling context for yahrzeit and Yizkor lighting.
 </p>
 
+<p>
+The <strong>Next Yizkor events</strong> list shows the next civil date of each
+Yizkor observance enabled on the Minhag page. The list follows the configured
+Pesach and Shavuot day choices and is sorted by upcoming date.
+</p>
+
 <h3>Wall Summary</h3>
 
 <p>

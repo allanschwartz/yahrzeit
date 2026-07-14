@@ -73,6 +73,12 @@ Sholom practice — that is, the day on which Yizkor services are held.
 </p>
 
 <p>
+The <strong>Next Yizkor events</strong> preview shows the next civil date for
+each observance in the settings currently saved. Save any changes before
+using the preview to verify the revised dates.
+</p>
+
+<p>
 The Minhag page determines which holidays and observances are treated as
 Yizkor days. The Yizkor on and off times become the run times of the two
 Yizkor scheduler phases. On other dates those phases do nothing.

@@ -168,102 +168,15 @@ function timestamp_line($message)
     echo date("Y-m-d H:i:s", $ts) . "  " . $message . "\n";
 }
 
-function bool_yes($value)
-{
-    return isset($value) && strtoupper(trim((string)$value)) == "YES";
-}
-
-function hebrew_date_parts($timestamp)
-{
-    $jd = gregoriantojd((int)date('n', $timestamp),
-                        (int)date('j', $timestamp),
-                        (int)date('Y', $timestamp));
-
-    $hebrew = jdtojewish($jd);
-    $parts = explode('/', $hebrew);
-
-    if (count($parts) < 3) {
-        return false;
-    }
-
-    return array(
-        'month' => (int)$parts[0],
-        'day' => (int)$parts[1],
-        'year' => (int)$parts[2],
-        'month_name' => jdmonthname($jd, 4),
-    );
-}
-
 function yizkor_reasons_today($minhag, $now)
 {
-
     $reasons = array();
-    $h = hebrew_date_parts($now);
 
-    if ($h !== false) {
-        // Yom Kippur: 10 Tishrei.
-        // Yizkor is recited during the Yom Kippur service.
-        if (bool_yes($minhag['yizkorYomKippur']) && $h['month'] == 1 && $h['day'] == 10) {
-            $reasons[] = "Yom Kippur";
-        }
-
-        // Shemini Atzeret: 22 Tishrei.
-        // Yizkor is recited during the Shemini Atzeret service.
-        if (bool_yes($minhag['yizkorShmini']) && $h['month'] == 1 && $h['day'] == 22) {
-            $reasons[] = "Shemini Atzeret";
-        }
-
-        // Pesach day 7 is 21 Nisan; day 8 is 22 Nisan.
-        // The Minhag page allows only day 7 or day 8.
-        if (bool_yes($minhag['yizkorPesach'])) {
-            $pesach_day = isset($minhag['yizkorPesachDay']) ? (int)$minhag['yizkorPesachDay'] : 8;
-            $nisan_day = ($pesach_day == 7) ? 21 : 22;
-
-            if ($h['month'] == 8 && $h['day'] == $nisan_day) {
-                $reasons[] = "Pesach day $pesach_day";
-            }
-        }
-
-        // Shavuot day 1 is 6 Sivan; day 2 is 7 Sivan.
-        // The Minhag page allows only day 1 or day 2.
-        if (bool_yes($minhag['yizkorShavuot'])) {
-            $shavuot_day = isset($minhag['yizkorShavuotDay']) ? (int)$minhag['yizkorShavuotDay'] : 2;
-            $sivan_day = ($shavuot_day == 1) ? 6 : 7;
-
-            if ($h['month'] == 10 && $h['day'] == $sivan_day) {
-                $reasons[] = "Shavuot day $shavuot_day";
-            }
-        }
-
-        // Other Yizkor-like Hebrew-date observance,
-        // for example Yom HaZikaron on 4 Iyar.
-        if (bool_yes($minhag['yizkorOther']) &&
-            isset($minhag['otherEngOrHeb']) &&
-            $minhag['otherEngOrHeb'] == 'heb') {
-
-            $other_month_name = closest_hebrew_month(isset($minhag['otherHebMM']) ? $minhag['otherHebMM'] : "");
-            $other_day = isset($minhag['otherHebDD']) ? (int)$minhag['otherHebDD'] : 0;
-
-            if ($other_month_name != "" &&
-                isset(HEBREW_MONTH_MAPPING[$other_month_name]) &&
-                $h['month'] == HEBREW_MONTH_MAPPING[$other_month_name] &&
-                $h['day'] == $other_day) {
-                $reasons[] = "Other Hebrew date: $other_day $other_month_name";
-            }
-        }
-    }
-
-    if (bool_yes($minhag['yizkorOther']) &&
-        isset($minhag['otherEngOrHeb']) &&
-        $minhag['otherEngOrHeb'] == 'eng') {
-
-        $mm_name = isset($minhag['otherEngMM']) ? $minhag['otherEngMM'] : "";
-        $dd = isset($minhag['otherEngDD']) ? (int)$minhag['otherEngDD'] : 0;
-
-        if (isset(ENGLISH_MONTH_MAPPING[$mm_name]) &&
-            (int)date('n', $now) == ENGLISH_MONTH_MAPPING[$mm_name] &&
-            (int)date('j', $now) == $dd) {
-            $reasons[] = "Other English date: $mm_name $dd";
+    $today = date('Y-m-d', $now);
+    foreach (next_yizkor_observances($minhag, $now) as $observance) {
+        if ($observance['date_key'] == $today) {
+            $reasons[] = $observance['name'] . ' (' .
+                         $observance['observance_date'] . ')';
         }
     }
 

@@ -65,7 +65,8 @@ Priority markers:
 
 - Works.
 - Home/status dashboard now shows date/time, Hebrew date, sunset/Shabbat timing, configured policy summary, controller summary, and wall image.
-- **[A]** Add a “next Yizkor observance” helper/library call.
+- **[B]** Decide how the appliance should display its current network address
+  when more than one address is present.
 - **[B]** Jazz up this screen with a better status/dashboard presentation.
 - Historical note: old removed status lines should be replaced only with real, reliable status information.
 
@@ -73,6 +74,10 @@ Priority markers:
 
 - OK.
 - Read-only wall/panel overview plus manual wall-wide operations.
+- **[A]** Remove the hard-coded lab-controller address.
+- **[A]** Restore a **Restore scheduled Yahrzeit lighting** operation.
+- **[A]** Review the all-on, all-off, and Yizkor controls, including which
+  operations require confirmation or other safeguards.
 
 ### `3singlepanel.php`
 
@@ -99,6 +104,13 @@ Priority markers:
 - **[A] (at CBS)** Review the simplified policy with the rabbi or Ritual
   Committee, favoring reliable automatic operation over unnecessary
   configurability.
+- **[A]** Audit the Yom HaShoah, Yom HaZikaron, and other special-observance
+  controls from memorial records and the Minhag form through the policy engine
+  and scheduler. Do not retain controls that merely save unused settings.
+- **[A] (at CBS)** Decide with the rabbi or Ritual Committee whether each
+  unsupported special observance should be implemented or removed cleanly.
+  If implemented, document the approved rule and add it at the policy or
+  scheduler layer rather than in a screen file.
 
 ---
 
@@ -182,10 +194,26 @@ Priority markers:
 
 ---
 
+## Network Addressing and Controller Discovery
+
+- **[A]** Keep the Arduino controller hostname or address in one authoritative
+  configuration source; remove remaining screen-specific overrides.
+- **[A]** Do not depend on a particular ISP router or on a router-specific DHCP
+  reservation surviving equipment replacement.
+- **[B]** Investigate mDNS for normal controller lookup.
+- **[B]** Consider a recovery/diagnostic discovery tool that scans the local
+  subnet and verifies a possible controller with a harmless `status` or
+  `version` request.
+
+---
+
 ## Data / Deployment Issues
 
-- **[A] (on code-spare NUC)** Rerun the updated installer and verify that both
-  the installer and a Minhag save update the same appliance-account crontab
-  while preserving an unrelated test entry.
 - **[A] (at CBS)** Fix known audit defect: Emile Kingsley uses unknown panel `col58`.
+- **[A]** Produce a report or preview of records whose English death year is
+  1945 and whose English month and day are absent.
+- **[A] (at CBS)** Present that narrowly defined group to the rabbi as possible
+  memorials for people lost in the Shoah whose exact dates of death are
+  unknown. Do not automatically classify or schedule them until a synagogue
+  minhag is approved.
 - **[B]** Decide whether any login/security support is needed on the deployed appliance.

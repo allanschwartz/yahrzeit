@@ -143,7 +143,7 @@ function yahrzeit_next_shabbat_lighting_line()
 // Rendering helpers
 // -----------------------------------------------------------------------------
 
-function yahrzeit_render_scheduled_events($timestamp = null)
+function yahrzeit_render_scheduled_events($minhag, $timestamp = null)
 {
     if ($timestamp === null) {
         $timestamp = time();
@@ -153,6 +153,20 @@ function yahrzeit_render_scheduled_events($timestamp = null)
 
     echo "Today's sunset in San Francisco is at " . h($todaySunsetText) . ".<br>\n";
     echo yahrzeit_next_shabbat_lighting_line() . "<br>\n";
+
+    $observances = next_yizkor_observances($minhag, $timestamp);
+    echo "<br><b>Next Yizkor events:</b><br>\n";
+
+    if (count($observances) == 0) {
+        echo "No Yizkor observances are enabled.<br>\n";
+        return;
+    }
+
+    foreach ($observances as $observance) {
+        echo h($observance['name']) . " &mdash; " .
+             h($observance['observance_date']) . " &mdash; " .
+             h($observance['next_date']) . "<br>\n";
+    }
 }
 
 function yahrzeit_render_main_page()
@@ -196,7 +210,7 @@ function yahrzeit_render_main_page()
             </td>
             <td class="text">
 <?php
-                yahrzeit_render_scheduled_events($render_timestamp);
+                yahrzeit_render_scheduled_events($minhag, $render_timestamp);
 ?>
                 <br>
             </td>

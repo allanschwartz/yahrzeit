@@ -77,6 +77,23 @@ function minhag_observance_from_post()
     return in_array($observance, ['day', 'week'], true) ? $observance : 'week';
 }
 
+/** Render the next occurrence of each enabled Yizkor observance. */
+function minhag_render_next_yizkor_events($minhag, $timestamp = null)
+{
+    $observances = next_yizkor_observances($minhag, $timestamp);
+
+    if (count($observances) == 0) {
+        echo "No Yizkor observances are enabled.<br>\n";
+        return;
+    }
+
+    foreach ($observances as $observance) {
+        echo h($observance['name']) . " &mdash; " .
+             h($observance['observance_date']) . " &mdash; " .
+             h($observance['next_date']) . "<br>\n";
+    }
+}
+
 function minhag_build_from_post()
 {
     return [
@@ -288,6 +305,16 @@ function minhag_render_form($minhag)
                 </select>
             </td>
             <td id="dateErr">&nbsp;</td>
+        </tr>
+
+        <tr>
+            <td height="25" align="left" valign="top">
+                <span class="text">Next Yizkor events</span><br>
+                <span class="textSmall">Based on the settings currently saved.</span>
+            </td>
+            <td colspan="2" class="text">
+                <?php minhag_render_next_yizkor_events($minhag); ?>
+            </td>
         </tr>
 
         <tr>
