@@ -22,6 +22,8 @@ WEB_ALIAS="${WEB_ALIAS:-yahrzeit}"
 WEB_LINK="${WEB_LINK:-/var/www/html/$WEB_ALIAS}"
 CRON_USER="${YAHRZEIT_CRON_USER:-${SUDO_USER:-$(id -un)}}"
 CRON_WRAPPER="/usr/local/sbin/yahrzeit-fix-crontab"
+INSTALL_USER="$(id -un)"
+INSTALL_GROUP="$(id -gn)"
 
 printf 'Installing/updating CBS Yahrzeit appliance software\n\n'
 printf 'Repo:       %s\n' "$REPO_URL"
@@ -75,6 +77,10 @@ if [ ! -d "$REPO_DIR/.git" ]; then
     git sparse-checkout set "$SITE_SUBDIR"
     git checkout "$BRANCH"
 else
+    # Older installer versions made data/ entirely www-data-owned. Restore
+    # repository ownership before Git attempts to replace tracked data files.
+    sudo chown -R "$INSTALL_USER:$INSTALL_GROUP" "$REPO_DIR"
+
     cd "$REPO_DIR"
     git fetch origin
     git sparse-checkout init --cone || true
@@ -132,9 +138,11 @@ chmod o+x "$INSTALL_PARENT"
 chmod o+x "$REPO_DIR"
 chmod o+x "$SITE_DIR"
 
-# Ensure Apache can write to data directory for logs and backups
-sudo chown -R www-data:www-data "$SITE_DIR/data" || true
-sudo chmod 755 "$SITE_DIR/data" || true
+# Keep the installation account as owner so future Git updates can replace
+# tracked files. Apache receives group-write access only to runtime data.
+sudo chown -R "$INSTALL_USER":www-data "$SITE_DIR/data"
+sudo find "$SITE_DIR/data" -type d -exec chmod 2775 {} +
+sudo find "$SITE_DIR/data" -type f -exec chmod 664 {} +
 sudo touch "$SITE_DIR/data/scheduler.log"
 sudo chown "$CRON_USER":www-data "$SITE_DIR/data/scheduler.log"
 sudo chmod 664 "$SITE_DIR/data/scheduler.log"
