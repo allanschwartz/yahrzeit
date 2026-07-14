@@ -87,6 +87,12 @@ The installer:
 The installer does not transmit commands to the physical controller during
 its tests.
 
+On an existing appliance, the checkout is treated as deployed code rather
+than a development worktree. The installer preserves `data/minhag.ini` and
+`data/yahrzeits-rev4.csv`, updates the remaining site files to exactly match
+the selected remote branch, and then restores those two live data files.
+Server-side edits to application source files are intentionally discarded.
+
 By default, the installer places the sparse checkout under:
 
 ```text
@@ -198,6 +204,13 @@ The installer records the intended cron account in
 `/etc/yahrzeit-cron-user` and authorizes the Minhag page to invoke only this
 repair helper. Rerun the installer, or the helper directly, after an operating
 system upgrade or appliance migration if scheduled operation needs repair.
+
+On hardened Ubuntu releases, Apache runs with the home directory mounted
+read-only in its private service namespace and with sudoers configuration
+hidden. The installer adds a systemd drop-in that makes only this site's
+`data/` directory writable and permits sudo to read the single-command
+authorization used by the cron-repair wrapper. The remaining Apache
+filesystem protections stay enabled.
 
 ## Data Backup And Restore
 

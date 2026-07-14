@@ -24,6 +24,10 @@
 #
 #   It does not transmit commands to the physical LED controller.
 #   It does not modify memorial CSV data.
+#   During an update it preserves data/minhag.ini and
+#   data/yahrzeits-rev4.csv, resets deployed code to the selected remote
+#   branch, and restores those live data files afterward. Do not make source
+#   code edits in the appliance checkout.
 #
 # One-time use from a fresh appliance:
 #
@@ -47,6 +51,7 @@
 # What this installer sets up:
 #   - git, using sparse checkout for yahrzeit_site-v3
 #   - Apache
+#   - a stable local Apache ServerName, avoiding DNS/address warning AH00558
 #   - PHP CLI and Apache PHP support
 #   - netcat for controller communication
 #   - coreutils timeout support
@@ -56,6 +61,8 @@
 #     server environments
 #   - local syntax and audit checks
 #   - policy-derived cron entries owned by the appliance administrator account
+#   - a narrow Apache systemd exception allowing writes to the application
+#     data directory and access to the cron helper's sudoers authorization
 #
 # Repository:
 #   https://github.com/allanschwartz/yahrzeit

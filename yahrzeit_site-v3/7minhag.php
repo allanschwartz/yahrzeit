@@ -382,7 +382,10 @@ function minhag_render_save_result($config_ok, $cron_result = null)
 
     if (!$config_ok) {
         emitMessagePage(
-            "Config write failure: minhag.ini",
+            "Configuration was not saved.<br><br>" .
+            "The web server could not replace <code>data/minhag.ini</code>. " .
+            "A technical maintainer should check the file and directory " .
+            "permissions and the Apache error log.",
             "click here to return to Minhag",
             "7minhag.php"
         );

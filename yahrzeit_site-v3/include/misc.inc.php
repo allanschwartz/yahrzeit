@@ -134,7 +134,7 @@ function read_minhag_ini()
  * Replace data/minhag.ini with the supplied configuration values.
  *
  * @param array<string, mixed> $assoc_arr
- * @return int 1 after a successful write; write failures terminate the request.
+ * @return int 1 after a successful write, or -1 after a logged failure.
  */
 function write_minhag_ini( $assoc_arr) 
 {
@@ -158,13 +158,36 @@ function write_minhag_ini( $assoc_arr)
         }
     }
 
-    if (!$handle = fopen($filename, 'w')) {
-        die ("fopen failure");
+    $directory = dirname($filename);
+    if (!is_dir($directory) || !is_writable($directory)) {
+        error_log("write_minhag_ini: data directory is not writable: $directory");
+        return -1;
     }
-    if (!fwrite($handle, $content)) {
-        die ("fwrite failure");
+
+    // Write beside the live file and rename it atomically so a partial write
+    // cannot leave minhag.ini empty or truncated.
+    $temporary = @tempnam($directory, '.minhag-');
+    if ($temporary === false) {
+        error_log("write_minhag_ini: could not create a temporary file in $directory");
+        return -1;
     }
-    fclose($handle);
+
+    $written = @file_put_contents($temporary, $content, LOCK_EX);
+    if ($written === false || $written !== strlen($content)) {
+        error_log("write_minhag_ini: incomplete write to $temporary");
+        @unlink($temporary);
+        return -1;
+    }
+
+    // Keep the file writable by both the installation account and www-data.
+    @chmod($temporary, 0664);
+
+    if (!@rename($temporary, $filename)) {
+        error_log("write_minhag_ini: could not replace $filename");
+        @unlink($temporary);
+        return -1;
+    }
+
     return 1;
 }
 

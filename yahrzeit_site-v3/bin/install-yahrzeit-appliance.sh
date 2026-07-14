@@ -182,12 +182,42 @@ sudo touch "$SITE_DIR/data/scheduler.log"
 sudo chown "$CRON_USER":www-data "$SITE_DIR/data/scheduler.log"
 sudo chmod 664 "$SITE_DIR/data/scheduler.log"
 
+# Ubuntu hardens Apache with ProtectHome=read-only and hides sudoers files.
+# Permit writes only to this application's runtime data, and let sudo read its
+# configuration so the one explicitly authorized cron-repair wrapper works.
+APACHE_OVERRIDE_DIR="/etc/systemd/system/apache2.service.d"
+APACHE_OVERRIDE="$APACHE_OVERRIDE_DIR/yahrzeit.conf"
+sudo mkdir -p "$APACHE_OVERRIDE_DIR"
+sudo tee "$APACHE_OVERRIDE" >/dev/null <<EOF_APACHE_OVERRIDE
+[Service]
+ReadWritePaths=$SITE_DIR/data
+
+# Reset the distribution list, then retain every inaccessible path except
+# /etc/sudoers and /etc/sudoers.d, which sudo must read.
+InaccessiblePaths=
+InaccessiblePaths=/boot
+InaccessiblePaths=/root
+InaccessiblePaths=-/etc/ssh
+InaccessiblePaths=-/etc/apt
+InaccessiblePaths=-/etc/.git
+InaccessiblePaths=-/etc/.svn
+EOF_APACHE_OVERRIDE
+sudo chmod 644 "$APACHE_OVERRIDE"
+sudo systemctl daemon-reload
+
 # Configure Apache: ensure php module is enabled and properly configured.
 # Try the generic 'php' module first, then try specific PHP versions if it doesn't exist
 for php_module in php php8.5 php8.4 php8.3 php8.2 php8.1 php8.0 php7.4; do
     sudo a2enmod "$php_module" 2>/dev/null && break
 done || true
 sudo a2enmod rewrite || true
+
+# This appliance does not depend on public DNS. A stable global name prevents
+# Apache from guessing an IPv4/IPv6 address and logging AH00558 on each restart.
+sudo tee /etc/apache2/conf-available/yahrzeit-servername.conf >/dev/null <<'EOF_SERVERNAME'
+ServerName localhost
+EOF_SERVERNAME
+sudo a2enconf yahrzeit-servername
 
 # Create a simple index.html at root to redirect to /yahrzeit/
 sudo tee /var/www/html/index.html > /dev/null <<REDIRECT_HTML
