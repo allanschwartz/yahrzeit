@@ -11,6 +11,7 @@
  *
  *      It also provides limited manual lighting operations, such as:
  *
+ *          - restore normal policy-driven Yahrzeit lighting
  *          - turn all LEDs off
  *          - turn all LEDs on
  *          - turn on Yizkor lighting
@@ -99,7 +100,8 @@ function panels_description()
     return "View the physical Yahrzeit panel geometry installed at $synagogue. " .
            "Click a panel in the photo, or click a panel ID in the table, " .
            "to view the names assigned to that panel. " .
-           "<p>Below are manual wall-wide lighting operations: all on, all off, and Yizkor. " .
+           "<p>Below are manual wall-wide lighting operations: all off, all on, " .
+           "Yahrzeit, and Yizkor. " .
            "These operations send commands to the wall immediately.";
 }
 
@@ -110,6 +112,7 @@ function panels_description()
 function run_yahrzeit_operation($operation)
 {
     $allowed = [
+        "scheduled" => "",
         "all-off" => "--all-off",
         "all-on"  => "--all-on",
         "yizkor"  => "--yizkor",
@@ -125,13 +128,11 @@ function run_yahrzeit_operation($operation)
         return [false, "Yahrzeit command script is not executable: $script"];
     }
 
-    // Local lab override.  Remove this for CBS deployment so bin/yahrzeit
-    // uses its default production controller host.
-    $allanHost = "192.168.86.240";
-
-    $cmd = escapeshellarg($script) .
-           " --host " . escapeshellarg($allanHost) .
-           " " . escapeshellarg($allowed[$operation]) . " 2>&1";
+    $cmd = escapeshellarg($script);
+    if ($allowed[$operation] != "") {
+        $cmd .= " " . escapeshellarg($allowed[$operation]);
+    }
+    $cmd .= " 2>&1";
 
     exec($cmd, $output, $rc);
 
@@ -307,9 +308,14 @@ function panels_render_main_page()
                 <button type="submit" name="lighting_operation" value="all-on" class="button">
                     Turn all lights on
                 </button>
+                <br>
+
+                <button type="submit" name="lighting_operation" value="scheduled" class="button">
+                    Yahrzeit lights
+                </button>
 
                 <button type="submit" name="lighting_operation" value="yizkor" class="button">
-                    Run Yizkor pattern
+                    Yizkor lights
                 </button>
             </td>
         </tr>

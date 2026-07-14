@@ -58,6 +58,10 @@
 #      bin/yahrzeit --report month --date 2026-05-25
 #
 # NOTES
+#      Controller host, port, and transport defaults are sourced from
+#      bin/yahrzeit-controller. Environment variables and command-line options
+#      may override those appliance defaults for one invocation.
+#
 #      State-changing controller operations emit "save".
 #
 #      "load" is intentionally not sent. The Arduino controller loads saved
@@ -80,14 +84,35 @@ YAHRZEIT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 PHP_BIN="$YAHRZEIT_DIR/bin/php"
 
-CONTROLLER_HOST="${CONTROLLER_HOST:-192.168.13.9}"
-CONTROLLER_PORT="${CONTROLLER_PORT:-2001}"
+CONTROLLER_CONFIG_FILE="$SCRIPT_DIR/yahrzeit-controller"
+if [[ ! -r "$CONTROLLER_CONFIG_FILE" ]]; then
+    echo "ERROR: controller configuration is not readable: $CONTROLLER_CONFIG_FILE" >&2
+    exit 1
+fi
 
-NC_DELAY="${NC_DELAY:-0.05}"
-POST_SEND_DELAY="${POST_SEND_DELAY:-0.5}"
+# Preserve one-command environment overrides while loading appliance defaults.
+ENV_CONTROLLER_HOST="${CONTROLLER_HOST:-}"
+ENV_CONTROLLER_PORT="${CONTROLLER_PORT:-}"
+ENV_NC_DELAY="${NC_DELAY:-}"
+ENV_POST_SEND_DELAY="${POST_SEND_DELAY:-}"
+ENV_TIMEOUT_CMD="${TIMEOUT_CMD:-}"
+ENV_NC_TIMEOUT="${NC_TIMEOUT:-}"
 
-TIMEOUT_CMD="${TIMEOUT_CMD:-timeout}"
-NC_TIMEOUT="${NC_TIMEOUT:-5}"
+# This file is owned by the appliance account and is not web-writable.
+# shellcheck source=bin/yahrzeit-controller
+source "$CONTROLLER_CONFIG_FILE"
+
+CONTROLLER_HOST="${ENV_CONTROLLER_HOST:-${CONTROLLER_HOST:-}}"
+CONTROLLER_PORT="${ENV_CONTROLLER_PORT:-${CONTROLLER_PORT:-2001}}"
+NC_DELAY="${ENV_NC_DELAY:-${NC_DELAY:-0.05}}"
+POST_SEND_DELAY="${ENV_POST_SEND_DELAY:-${POST_SEND_DELAY:-0.5}}"
+TIMEOUT_CMD="${ENV_TIMEOUT_CMD:-${TIMEOUT_CMD:-timeout}}"
+NC_TIMEOUT="${ENV_NC_TIMEOUT:-${NC_TIMEOUT:-5}}"
+
+if [[ -z "$CONTROLLER_HOST" || "$CONTROLLER_HOST" =~ [[:space:]] ]]; then
+    echo "ERROR: invalid CONTROLLER_HOST in $CONTROLLER_CONFIG_FILE" >&2
+    exit 1
+fi
 
 MODE="yahrzeit"
 TRANSMIT=1
@@ -154,7 +179,7 @@ Transmit/control options:
       Print command stream to stdout instead of sending to controller.
 
   --ip, --host HOST
-      Override controller host. Default: 192.168.13.9.
+      Override the host stored in bin/yahrzeit-controller.
 
   --port PORT
       Override controller TCP port. Default: 2001.

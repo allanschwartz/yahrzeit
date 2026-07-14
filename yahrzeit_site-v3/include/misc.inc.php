@@ -243,6 +243,23 @@ function myBool($v)
     return "NO";
 }
 
+/** Return the controller hostname or address from the shared appliance file. */
+function yahrzeit_controller_host()
+{
+    $path = dirname(__DIR__) . "/bin/yahrzeit-controller";
+    if (!is_readable($path)) {
+        return "unknown";
+    }
+
+    $config = parse_ini_file($path, false, INI_SCANNER_RAW);
+
+    if ($config === false || empty($config['CONTROLLER_HOST'])) {
+        return "unknown";
+    }
+
+    return trim($config['CONTROLLER_HOST']);
+}
+
 // -----------------------------------------------------------------------------
 // GUI rendering helpers
 // -----------------------------------------------------------------------------

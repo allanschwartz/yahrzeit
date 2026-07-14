@@ -122,27 +122,27 @@ If an example is added later, it should be clearly marked as an example.
 
 ## Controller Address
 
-The default controller target is in `bin/yahrzeit`:
+Controller transport defaults are stored as shell assignments in:
 
-```sh
-CONTROLLER_HOST="${CONTROLLER_HOST:-192.168.13.9}"
-CONTROLLER_PORT="${CONTROLLER_PORT:-2001}"
+```text
+bin/yahrzeit-controller
 ```
 
-The Arduino V3 firmware must be configured to use the matching IP address and
-listen port. Before deployment, confirm that any lab-only override has been
-removed from the web application.
+`bin/yahrzeit` sources this file before parsing its command-line options. The
+installer asks for `CONTROLLER_HOST`, using its current value as the default,
+and preserves the complete file during later software updates. The Arduino V3
+firmware must be configured to use the matching address and port.
 
 You can override the controller target for a single command:
 
 ```sh
-bin/yahrzeit --host 192.168.13.9 --port 2001 --status
+bin/yahrzeit --host 192.168.86.240 --port 2001 --status
 ```
 
 or through the environment:
 
 ```sh
-CONTROLLER_HOST=192.168.13.9 CONTROLLER_PORT=2001 bin/yahrzeit --status
+CONTROLLER_HOST=192.168.86.240 CONTROLLER_PORT=2001 bin/yahrzeit --status
 ```
 
 ## Safe Validation

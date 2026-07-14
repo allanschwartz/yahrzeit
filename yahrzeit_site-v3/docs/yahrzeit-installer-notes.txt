@@ -24,10 +24,11 @@
 #
 #   It does not transmit commands to the physical LED controller.
 #   It does not modify memorial CSV data.
-#   During an update it preserves data/minhag.ini and
-#   data/yahrzeits-rev4.csv, resets deployed code to the selected remote
-#   branch, and restores those live data files afterward. Do not make source
-#   code edits in the appliance checkout.
+#   During an update it preserves the shell configuration in
+#   bin/yahrzeit-controller, plus data/minhag.ini and
+#   data/yahrzeits-rev4.csv. It resets deployed code to the selected remote
+#   branch and restores those appliance-specific files afterward. Do not make
+#   source code edits in the appliance checkout.
 #
 # One-time use from a fresh appliance:
 #
@@ -61,6 +62,7 @@
 #     server environments
 #   - local syntax and audit checks
 #   - policy-derived cron entries owned by the appliance administrator account
+#   - controller address requested interactively and stored in the application
 #   - a narrow Apache systemd exception allowing writes to the application
 #     data directory and access to the cron helper's sudoers authorization
 #
@@ -84,7 +86,7 @@
 #        bin/yahrzeit --audit
 #        bin/yahrzeit --notransmit --status
 #
-#   3. Confirm controller host/port before live testing.
+#   3. Confirm bin/yahrzeit-controller before live testing.
 #
 #   4. Review the managed cron block printed by the installer. Save the Minhag
 #      page, or run sudo bin/fix-up-crontab, whenever the schedule changes.

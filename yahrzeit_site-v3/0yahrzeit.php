@@ -74,6 +74,12 @@ function yahrzeit_page_description()
            h($minhag['synagogueName'] ?? "") . ".";
 }
 
+/** Return the server address used for this web request. */
+function yahrzeit_server_address()
+{
+    return $_SERVER['SERVER_ADDR'] ?? "unknown";
+}
+
 function controller_summary_lines($timestamp = null)
 {
     if ($timestamp === null) {
@@ -200,6 +206,17 @@ function yahrzeit_render_main_page()
             <td class="text">
                 <?php echo h(date("l F j, Y, g:i a")); ?><br>
                 <?php echo h(current_hebrew_date_string()); ?>
+            </td>
+            <td id="notused">&nbsp;</td>
+        </tr>
+
+        <tr>
+            <td height="25" align="left" valign="top" class="text">
+                Addresses
+            </td>
+            <td class="text">
+                Yahrzeit server: <?php echo h(yahrzeit_server_address()); ?><br>
+                Yahrzeit controller: <?php echo h(yahrzeit_controller_host()); ?>
             </td>
             <td id="notused">&nbsp;</td>
         </tr>

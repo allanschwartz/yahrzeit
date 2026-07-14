@@ -42,6 +42,12 @@ Occupied locations show the memorial name assigned to that position.
 Open locations are shown as empty or open.
 </p>
 
+<p>
+The LED image beside each memorial shows whether that light should currently
+be lit according to the memorial record and saved synagogue policy. The panel
+summary also gives the number of memorial lights that should be lit now.
+</p>
+
 <h3>Assigned Names</h3>
 
 <p>
@@ -52,9 +58,9 @@ column layout comes from the fixed panel geometry.
 <h3>Not a Live Controller View</h3>
 
 <p>
-This page shows database assignments. It does not query the controller and
-does not prove whether an LED is currently on, off, working, or physically
-wired correctly.
+The displayed LED state is calculated by the application. This page does not
+query the controller and therefore does not prove whether an LED is actually
+on, off, working, or physically wired correctly.
 </p>
 
 <h3>Finding Problems</h3>

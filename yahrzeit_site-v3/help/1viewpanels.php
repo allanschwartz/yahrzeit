@@ -53,8 +53,10 @@ physical wall layout and are not edited from this screen.
 <h3>Manual Lighting Controls</h3>
 
 <p>
-This page may include manual operations such as turning all LEDs on, turning
-all LEDs off, or turning on Yizkor lighting.
+Use <strong>Yahrzeit lights</strong> to recalculate the normal policy-driven
+display and replace a temporary manual or Yizkor display. Use
+<strong>Yizkor lights</strong> for the full-wall Yizkor display. The other
+controls turn all LEDs on or turn all LEDs off.
 </p>
 
 <p>

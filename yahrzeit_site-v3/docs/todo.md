@@ -39,10 +39,6 @@ Priority markers:
 ### `bin/yahrzeit_scheduler`
 
 - Mostly done for now.
-- Uses explicit cron phases:
-  - `--phase yizkor-on`
-  - `--phase yizkor-off`
-  - `--phase yahrzeit`
 - **[B] (at CBS)** Confirm CBS Yizkor service timing and decide whether the scheduler remains three-phase or simplifies to two-phase.
 - **[B]** Add installer-managed rotation for `data/scheduler.log`, retaining
   approximately three months of compressed weekly logs without emailing
@@ -64,18 +60,14 @@ Priority markers:
 ### `0yahrzeit.php`
 
 - Works.
-- Home/status dashboard now shows date/time, Hebrew date, sunset/Shabbat timing, configured policy summary, controller summary, and wall image.
-- **[B]** Decide how the appliance should display its current network address
-  when more than one address is present.
-- **[B]** Jazz up this screen with a better status/dashboard presentation.
-- Historical note: old removed status lines should be replaced only with real, reliable status information.
+- Home/status dashboard now shows date/time, Hebrew date, server/controller
+  addresses, sunset/Shabbat timing, configured policy summary, controller
+  summary, and wall image.
 
 ### `1viewpanels.php`
 
 - OK.
 - Read-only wall/panel overview plus manual wall-wide operations.
-- **[A]** Remove the hard-coded lab-controller address.
-- **[A]** Restore a **Restore scheduled Yahrzeit lighting** operation.
 - **[A]** Review the all-on, all-off, and Yizkor controls, including which
   operations require confirmation or other safeguards.
 
@@ -104,13 +96,6 @@ Priority markers:
 - **[A] (at CBS)** Review the simplified policy with the rabbi or Ritual
   Committee, favoring reliable automatic operation over unnecessary
   configurability.
-- **[A]** Audit the Yom HaShoah, Yom HaZikaron, and other special-observance
-  controls from memorial records and the Minhag form through the policy engine
-  and scheduler. Do not retain controls that merely save unused settings.
-- **[A] (at CBS)** Decide with the rabbi or Ritual Committee whether each
-  unsupported special observance should be implemented or removed cleanly.
-  If implemented, document the approved rule and add it at the policy or
-  scheduler layer rather than in a screen file.
 
 ---
 
@@ -119,7 +104,6 @@ Priority markers:
 ### `help/0yahrzeit.php`
 
 - OK.
-- **[B]** Update if the dashboard gains lit-count or next-Yizkor summaries.
 
 ### `help/1viewpanels.php`
 
@@ -128,7 +112,6 @@ Priority markers:
 ### `help/3singlepanel.php`
 
 - OK.
-- **[B]** Update after the panel view distinguishes currently-lit vs unlit memorials.
 
 ### `help/4viewnames.php`
 
@@ -136,7 +119,7 @@ Priority markers:
 
 ### `help/5singlename.php`
 
-- OK, but may need wording update after final `5singlename.php` policy decision.
+- OK.
 
 ### `help/6reports.php`
 
@@ -145,12 +128,10 @@ Priority markers:
 ### `help/7minhag.php`
 
 - OK.
-- Updated for the installed, policy-derived cron schedule.
 
 ### `help/user_guide.php`
 
 - OK.
-- Should be kept in sync with scheduler model and deployment assumptions.
 
 ---
 
@@ -190,30 +171,10 @@ Priority markers:
 ### Weekly reports: `bin/yahrzeit_engine.php`, `bin/yahrzeit`, and `6reports.php`
 
 - Current report, panel displays, dry-run preview, and normal engine output agree for the active erev_shabbat_to_erev_shabbat window.
-  - Keep report generation in the engine, wrapper argument handling in `bin/yahrzeit`, and Reports-screen form/rendering changes in `6reports.php`.
-
----
-
-## Network Addressing and Controller Discovery
-
-- **[A]** Keep the Arduino controller hostname or address in one authoritative
-  configuration source; remove remaining screen-specific overrides.
-- **[A]** Do not depend on a particular ISP router or on a router-specific DHCP
-  reservation surviving equipment replacement.
-- **[B]** Investigate mDNS for normal controller lookup.
-- **[B]** Consider a recovery/diagnostic discovery tool that scans the local
-  subnet and verifies a possible controller with a harmless `status` or
-  `version` request.
 
 ---
 
 ## Data / Deployment Issues
 
 - **[A] (at CBS)** Fix known audit defect: Emile Kingsley uses unknown panel `col58`.
-- **[A]** Produce a report or preview of records whose English death year is
-  1945 and whose English month and day are absent.
-- **[A] (at CBS)** Present that narrowly defined group to the rabbi as possible
-  memorials for people lost in the Shoah whose exact dates of death are
-  unknown. Do not automatically classify or schedule them until a synagogue
-  minhag is approved.
 - **[B]** Decide whether any login/security support is needed on the deployed appliance.

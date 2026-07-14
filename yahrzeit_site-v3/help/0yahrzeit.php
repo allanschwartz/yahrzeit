@@ -49,12 +49,17 @@ Yizkor observance enabled on the Minhag page. The list follows the configured
 Pesach and Shavuot day choices and is sorted by upcoming date.
 </p>
 
+<p>
+The Addresses row shows the server address used for the current web request
+and the controller address stored in <code>bin/yahrzeit-controller</code>.
+</p>
+
 <h3>Wall Summary</h3>
 
 <p>
-The page may show summary counts for configured wall panels and memorial
-records. These counts come from the application’s panel geometry and memorial
-database.
+The page shows counts for configured wall panels, memorial records, and
+memorial lights currently lit under the saved policy. These counts come from
+the application’s panel geometry, memorial database, and lighting rules.
 </p>
 
 <h3>Navigation</h3>

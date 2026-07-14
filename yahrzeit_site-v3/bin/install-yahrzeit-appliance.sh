@@ -84,28 +84,31 @@ else
     cd "$REPO_DIR"
 
     # The appliance checkout is a deployment, not a development worktree.
-    # Preserve its two live tracked data files, repair interrupted/dirty code
-    # updates by matching origin exactly, and then restore the live data.
-    LIVE_DATA_TMP="$(mktemp -d)"
-    restore_live_data() {
+    # Preserve its local controller address and live tracked data, repair
+    # interrupted/dirty code updates by matching origin exactly, and restore
+    # the appliance-specific files afterward.
+    LOCAL_FILES_TMP="$(mktemp -d)"
+    restore_local_files() {
         for relative_path in \
+            "$SITE_SUBDIR/bin/yahrzeit-controller" \
             "$SITE_SUBDIR/data/minhag.ini" \
             "$SITE_SUBDIR/data/yahrzeits-rev4.csv"; do
-            backup_path="$LIVE_DATA_TMP/$relative_path"
+            backup_path="$LOCAL_FILES_TMP/$relative_path"
             if [ -f "$backup_path" ]; then
                 mkdir -p "$(dirname "$REPO_DIR/$relative_path")"
                 cp -p "$backup_path" "$REPO_DIR/$relative_path"
             fi
         done
     }
-    trap 'restore_live_data' EXIT
+    trap 'restore_local_files' EXIT
 
     for relative_path in \
+        "$SITE_SUBDIR/bin/yahrzeit-controller" \
         "$SITE_SUBDIR/data/minhag.ini" \
         "$SITE_SUBDIR/data/yahrzeits-rev4.csv"; do
         if [ -f "$REPO_DIR/$relative_path" ]; then
-            mkdir -p "$(dirname "$LIVE_DATA_TMP/$relative_path")"
-            cp -p "$REPO_DIR/$relative_path" "$LIVE_DATA_TMP/$relative_path"
+            mkdir -p "$(dirname "$LOCAL_FILES_TMP/$relative_path")"
+            cp -p "$REPO_DIR/$relative_path" "$LOCAL_FILES_TMP/$relative_path"
         fi
     done
 
@@ -119,9 +122,9 @@ else
     git sparse-checkout set "$SITE_SUBDIR"
     git reset --hard "origin/$BRANCH"
 
-    restore_live_data
+    restore_local_files
     trap - EXIT
-    rm -rf -- "${LIVE_DATA_TMP:?}"
+    rm -rf -- "${LOCAL_FILES_TMP:?}"
 fi
 
 if [ ! -d "$SITE_DIR" ]; then
@@ -130,6 +133,32 @@ if [ ! -d "$SITE_DIR" ]; then
 fi
 
 cd "$SITE_DIR"
+
+CONTROLLER_CONFIG_FILE="bin/yahrzeit-controller"
+# shellcheck source=bin/yahrzeit-controller
+source "$CONTROLLER_CONFIG_FILE"
+DEFAULT_CONTROLLER_HOST="${CONTROLLER_HOST:-}"
+CONTROLLER_HOST_INPUT="${YAHRZEIT_CONTROLLER_HOST:-}"
+
+if [ -z "$CONTROLLER_HOST_INPUT" ] && [ -t 0 ]; then
+    printf 'Yahrzeit controller address [%s]: ' "$DEFAULT_CONTROLLER_HOST"
+    IFS= read -r CONTROLLER_HOST_INPUT
+fi
+
+CONTROLLER_HOST_INPUT="${CONTROLLER_HOST_INPUT:-$DEFAULT_CONTROLLER_HOST}"
+if [[ ! "$CONTROLLER_HOST_INPUT" =~ ^[A-Za-z0-9._:-]+$ ]]; then
+    echo "ERROR: invalid controller hostname or address: $CONTROLLER_HOST_INPUT" >&2
+    exit 1
+fi
+
+if ! grep -q '^CONTROLLER_HOST=' "$CONTROLLER_CONFIG_FILE"; then
+    echo "ERROR: CONTROLLER_HOST is missing from $CONTROLLER_CONFIG_FILE" >&2
+    exit 1
+fi
+
+sed -i "s/^CONTROLLER_HOST=.*/CONTROLLER_HOST=$CONTROLLER_HOST_INPUT/" "$CONTROLLER_CONFIG_FILE"
+chmod 644 "$CONTROLLER_CONFIG_FILE"
+printf 'Controller: %s\n\n' "$CONTROLLER_HOST_INPUT"
 
 mkdir -p data/backups
 touch data/scheduler.log
@@ -320,6 +349,7 @@ Install/update complete.
 ✓ Yahrzeit site linked to: $WEB_LINK
 ✓ Apache configuration verified
 ✓ Scheduled lighting installed for: $CRON_USER
+✓ Controller address: $CONTROLLER_HOST_INPUT
 
 Access the site at:
   http://$FIRST_IP/$WEB_ALIAS/
