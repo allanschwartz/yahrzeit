@@ -51,7 +51,7 @@ Pesach and Shavuot day choices and is sorted by upcoming date.
 
 <p>
 The Addresses row shows the server address used for the current web request
-and the controller address stored in <code>bin/yahrzeit-controller</code>.
+and the controller address stored in <code>bin/yahrzeit-controller.conf</code>.
 </p>
 
 <h3>Wall Summary</h3>

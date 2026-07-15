@@ -56,6 +56,7 @@ sudo apt-get install -y \
     tcpdump \
     coreutils \
     cron \
+    logrotate \
     sudo
 
 # Ensure SSH is enabled and running
@@ -83,14 +84,27 @@ else
 
     cd "$REPO_DIR"
 
+    # Remember only the previously selected controller address. The tracked
+    # configuration and program defaults should otherwise update with Git.
+    PREVIOUS_CONTROLLER_HOST=""
+    for relative_path in \
+        "$SITE_SUBDIR/bin/yahrzeit-controller.conf" \
+        "$SITE_SUBDIR/bin/yahrzeit-controller"; do
+        controller_config="$REPO_DIR/$relative_path"
+        if [ -r "$controller_config" ]; then
+            PREVIOUS_CONTROLLER_HOST="$(awk -F= '$1 == "CONTROLLER_HOST" { print substr($0, index($0, "=") + 1); exit }' "$controller_config")"
+            if [ -n "$PREVIOUS_CONTROLLER_HOST" ]; then
+                break
+            fi
+        fi
+    done
+
     # The appliance checkout is a deployment, not a development worktree.
-    # Preserve its local controller address and live tracked data, repair
-    # interrupted/dirty code updates by matching origin exactly, and restore
-    # the appliance-specific files afterward.
+    # Preserve its live tracked data, repair interrupted/dirty code updates by
+    # matching origin exactly, and restore the appliance-specific data files.
     LOCAL_FILES_TMP="$(mktemp -d)"
     restore_local_files() {
         for relative_path in \
-            "$SITE_SUBDIR/bin/yahrzeit-controller" \
             "$SITE_SUBDIR/data/minhag.ini" \
             "$SITE_SUBDIR/data/yahrzeits-rev4.csv"; do
             backup_path="$LOCAL_FILES_TMP/$relative_path"
@@ -103,7 +117,6 @@ else
     trap 'restore_local_files' EXIT
 
     for relative_path in \
-        "$SITE_SUBDIR/bin/yahrzeit-controller" \
         "$SITE_SUBDIR/data/minhag.ini" \
         "$SITE_SUBDIR/data/yahrzeits-rev4.csv"; do
         if [ -f "$REPO_DIR/$relative_path" ]; then
@@ -134,18 +147,19 @@ fi
 
 cd "$SITE_DIR"
 
-CONTROLLER_CONFIG_FILE="bin/yahrzeit-controller"
-# shellcheck source=bin/yahrzeit-controller
+CONTROLLER_CONFIG_FILE="bin/yahrzeit-controller.conf"
+# shellcheck source=bin/yahrzeit-controller.conf
 source "$CONTROLLER_CONFIG_FILE"
-DEFAULT_CONTROLLER_HOST="${CONTROLLER_HOST:-}"
+RECORDED_CONTROLLER_HOST="${PREVIOUS_CONTROLLER_HOST:-${CONTROLLER_HOST:-}}"
 CONTROLLER_HOST_INPUT="${YAHRZEIT_CONTROLLER_HOST:-}"
 
 if [ -z "$CONTROLLER_HOST_INPUT" ] && [ -t 0 ]; then
-    printf 'Yahrzeit controller address [%s]: ' "$DEFAULT_CONTROLLER_HOST"
+    printf 'CONTROLLER_HOST is recorded as %s.\n' "$RECORDED_CONTROLLER_HOST"
+    printf 'Press Enter to keep it, or enter a new address: '
     IFS= read -r CONTROLLER_HOST_INPUT
 fi
 
-CONTROLLER_HOST_INPUT="${CONTROLLER_HOST_INPUT:-$DEFAULT_CONTROLLER_HOST}"
+CONTROLLER_HOST_INPUT="${CONTROLLER_HOST_INPUT:-$RECORDED_CONTROLLER_HOST}"
 if [[ ! "$CONTROLLER_HOST_INPUT" =~ ^[A-Za-z0-9._:-]+$ ]]; then
     echo "ERROR: invalid controller hostname or address: $CONTROLLER_HOST_INPUT" >&2
     exit 1
@@ -161,7 +175,10 @@ chmod 644 "$CONTROLLER_CONFIG_FILE"
 printf 'Controller: %s\n\n' "$CONTROLLER_HOST_INPUT"
 
 mkdir -p data/backups
-touch data/scheduler.log
+if [ -f data/scheduler.log ] && [ ! -e data/automation.log ]; then
+    mv data/scheduler.log data/automation.log
+fi
+touch data/automation.log
 
 chmod 755 bin/yahrzeit bin/yahrzeit_scheduler bin/yahrzeit_engine.php bin/fix-up-crontab
 
@@ -207,9 +224,32 @@ chmod o+x "$SITE_DIR"
 sudo chown -R "$INSTALL_USER":www-data "$SITE_DIR/data"
 sudo find "$SITE_DIR/data" -type d -exec chmod 2775 {} +
 sudo find "$SITE_DIR/data" -type f -exec chmod 664 {} +
-sudo touch "$SITE_DIR/data/scheduler.log"
-sudo chown "$CRON_USER":www-data "$SITE_DIR/data/scheduler.log"
-sudo chmod 664 "$SITE_DIR/data/scheduler.log"
+sudo touch "$SITE_DIR/data/automation.log"
+sudo chown "$CRON_USER":www-data "$SITE_DIR/data/automation.log"
+sudo chmod 664 "$SITE_DIR/data/automation.log"
+
+# Keep approximately three months of weekly automation history. Cron opens the
+# log for each invocation, so normal rename/create rotation is safe.
+LOGROTATE_TMP="$(mktemp)"
+LOGROTATE_CONFIG="/etc/logrotate.d/cbs-yahrzeit-automation"
+trap 'rm -f "$LOGROTATE_TMP"' EXIT
+cat > "$LOGROTATE_TMP" <<EOF_LOGROTATE
+"$SITE_DIR/data/automation.log" {
+    weekly
+    rotate 13
+    compress
+    dateext
+    missingok
+    notifempty
+    create 0664 $CRON_USER www-data
+    su $CRON_USER www-data
+}
+EOF_LOGROTATE
+sudo install -o root -g root -m 0644 "$LOGROTATE_TMP" "$LOGROTATE_CONFIG"
+sudo rm -f /etc/logrotate.d/cbs-yahrzeit-scheduler
+rm -f "$LOGROTATE_TMP"
+trap - EXIT
+sudo logrotate --debug "$LOGROTATE_CONFIG" >/dev/null 2>&1
 
 # Ubuntu hardens Apache with ProtectHome=read-only and hides sudoers files.
 # Permit writes only to this application's runtime data, and let sudo read its
@@ -326,7 +366,7 @@ if ! command -v timeout >/dev/null 2>&1; then
 fi
 
 bin/yahrzeit --audit || true
-bin/yahrzeit --notransmit || true
+bin/yahrzeit --dry-run || true
 
 # Install or repair only the marked Yahrzeit block in the intended appliance
 # account's crontab. This command does not transmit to the controller.
@@ -349,6 +389,7 @@ Install/update complete.
 ✓ Yahrzeit site linked to: $WEB_LINK
 ✓ Apache configuration verified
 ✓ Scheduled lighting installed for: $CRON_USER
+✓ Automation log rotation installed: 13 compressed weekly logs
 ✓ Controller address: $CONTROLLER_HOST_INPUT
 
 Access the site at:
@@ -359,7 +400,7 @@ Access the site at:
 Quick verification:
   cd $SITE_DIR
   bin/yahrzeit --audit
-  bin/yahrzeit --notransmit
+  bin/yahrzeit --dry-run
 
 Notes:
   - Cron is generated from data/minhag.ini. Save the Minhag screen or run

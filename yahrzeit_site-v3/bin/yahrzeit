@@ -45,7 +45,7 @@
 #
 # EXAMPLES
 #      bin/yahrzeit
-#      bin/yahrzeit --notransmit
+#      bin/yahrzeit --dry-run
 #      bin/yahrzeit --yizkor
 #      bin/yahrzeit --all-on
 #      bin/yahrzeit --all-off
@@ -54,9 +54,9 @@
 #      bin/yahrzeit --report month --date 2026-05-25
 #
 # NOTES
-#      Controller host, port, and transport defaults are sourced from
-#      bin/yahrzeit-controller. Environment variables may override those
-#      appliance defaults for one invocation.
+#      Controller host and port are sourced from
+#      bin/yahrzeit-controller.conf. Environment variables may override the
+#      connection and transport defaults for one invocation.
 #
 #      State-changing controller operations emit "save".
 #
@@ -77,7 +77,7 @@ YAHRZEIT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 PHP_BIN="$YAHRZEIT_DIR/bin/php"
 
-CONTROLLER_CONFIG_FILE="$SCRIPT_DIR/yahrzeit-controller"
+CONTROLLER_CONFIG_FILE="$SCRIPT_DIR/yahrzeit-controller.conf"
 if [[ ! -r "$CONTROLLER_CONFIG_FILE" ]]; then
     echo "ERROR: controller configuration is not readable: $CONTROLLER_CONFIG_FILE" >&2
     exit 1
@@ -92,7 +92,7 @@ ENV_TIMEOUT_CMD="${TIMEOUT_CMD:-}"
 ENV_NC_TIMEOUT="${NC_TIMEOUT:-}"
 
 # This file is owned by the appliance account and is not web-writable.
-# shellcheck source=bin/yahrzeit-controller
+# shellcheck source=bin/yahrzeit-controller.conf
 source "$CONTROLLER_CONFIG_FILE"
 
 CONTROLLER_HOST="${ENV_CONTROLLER_HOST:-${CONTROLLER_HOST:-}}"
@@ -147,7 +147,7 @@ Reports / dry-run modes:
       Include verbose per-person lighting-decision diagnostics from the engine.
 
 Transmit/control options:
-  --notransmit, --dry-run
+  --dry-run
       Print command stream to stdout instead of sending to controller.
 
   -h, --help
@@ -155,7 +155,7 @@ Transmit/control options:
 
 Examples:
   yahrzeit
-  yahrzeit --notransmit
+  yahrzeit --dry-run
   yahrzeit --yizkor
   yahrzeit --all-off
   yahrzeit --audit
@@ -249,7 +249,7 @@ while [[ $# -gt 0 ]]; do
             usage
             exit 0
             ;;
-        --notransmit|--dry-run)
+        --dry-run)
             TRANSMIT=0
             shift
             ;;
@@ -356,7 +356,7 @@ run_yahrzeitd() {
 #
 # The following emit_*() functions produce the literal command streams that are
 # sent to the Yahrzeit embedded controller.  The final command stream is either
-# printed to stdout (--notransmit) or piped through slowcat/nc into the Arduino
+# printed to stdout (--dry-run) or piped through slowcat/nc into the Arduino
 # V3 appliance over TCP port 2001.
 #
 # The embedded controller is instrumented to echo each command it executes, then
@@ -461,7 +461,7 @@ emit_commands() {
 slowcat() {
     local delay="$1"
     while IFS= read -r line; do
-        printf '%s\n' "$line"
+        printf '%s\n' "$line" || return $?
         sleep "$delay"
     done
     sleep "$POST_SEND_DELAY"
@@ -469,12 +469,14 @@ slowcat() {
 
 # Either print the generated command stream or transmit it to the controller.
 #
-# In --notransmit / --dry-run mode, the command stream is simply printed to
+# In --dry-run mode, the command stream is simply printed to
 # stdout for inspection.
 #
 # In normal mode, the stream is passed through slowcat and then into nc,
 # connecting to the Yahrzeit embedded controller
 transmit_commands() {
+    local expected_commands="${1:-0}"
+
     if [[ "$TRANSMIT" -eq 0 ]]; then
         cat
         return
@@ -483,37 +485,111 @@ transmit_commands() {
     command -v nc >/dev/null 2>&1 || die "nc not found"
     command -v "$TIMEOUT_CMD" >/dev/null 2>&1 || die "$TIMEOUT_CMD not found"
 
+    local summary_mode="${YAHRZEIT_LOG_SUMMARY:-0}"
+    local response_file=""
+    if [[ "$summary_mode" == "1" ]]; then
+        response_file="$(mktemp)"
+        echo "TRANSPORT start mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT timeout=${NC_TIMEOUT}s expected_commands=$expected_commands"
+    fi
+
     set +e
-    slowcat "$NC_DELAY" |
-        "$TIMEOUT_CMD" "$NC_TIMEOUT" nc "$CONTROLLER_HOST" "$CONTROLLER_PORT"
+    if [[ "$summary_mode" == "1" ]]; then
+        slowcat "$NC_DELAY" |
+            "$TIMEOUT_CMD" "$NC_TIMEOUT" nc "$CONTROLLER_HOST" "$CONTROLLER_PORT" >"$response_file"
+    else
+        slowcat "$NC_DELAY" |
+            "$TIMEOUT_CMD" "$NC_TIMEOUT" nc "$CONTROLLER_HOST" "$CONTROLLER_PORT"
+    fi
     local status=("${PIPESTATUS[@]}")
     set -e
 
     local slowcat_status="${status[0]}"
     local transmit_status="${status[1]}"
+    local response_lines=0
+    local response_bytes=0
+    local controller_ok=0
+    local controller_errors=0
+    if [[ -n "$response_file" ]]; then
+        response_lines="$(wc -l <"$response_file" | tr -d ' ')"
+        response_bytes="$(wc -c <"$response_file" | tr -d ' ')"
+        controller_ok="$(grep -Ec '^OK$' "$response_file" || true)"
+        controller_errors="$(grep -Ec '^(Eh\?|ERR )' "$response_file" || true)"
+    fi
 
     if [[ "$transmit_status" -eq 124 ]]; then
-        echo "ERROR: controller transmit timed out after ${NC_TIMEOUT}s" >&2
-        echo "       host=${CONTROLLER_HOST} port=${CONTROLLER_PORT}" >&2
+        [[ -z "$response_file" ]] || rm -f "$response_file"
+        echo "ERROR: controller transmit timed out mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT timeout=${NC_TIMEOUT}s nc_status=$transmit_status slowcat_status=$slowcat_status response_lines=$response_lines response_bytes=$response_bytes controller_ok=$controller_ok controller_errors=$controller_errors" >&2
         return 124
     fi
 
     if [[ "$transmit_status" -ne 0 ]]; then
-        echo "ERROR: controller transmit failed with exit status $transmit_status" >&2
-        echo "       host=${CONTROLLER_HOST} port=${CONTROLLER_PORT}" >&2
+        [[ -z "$response_file" ]] || rm -f "$response_file"
+        echo "ERROR: controller transmit failed mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT nc_status=$transmit_status slowcat_status=$slowcat_status response_lines=$response_lines response_bytes=$response_bytes controller_ok=$controller_ok controller_errors=$controller_errors" >&2
         return "$transmit_status"
     fi
 
     if [[ "$slowcat_status" -ne 0 ]]; then
-        echo "ERROR: slowcat failed with exit status $slowcat_status" >&2
+        [[ -z "$response_file" ]] || rm -f "$response_file"
+        echo "ERROR: controller command stream failed mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT nc_status=$transmit_status slowcat_status=$slowcat_status response_lines=$response_lines response_bytes=$response_bytes controller_ok=$controller_ok controller_errors=$controller_errors" >&2
         return "$slowcat_status"
     fi
 
+    if [[ "$summary_mode" == "1" && "$controller_errors" -gt 0 ]]; then
+        awk '
+            /^(Eh\?|ERR )/ { print "CONTROLLER error: " previous " => " $0 }
+            { previous = $0 }
+        ' "$response_file" >&2
+        rm -f "$response_file"
+        echo "ERROR: controller rejected commands mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT response_lines=$response_lines response_bytes=$response_bytes controller_ok=$controller_ok controller_errors=$controller_errors" >&2
+        return 65
+    fi
+
+    if [[ "$summary_mode" == "1" && "$response_lines" -eq 0 ]]; then
+        rm -f "$response_file"
+        echo "ERROR: controller returned no response mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT" >&2
+        return 66
+    fi
+
+    if [[ "$summary_mode" == "1" && "$controller_ok" -ne "$expected_commands" ]]; then
+        rm -f "$response_file"
+        echo "ERROR: incomplete controller response mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT expected_ok=$expected_commands controller_ok=$controller_ok response_lines=$response_lines response_bytes=$response_bytes" >&2
+        return 67
+    fi
+
+    if [[ "$summary_mode" == "1" ]]; then
+        echo "TRANSPORT success mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT expected_ok=$expected_commands controller_ok=$controller_ok response_lines=$response_lines response_bytes=$response_bytes controller_errors=$controller_errors"
+    fi
+    [[ -z "$response_file" ]] || rm -f "$response_file"
     return 0
+}
+
+run_logged_operation() {
+    local command_file
+    local generation_status=0
+    local transmit_status=0
+    local command_count
+
+    command_file="$(mktemp)"
+    emit_commands >"$command_file" || generation_status=$?
+    if [[ "$generation_status" -ne 0 ]]; then
+        rm -f "$command_file"
+        echo "ERROR: command generation failed mode=$MODE status=$generation_status" >&2
+        return "$generation_status"
+    fi
+
+    command_count="$(awk 'NF && $1 !~ /^#/ { count++ } END { print count + 0 }' "$command_file")"
+    echo "COMMANDS generated mode=$MODE count=$command_count"
+    transmit_commands "$command_count" <"$command_file" || transmit_status=$?
+    rm -f "$command_file"
+    return "$transmit_status"
 }
 
 # Main pipeline:
 #
 #   1. Generate the selected controller command stream.
-#   2. Either print it (--notransmit) or send it to the embedded controller.
-emit_commands | transmit_commands
+#   2. Either print it (--dry-run) or send it to the embedded controller.
+if [[ "${YAHRZEIT_LOG_SUMMARY:-0}" == "1" && "$TRANSMIT" -eq 1 ]]; then
+    run_logged_operation
+else
+    emit_commands | transmit_commands
+fi

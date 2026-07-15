@@ -246,7 +246,7 @@ function myBool($v)
 /** Return the controller hostname or address from the shared appliance file. */
 function yahrzeit_controller_host()
 {
-    $path = dirname(__DIR__) . "/bin/yahrzeit-controller";
+    $path = dirname(__DIR__) . "/bin/yahrzeit-controller.conf";
     if (!is_readable($path)) {
         return "unknown";
     }

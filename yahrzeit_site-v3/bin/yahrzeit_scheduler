@@ -31,6 +31,9 @@
  *              Run normal yahrzeit lighting:
  *                  bin/yahrzeit
  *
+ *          --phase cron-refresh
+ *              Rebuild moving sunset-based cron times.
+ *
  *      The normal scheduled-control path is:
  *
  *          cron
@@ -78,6 +81,7 @@ function scheduler_usage()
     echo "  --phase yizkor-on     Run Yizkor lighting if today is a configured Yizkor day.\n";
     echo "  --phase yizkor-off    Restore normal yahrzeit lighting if today is a configured Yizkor day.\n";
     echo "  --phase yahrzeit      Run normal yahrzeit lighting.\n\n";
+    echo "  --phase cron-refresh  Rebuild moving sunset-based cron times.\n\n";
     echo "Options:\n";
     echo "  --dry-run             Show what would be run; do not call bin/yahrzeit.\n";
     echo "  --now 'YYYY-MM-DD HH:MM'\n";
@@ -134,7 +138,7 @@ function parse_options($argv)
         case '--phase':
             $i++;
             if ($i >= count($argv)) {
-                fail("--phase requires yizkor-on, yizkor-off, or yahrzeit");
+                fail("--phase requires yizkor-on, yizkor-off, yahrzeit, or cron-refresh");
             }
             $opts['phase'] = $argv[$i];
             break;
@@ -152,6 +156,7 @@ function parse_options($argv)
     case 'yizkor-on':
     case 'yizkor-off':
     case 'yahrzeit':
+    case 'cron-refresh':
         break;
     default:
         fail("unknown phase: " . $opts['phase']);
@@ -166,6 +171,20 @@ function timestamp_line($message)
 
     $ts = isset($log_now) ? $log_now : time();
     echo date("Y-m-d H:i:s", $ts) . "  " . $message . "\n";
+}
+
+function timestamp_child_output($label, $lines)
+{
+    foreach ($lines as $line) {
+        timestamp_line("$label: $line");
+    }
+}
+
+function finish_phase($phase, $status, $started_at)
+{
+    $duration_ms = (int)round((microtime(true) - $started_at) * 1000);
+    timestamp_line("END phase=$phase status=$status duration_ms=$duration_ms");
+    return $status;
 }
 
 function yizkor_reasons_today($minhag, $now)
@@ -198,7 +217,9 @@ function run_yahrzeit_command($args, $reason, $opts)
         return 0;
     }
 
-    passthru($cmd, $rc);
+    $output = array();
+    exec("YAHRZEIT_LOG_SUMMARY=1 $cmd 2>&1", $output, $rc);
+    timestamp_child_output("WRAPPER", $output);
 
     if ($rc != 0) {
         timestamp_line("ERROR: command exited with status $rc");
@@ -207,17 +228,22 @@ function run_yahrzeit_command($args, $reason, $opts)
     return $rc;
 }
 
-/** Refresh moving sunset-based cron times after a successful normal run. */
-function refresh_sunset_crontab($minhag, $opts)
+/** Refresh moving sunset-based cron times and include its result in this log. */
+function refresh_sunset_crontab($minhag, $opts, $force = false)
 {
-    if ($opts['dry_run'] || ($minhag['yahrzeitLightTime'] ?? 'setTime') != 'atSunset') {
+    if (!$force && ($minhag['yahrzeitLightTime'] ?? 'setTime') != 'atSunset') {
         return 0;
     }
 
     $command = escapeshellarg(__DIR__ . '/fix-up-crontab');
+    if ($opts['dry_run']) {
+        $command .= ' --dry-run --crontab-file /dev/null';
+    }
     timestamp_line("ACTION: refresh next sunset-based cron schedule");
     timestamp_line("COMMAND: $command");
-    passthru($command, $status);
+    $output = array();
+    exec("$command 2>&1", $output, $status);
+    timestamp_child_output("CRONTAB", $output);
 
     if ($status != 0) {
         timestamp_line("ERROR: crontab refresh exited with status $status");
@@ -236,13 +262,24 @@ function main($argv)
 
     $minhag = read_minhag_ini();
     $phase = $opts['phase'];
+    $started_at = microtime(true);
+
+    timestamp_line(
+        "START phase=$phase dry_run=" . ($opts['dry_run'] ? 'yes' : 'no')
+    );
 
     if ($phase == 'yahrzeit') {
         $status = run_yahrzeit_command(array(), "normal yahrzeit lighting", $opts);
         if ($status != 0) {
-            return $status;
+            return finish_phase($phase, $status, $started_at);
         }
-        return refresh_sunset_crontab($minhag, $opts);
+        $status = refresh_sunset_crontab($minhag, $opts);
+        return finish_phase($phase, $status, $started_at);
+    }
+
+    if ($phase == 'cron-refresh') {
+        $status = refresh_sunset_crontab($minhag, $opts, true);
+        return finish_phase($phase, $status, $started_at);
     }
 
     $reasons = yizkor_reasons_today($minhag, $now);
@@ -251,24 +288,22 @@ function main($argv)
 
     if ($phase == 'yizkor-on') {
         if ($is_yizkor_day) {
-            return run_yahrzeit_command(array("--yizkor"), "Yizkor lighting on: $reason_text", $opts);
+            $status = run_yahrzeit_command(array("--yizkor"), "Yizkor lighting on: $reason_text", $opts);
+            return finish_phase($phase, $status, $started_at);
         }
 
-        if ($opts['verbose']) {
-            timestamp_line("No action: yizkor-on phase, $reason_text");
-        }
-        return 0;
+        timestamp_line("DECISION: no action; yizkor-on phase, $reason_text");
+        return finish_phase($phase, 0, $started_at);
     }
 
     if ($phase == 'yizkor-off') {
         if ($is_yizkor_day) {
-            return run_yahrzeit_command(array(), "Yizkor service over; restore normal yahrzeit lighting: $reason_text", $opts);
+            $status = run_yahrzeit_command(array(), "Yizkor service over; restore normal yahrzeit lighting: $reason_text", $opts);
+            return finish_phase($phase, $status, $started_at);
         }
 
-        if ($opts['verbose']) {
-            timestamp_line("No action: yizkor-off phase, $reason_text");
-        }
-        return 0;
+        timestamp_line("DECISION: no action; yizkor-off phase, $reason_text");
+        return finish_phase($phase, 0, $started_at);
     }
 
     fail("unknown phase: $phase");

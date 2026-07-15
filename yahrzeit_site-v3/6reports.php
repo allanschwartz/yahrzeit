@@ -183,7 +183,7 @@ function reports_handle_audit()
 
 function reports_handle_preview()
 {
-    [$status, $output] = reports_run_yahrzeit(['--notransmit']);
+    [$status, $output] = reports_run_yahrzeit(['--dry-run']);
 
     return [$status == 0, "Controller command preview (exit $status)", $output];
 }

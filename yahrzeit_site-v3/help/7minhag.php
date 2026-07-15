@@ -119,7 +119,7 @@ clock time automatically.
 
 <pre>
 cd /path/to/yahrzeit_site-v3
-bin/fix-up-crontab --preview
+bin/fix-up-crontab --dry-run
 sudo bin/fix-up-crontab
 </pre>
 

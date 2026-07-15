@@ -118,25 +118,26 @@ fresh Ubuntu appliance, configure that on-site using the local network policy,
 usually in `/etc/netplan/*.yaml`.
 
 Do not commit site-specific `/etc/netplan/*.yaml` files to this repository.
-If an example is added later, it should be clearly marked as an example.
 
 ## Controller Address
 
-Controller transport defaults are stored as shell assignments in:
+The controller connection is stored as shell assignments in:
 
 ```text
-bin/yahrzeit-controller
+bin/yahrzeit-controller.conf
 ```
 
 `bin/yahrzeit` sources this file before parsing its command-line options. The
-installer asks for `CONTROLLER_HOST`, using its current value as the default,
-and preserves the complete file during later software updates. The Arduino V3
-firmware must be configured to use the matching address and port.
+installer remembers the previously recorded `CONTROLLER_HOST` before updating
+the checkout, installs the current tracked configuration, and asks whether to
+keep that address or enter a replacement. The configuration file itself is not
+preserved. The fixed port and transport defaults update with the software. The
+Arduino V3 firmware must use the matching address and port.
 
 For a one-command diagnostic override, use environment variables:
 
 ```sh
-CONTROLLER_HOST=192.168.86.240 CONTROLLER_PORT=2001 bin/yahrzeit --notransmit
+CONTROLLER_HOST=192.168.86.240 CONTROLLER_PORT=2001 bin/yahrzeit --dry-run
 ```
 
 ## Safe Validation
@@ -156,7 +157,7 @@ Run data/audit checks that do not transmit:
 
 ```sh
 bin/yahrzeit --audit
-bin/yahrzeit --notransmit
+bin/yahrzeit --dry-run
 ```
 
 ## Live Controller Operations
@@ -180,8 +181,19 @@ cron jobs. Weekly observance schedules normal lighting on Friday; day-only
 observance schedules it daily. Fixed times remain stable, while sunset-based
 times are recalculated automatically.
 
+Every managed cron invocation appends to `data/automation.log`. Each run records
+its phase, decision or action, controller transport summary, cron-repair
+result, final status, and duration. Normal scheduled runs do not record the
+complete controller command stream. The installer configures `logrotate` to
+retain 13 compressed weekly logs without sending routine cron email.
+
 ```sh
-bin/fix-up-crontab --preview
+tail -100 data/automation.log
+ls -lh data/automation.log*
+```
+
+```sh
+bin/fix-up-crontab --dry-run
 sudo bin/fix-up-crontab
 ```
 
@@ -225,15 +237,6 @@ The preferred one-person engineering workflow is:
 3. Tag the installation version.
 4. Push `master` and the tag.
 5. On the installed appliance, rerun `bin/install-yahrzeit-appliance.sh`.
-
-The installer updates with:
-
-```sh
-git pull --ff-only origin master
-```
-
-This is deliberately conservative. It will not silently merge or overwrite
-local changes.
 
 ## What Not To Change Casually
 
