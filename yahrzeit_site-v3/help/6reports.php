@@ -41,6 +41,13 @@ Use the day, week, next-week, month, and next-month reports to list memorial
 names whose yahrzeits fall in the selected period.
 </p>
 
+<p>
+Week reports use the same Erev Shabbat-to-Erev Shabbat observance period as
+automatic weekly lighting. The displayed civil dates run from Saturday through
+Friday. If the anchor date is Friday, <em>This week</em> begins that evening;
+<em>Next week</em> selects the following observance period.
+</p>
+
 <h3>Audit Database</h3>
 
 <p>

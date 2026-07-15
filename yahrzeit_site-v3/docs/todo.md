@@ -16,7 +16,7 @@ Priority markers:
 
 - OK.
 
-### `bin/install-yahrzeit-appliance.sh`
+### `bin/install-yahrzeit.sh`
 
 - OK.
 
@@ -26,17 +26,7 @@ Priority markers:
 
 ### `bin/yahrzeit_engine.php`
 
-- Done for current deployment.
-- **[A]** Correct the `week` and `next-week` report ranges to use the shared
-  Erev Shabbat-to-Erev Shabbat lighting-week policy.
-  - `report_date_range()` currently starts `week` on the selected anchor date
-    and `next-week` exactly seven days later, then reports seven calendar days.
-  - Reuse `yahrzeit_lighting_week_range()` or a shared companion helper rather
-    than implementing a separate calendar-week calculation.
-  - Update the Reports screen/help and section 27-8 wording so the anchor-date
-    behavior and reported Erev Shabbat observance period are clear.
-  - Add boundary tests for Friday before sunset, Friday after sunset, and dates
-    near Gregorian and Hebrew year transitions.
+- OK.
 
 ### `bin/yahrzeit_scheduler`
 

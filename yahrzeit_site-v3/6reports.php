@@ -346,7 +346,8 @@ function reports_render_main_page()
             <input type="date" name="report_date" value="<?php echo h($today); ?>" class="formStyle">
             <br>
             <span class="textsmall">
-                The week and month reports are computed by bin/yahrzeit and yahrzeit_engine.php.
+                Week reports use the same Erev Shabbat-to-Erev Shabbat period as automatic lighting.<br>
+                On Friday, This week begins that evening; Next week selects the following period.
             </span>
         </td>
     </tr>

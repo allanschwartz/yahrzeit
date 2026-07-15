@@ -50,6 +50,16 @@ function yahrzeit_lighting_week_range($timestamp = null)
     return [$start, strtotime("+6 days", $start)];
 }
 
+/** Return the Saturday-through-Friday lighting window following this one. */
+function yahrzeit_next_lighting_week_range($timestamp = null)
+{
+    if ($timestamp === null) {
+        $timestamp = time();
+    }
+
+    return yahrzeit_lighting_week_range(strtotime("+7 days", $timestamp));
+}
+
 /**
  * Return whether a Gregorian month/day falls within the lighting week.
  *
@@ -91,25 +101,10 @@ function yahrzeit_english_day_is_in_lighting_week($month, $day, $timestamp)
  */
 function yahrzeit_person_matches_observance_window($person, $window, $timestamp = null)
 {
-    global $minhag;
     global $hebrewMonthName;
     global $hebrewYear;
 
-    $use_hebrew =
-        isset($minhag['yahrzeitEngOrHeb']) &&
-        $minhag['yahrzeitEngOrHeb'] == "heb";
-
-    if (isset($person['useHeb']) && $person['useHeb']) {
-        $use_hebrew = true;
-    }
-
-    $use_english =
-        isset($minhag['yahrzeitEngOrHeb']) &&
-        $minhag['yahrzeitEngOrHeb'] == "eng";
-
-    if (isset($person['useEng']) && $person['useEng']) {
-        $use_english = true;
-    }
+    $use_hebrew = yahrzeit_person_uses_hebrew_date($person);
 
     if ($use_hebrew) {
         $month_name = isset($person['hebYzMonth'])
@@ -153,11 +148,9 @@ function yahrzeit_person_matches_observance_window($person, $window, $timestamp 
         }
 
         [$month, $day] = $parts;
-    } else if ($use_english) {
+    } else {
         $month = isset($person['engYzMonth']) ? $person['engYzMonth'] : "";
         $day = isset($person['engYzDD']) ? $person['engYzDD'] : "";
-    } else {
-        return false;
     }
 
     if ($window == "today") {

@@ -94,6 +94,8 @@ require_once site_root() . "/include/leds.inc.php";
 require_once site_root() . "/include/date_support.inc.php";
 require_once site_root() . "/include/yahrzeit_policy.inc.php";
 
+date_default_timezone_set("America/Los_Angeles");
+
 
 // ---------------------------------------------------------------------------
 // Program entry and option handling
@@ -480,12 +482,10 @@ function report_date_range($kind, $base_timestamp)
         $end   = $start;
     }
     else if ($kind == "week") {
-        $start = strtotime(date("Y-m-d", $base_timestamp));
-        $end   = strtotime("+6 days", $start);
+        [$start, $end] = yahrzeit_lighting_week_range($base_timestamp);
     }
     else if ($kind == "next-week") {
-        $start = strtotime("+7 days", strtotime(date("Y-m-d", $base_timestamp)));
-        $end   = strtotime("+6 days", $start);
+        [$start, $end] = yahrzeit_next_lighting_week_range($base_timestamp);
     }
     else if ($kind == "month") {
         $start = strtotime(date("Y-m-01", $base_timestamp));
@@ -658,7 +658,9 @@ function yz_process_person($person, $timestamp)
 // Program entry point
 // -----------------------------------------------------------------------------
 
-$options = parse_options();
-$minhag = read_minhag_ini();
+if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
+    $options = parse_options();
+    $minhag = read_minhag_ini();
 
-exit(yz_main());
+    exit(yz_main());
+}

@@ -68,9 +68,9 @@ and command previews are intended to be safe; live wall operations call
 For a fresh Ubuntu/Debian appliance, run:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/allanschwartz/yahrzeit/master/yahrzeit_site-v3/bin/install-yahrzeit-appliance.sh -o /tmp/install-yahrzeit-appliance.sh
-chmod +x /tmp/install-yahrzeit-appliance.sh
-/tmp/install-yahrzeit-appliance.sh
+curl -fsSL https://raw.githubusercontent.com/allanschwartz/yahrzeit/master/yahrzeit_site-v3/bin/install-yahrzeit.sh -o /tmp/install-yahrzeit.sh
+chmod +x /tmp/install-yahrzeit.sh
+/tmp/install-yahrzeit.sh
 ```
 
 The installer:
@@ -150,7 +150,7 @@ for f in [0-9]*.php include/*.inc.php help/*.php bin/yahrzeit_engine.php bin/yah
 done
 
 bash -n bin/yahrzeit
-bash -n bin/install-yahrzeit-appliance.sh
+bash -n bin/install-yahrzeit.sh
 ```
 
 Run data/audit checks that do not transmit:
@@ -158,6 +158,7 @@ Run data/audit checks that do not transmit:
 ```sh
 bin/yahrzeit --audit
 bin/yahrzeit --dry-run
+php tests/yahrzeit_engine_policy_test.php
 ```
 
 ## Live Controller Operations
@@ -236,7 +237,7 @@ The preferred one-person engineering workflow is:
 2. Commit the changes.
 3. Tag the installation version.
 4. Push `master` and the tag.
-5. On the installed appliance, rerun `bin/install-yahrzeit-appliance.sh`.
+5. On the installed appliance, rerun `bin/install-yahrzeit.sh`.
 
 ## What Not To Change Casually
 

@@ -43,12 +43,12 @@ File size / maintainability guidelines:
 Validation commands:
 
 ```sh
-for f in [0-9]*.php include/*.inc.php help/*.php bin/yahrzeit_engine.php bin/yahrzeit_scheduler; do
+for f in [0-9]*.php include/*.inc.php help/*.php bin/*.php bin/yahrzeit_scheduler; do
     php -l "$f"
 done
 
 bash -n bin/yahrzeit
-bash -n bin/install-yahrzeit-appliance.sh
+bash -n bin/install-yahrzeit.sh
 ```
 
 Do not run commands that transmit to the physical controller unless explicitly asked.

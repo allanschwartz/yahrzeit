@@ -4,9 +4,9 @@ set -euo pipefail
 # Install/update the CBS Yahrzeit Wall PHP appliance on a small Ubuntu/Debian host.
 #
 # Run locally on a fresh Ubuntu/Debian appliance:
-#   curl -fsSL https://raw.githubusercontent.com/allanschwartz/yahrzeit/master/yahrzeit_site-v3/bin/install-yahrzeit-appliance.sh -o /tmp/install-yahrzeit-appliance.sh
-#   chmod +x /tmp/install-yahrzeit-appliance.sh
-#   /tmp/install-yahrzeit-appliance.sh
+#   curl -fsSL https://raw.githubusercontent.com/allanschwartz/yahrzeit/master/yahrzeit_site-v3/bin/install-yahrzeit.sh -o /tmp/install-yahrzeit.sh
+#   chmod +x /tmp/install-yahrzeit.sh
+#   /tmp/install-yahrzeit.sh
 #
 # This script installs packages, clones or updates the repo, configures Apache,
 # runs syntax/audit checks, and installs the managed lighting schedule.
@@ -367,6 +367,7 @@ fi
 
 bin/yahrzeit --audit || true
 bin/yahrzeit --dry-run || true
+php tests/yahrzeit_engine_policy_test.php
 
 # Install or repair only the marked Yahrzeit block in the intended appliance
 # account's crontab. This command does not transmit to the controller.

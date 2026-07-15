@@ -32,12 +32,12 @@
 #
 # One-time use from a fresh appliance:
 #
-#   curl -fsSL -o /tmp/install-yahrzeit-appliance.sh \
-#     https://raw.githubusercontent.com/allanschwartz/yahrzeit/master/yahrzeit_site-v3/bin/install-yahrzeit-appliance.sh
+#   curl -fsSL -o /tmp/install-yahrzeit.sh \
+#     https://raw.githubusercontent.com/allanschwartz/yahrzeit/master/yahrzeit_site-v3/bin/install-yahrzeit.sh
 #
-#   less /tmp/install-yahrzeit-appliance.sh
-#   chmod +x /tmp/install-yahrzeit-appliance.sh
-#   /tmp/install-yahrzeit-appliance.sh
+#   less /tmp/install-yahrzeit.sh
+#   chmod +x /tmp/install-yahrzeit.sh
+#   /tmp/install-yahrzeit.sh
 #
 # Recommended preconditions:
 #   1. Install Ubuntu Server LTS.
@@ -86,6 +86,7 @@
 #        cd ~/src/yahrzeit/yahrzeit_site-v3
 #        bin/yahrzeit --audit
 #        bin/yahrzeit --dry-run
+#        php tests/yahrzeit_engine_policy_test.php
 #
 #   3. Confirm bin/yahrzeit-controller.conf before live testing.
 #
