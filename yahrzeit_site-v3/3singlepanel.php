@@ -194,7 +194,7 @@ function single_panel_render_main_page($panelid, $panel, $completePanel, $timest
     emitTopOfScreen($title, SINGLE_PANEL_DESCRIPTION, SINGLE_PANEL_HELPFILE);
 ?>
 
-    <table cellspacing="0" cellpadding="4" width="90%" border="0" class="botBorder">
+    <table cellspacing="0" cellpadding="4" width="100%" border="0" class="botBorder">
         <tr>
             <td width="35%"></td>
             <td width="40%"></td>
@@ -224,7 +224,6 @@ function single_panel_render_main_page($panelid, $panel, $completePanel, $timest
         emitCopyright();
 ?>
     </table>
-    <br>&nbsp;<br>
 
 <?php
     emitFooter();

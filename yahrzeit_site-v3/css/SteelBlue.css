@@ -563,7 +563,7 @@ TABLE.NobotBorder TD {border-bottom:thin none}
 
 .bgNone {
     background-color: #FFFFFF;
-    background-image: url(../images/bgNone.gif);
+    background-image: none;
     margin: 0px;
     padding: 0px;
 }
@@ -606,13 +606,24 @@ TABLE.rowBorder TD {
     font-size: 70%;
     font-weight: bold;
     text-decoration: none;
-    color: #FFFFFF
+    color: #FFFFFF;
+    white-space: nowrap;
 }
 .tabTextUnsel {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 70%;
     text-decoration: none;
-    color: #000000
+    color: #000000;
+    white-space: nowrap;
+}
+
+@media screen and (max-width: 1100px) {
+    .tabSelectedBeg,
+    .tabSelectedEnd,
+    .tabUnselectedBeg,
+    .tabUnselectedEnd {
+        width: 8px;
+    }
 }
 
 .logFormStyle {
@@ -709,4 +720,65 @@ TABLE.rowBorder TD {
     padding: 8px 0;
     text-align: center;
     color: #555555;
+}
+
+TABLE.botBorder TD.pageCopyrightCell {
+    padding: 14px 4px 10px;
+    border-bottom: 0;
+    text-align: center;
+}
+
+/* Shared page shell: equal side gutters with full-width content between them. */
+.pageShell {
+    height: calc(100vh - 65px);
+}
+
+.pageSideGutter {
+    width: 120px;
+    background-color: #E8ECF7;
+}
+
+.pageMainContent {
+    box-sizing: border-box;
+    padding-right: 1em;
+    padding-left: 1em;
+    background-color: #FFFFFF;
+}
+
+.pageHeading {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.pageHeadingTitle {
+    box-sizing: border-box;
+    min-height: 30px;
+    padding-top: 12px;
+    border-bottom: 1px solid #336699;
+}
+
+.pageHeadingDescription {
+    padding-top: 1px;
+}
+
+.pageHeadingHelp {
+    min-height: 30px;
+    padding-top: 1px;
+    text-align: right;
+}
+
+table.yizkorEvents {
+    border-collapse: collapse;
+    font: inherit;
+    color: inherit;
+}
+
+table.yizkorEvents td {
+    padding: 0 1em 1px 0;
+    border-bottom: 0;
+    vertical-align: top;
+}
+
+table.yizkorEvents td.yizkorCivilDate {
+    padding-right: 0;
 }

@@ -82,16 +82,7 @@ function minhag_render_next_yizkor_events($minhag, $timestamp = null)
 {
     $observances = next_yizkor_observances($minhag, $timestamp);
 
-    if (count($observances) == 0) {
-        echo "No Yizkor observances are enabled.<br>\n";
-        return;
-    }
-
-    foreach ($observances as $observance) {
-        echo h($observance['name']) . " &mdash; " .
-             h($observance['observance_date']) . " &mdash; " .
-             h($observance['next_date']) . "<br>\n";
-    }
+    emit_yizkor_observance_table($observances);
 }
 
 function minhag_build_from_post()
@@ -139,7 +130,7 @@ function minhag_render_form($minhag)
 ?>
 
 <form name="minhagForm" action="7minhag.php" method="POST">
-    <table cellSpacing="0" cellPadding="4" width="90%" border="0" class="botBorder">
+    <table cellSpacing="0" cellPadding="4" width="100%" border="0" class="botBorder">
         <tr><td width="35%"></td>
             <td width="40%"></td>
             <td width="25%"></td>
@@ -374,7 +365,6 @@ function minhag_render_form($minhag)
         emitCopyright();
 ?>
     </table>
-<br>&nbsp;<br>
 </form>
 
 <?php

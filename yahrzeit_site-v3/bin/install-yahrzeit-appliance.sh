@@ -326,7 +326,7 @@ if ! command -v timeout >/dev/null 2>&1; then
 fi
 
 bin/yahrzeit --audit || true
-bin/yahrzeit --notransmit --status || true
+bin/yahrzeit --notransmit || true
 
 # Install or repair only the marked Yahrzeit block in the intended appliance
 # account's crontab. This command does not transmit to the controller.
@@ -359,7 +359,7 @@ Access the site at:
 Quick verification:
   cd $SITE_DIR
   bin/yahrzeit --audit
-  bin/yahrzeit --notransmit --status
+  bin/yahrzeit --notransmit
 
 Notes:
   - Cron is generated from data/minhag.ini. Save the Minhag screen or run

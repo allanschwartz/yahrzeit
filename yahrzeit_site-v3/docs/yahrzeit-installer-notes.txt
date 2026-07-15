@@ -84,7 +84,7 @@
 #
 #        cd ~/src/yahrzeit/yahrzeit_site-v3
 #        bin/yahrzeit --audit
-#        bin/yahrzeit --notransmit --status
+#        bin/yahrzeit --notransmit
 #
 #   3. Confirm bin/yahrzeit-controller before live testing.
 #
@@ -92,7 +92,6 @@
 #      page, or run sudo bin/fix-up-crontab, whenever the schedule changes.
 #
 # Notes:
-#   - The installer is deliberately boring and short-lived.
 #   - It is safe to rerun; it should update the repo and refresh the Apache
 #     symlink.
 #   - For production, the appliance should have a stable address, either by

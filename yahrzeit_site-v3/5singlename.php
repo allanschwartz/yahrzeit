@@ -260,7 +260,7 @@
     emitTopOfScreen($title, $description, $helpfile);
 ?>
 
-    <table cellSpacing=0 cellPadding=4 width=90% border=0 class="botBorder">
+    <table cellSpacing=0 cellPadding=4 width=100% border=0 class="botBorder">
         <tr><td width="35%"></td>
             <td width="40%"></td>
             <td width="25%"></td>
@@ -423,7 +423,6 @@
         emitCopyright();
 ?>
     </table>
-<br>&nbsp;<br>
 </form>
 
 <?php 

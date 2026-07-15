@@ -56,7 +56,7 @@ and command previews are intended to be safe; live wall operations call
 
 - `data/yahrzeits-rev4.csv` - memorial database.
 - `data/minhag.ini` - synagogue lighting policy and display settings.
-- `bin/yahrzeit` - main command wrapper and controller transport.
+- `bin/yahrzeit` - shared scheduler/web execution stage and controller transport.
 - `bin/yahrzeit_engine.php` - decides what should be lit or reported.
 - `bin/yahrzeit_scheduler` - cron-facing scheduled phase runner.
 - `bin/fix-up-crontab` - installs the policy-derived managed cron block.
@@ -133,16 +133,10 @@ installer asks for `CONTROLLER_HOST`, using its current value as the default,
 and preserves the complete file during later software updates. The Arduino V3
 firmware must be configured to use the matching address and port.
 
-You can override the controller target for a single command:
+For a one-command diagnostic override, use environment variables:
 
 ```sh
-bin/yahrzeit --host 192.168.86.240 --port 2001 --status
-```
-
-or through the environment:
-
-```sh
-CONTROLLER_HOST=192.168.86.240 CONTROLLER_PORT=2001 bin/yahrzeit --status
+CONTROLLER_HOST=192.168.86.240 CONTROLLER_PORT=2001 bin/yahrzeit --notransmit
 ```
 
 ## Safe Validation
@@ -162,22 +156,13 @@ Run data/audit checks that do not transmit:
 
 ```sh
 bin/yahrzeit --audit
-bin/yahrzeit --notransmit --status
 bin/yahrzeit --notransmit
 ```
 
-## Live Controller Checks
+## Live Controller Operations
 
 Only run these when the controller IP is correct and it is safe to talk to the
 wall:
-
-```sh
-bin/yahrzeit --status
-bin/yahrzeit --version
-bin/yahrzeit --help-controller
-```
-
-Manual wall-wide operations are live operations:
 
 ```sh
 bin/yahrzeit --all-off

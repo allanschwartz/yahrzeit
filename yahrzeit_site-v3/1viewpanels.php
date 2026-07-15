@@ -260,7 +260,7 @@ function panels_render_main_page()
 
     <form name="viewpanels" action="<?php echo h($_SERVER['PHP_SELF']); ?>" method="POST">
 
-    <table cellspacing="0" cellpadding="4" width="90%" border="0" class="botBorder">
+    <table cellspacing="0" cellpadding="4" width="100%" border="0" class="botBorder">
         <tr>
             <td width="35%"></td>
             <td width="40%"></td>
@@ -324,7 +324,6 @@ function panels_render_main_page()
         emitCopyright();
 ?>
     </table>
-    <br>&nbsp;<br>
     </form>
 <?php
     emitFooter();
@@ -340,7 +339,7 @@ function panels_render_operation_result_page($operation, $ok, $message)
                     PANELS_HELPFILE);
 ?>
 
-    <table cellspacing="0" cellpadding="4" width="90%" border="0" class="botBorder">
+    <table cellspacing="0" cellpadding="4" width="100%" border="0" class="botBorder">
         <tr>
             <td class="text">
                 <pre><?php echo h($titleText . "\n\n" . $message); ?></pre>
@@ -355,7 +354,6 @@ function panels_render_operation_result_page($operation, $ok, $message)
         emitCopyright();
 ?>
     </table>
-    <br>&nbsp;<br>
 
 <?php
     emitFooter();

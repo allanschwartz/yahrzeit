@@ -218,14 +218,9 @@ function yz_main()
 // Logging and date context helpers
 // ---------------------------------------------------------------------------
 
-// Debug levels for yahrzeit_engine.php
+// Debug output for yahrzeit_engine.php
 //
 //   -d 0    quiet; command stream only
-//   -d 1    high-level execution summary
-//   -d 5    database/person processing summary
-//   -d 10   date-matching decisions
-//   -d 20   English-date matching details
-//   -d 30   Hebrew-date conversion details
 //   -d 40   verbose per-person diagnostics
 //
 // Debug output is emitted as comment lines beginning with "#", so it remains

@@ -163,16 +163,7 @@ function yahrzeit_render_scheduled_events($minhag, $timestamp = null)
     $observances = next_yizkor_observances($minhag, $timestamp);
     echo "<br><b>Next Yizkor events:</b><br>\n";
 
-    if (count($observances) == 0) {
-        echo "No Yizkor observances are enabled.<br>\n";
-        return;
-    }
-
-    foreach ($observances as $observance) {
-        echo h($observance['name']) . " &mdash; " .
-             h($observance['observance_date']) . " &mdash; " .
-             h($observance['next_date']) . "<br>\n";
-    }
+    emit_yizkor_observance_table($observances);
 }
 
 function yahrzeit_render_main_page()
@@ -184,7 +175,7 @@ function yahrzeit_render_main_page()
     emitTopOfScreen(YAHRZEIT_TITLE, yahrzeit_page_description(), YAHRZEIT_HELPFILE);
 ?>
 
-    <table cellSpacing=0 cellPadding=4 width=90% border=0 class="botBorder">
+    <table cellSpacing=0 cellPadding=4 width=100% border=0 class="botBorder">
         <tr>
             <td width="35%"></td>
             <td width="40%"></td>
@@ -225,13 +216,12 @@ function yahrzeit_render_main_page()
             <td height="25" align="left" valign="top" class="text">
                 Scheduled Events
             </td>
-            <td class="text">
+            <td colspan="2" class="text">
 <?php
                 yahrzeit_render_scheduled_events($minhag, $render_timestamp);
 ?>
                 <br>
             </td>
-            <td id="notused">&nbsp;</td>
         </tr>
 
         <tr>
@@ -272,7 +262,6 @@ function yahrzeit_render_main_page()
 ?>
 
     </table>
-<br>&nbsp;<br>
 
 <?php
     emitFooter();

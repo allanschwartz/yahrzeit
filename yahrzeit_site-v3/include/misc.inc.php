@@ -333,9 +333,7 @@ ENDOFTEXT;
  */
 function emitTopOfScreen($title, $description, $helpfile = "")
 {
-    $transGif = h(site_url("images/trans.gif"));
-
-    $pageHelpLink = "<br>";
+    $pageHelpLink = "&nbsp;";
     if ($helpfile !== "") {
         $helpUrl = h(site_url($helpfile));
         $pageHelpLink = <<<ENDOFTEXT
@@ -347,47 +345,59 @@ ENDOFTEXT;
     $text = <<<ENDOFTEXT
 
     <!-- Top of Screen Page Title / Description / Page Help -->
-    <table border="0" cellpadding="0" cellspacing="0" width="95%">
-        <tr>
-            <td width="80%" height="30" valign=bottom class="header1">
-                $title
-            </td>
-            <td width="20%"></td>
-        </tr>
-        <tr>
-            <td colspan="2" height=1 class="hline">
-                <img src="$transGif" width=1 height=1>
-            </td>
-        </tr>
-        <tr>
-            <td width="80%" class="text">
-                $description
-            </td>
-            <td width="20%"></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td align="right">
+    <div class="pageHeading">
+        <div class="pageHeadingTitle header1">
+            $title
+        </div>
+        <div class="pageHeadingDescription text">
+            $description
+        </div>
+        <div class="pageHeadingHelp">
 $pageHelpLink
-            </td>
-        </tr>
-    </table>
+        </div>
+    </div>
 ENDOFTEXT;
 
     echo $text;
 }
 
 
+/**
+ * Emit an aligned summary of upcoming Yizkor observances.
+ *
+ * @param array<int, array{name:string, observance_date:string,
+ *     next_date:string}> $observances
+ */
+function emit_yizkor_observance_table($observances)
+{
+    if (count($observances) == 0) {
+        echo "No Yizkor observances are enabled.<br>\n";
+        return;
+    }
+
+    echo "<table class=\"yizkorEvents\" cellspacing=\"0\" cellpadding=\"0\">\n";
+    foreach ($observances as $observance) {
+        echo "<tr>\n";
+        echo "<td class=\"yizkorEventName\">" . h($observance['name']) . "</td>\n";
+        echo "<td class=\"yizkorHebrewDate\">" . h($observance['observance_date']) . "</td>\n";
+        echo "<td class=\"yizkorCivilDate\">" . h($observance['next_date']) . "</td>\n";
+        echo "</tr>\n";
+    }
+    echo "</table>\n";
+}
+
+
 // Emit one navigation tab in the legacy table-based page shell.
-function toptab ( $selected, $fileref, $tabname ) 
+function toptab($selected, $fileref, $tabname, $target = "")
 {
     $fileUrl = h(site_url($fileref));
+    $targetAttribute = $target === "" ? "" : ' target="' . h($target) . '"';
 
    echo '<td width="14" height="23" class=' . 
     ($selected ? '"tabSelectedBeg"' : '"tabUnselectedBeg"' )."> &nbsp; </td>\n";
    echo '<td class=' . 
     ($selected ? '"tabSelectedBg"' : '"tabUnselectedBg"' ).'>';
-   echo '<a href="' . $fileUrl . '" class=' . 
+   echo '<a href="' . $fileUrl . '"' . $targetAttribute . ' class=' .
             ($selected ? '"tabTextSel"' : '"tabTextUnsel"' ).'> ' . $tabname . "</a></td>\n";
    echo '<td width="14" class=' . 
     ($selected ? '"tabSelectedEnd"' : '"tabUnselectedEnd"' )."> &nbsp; </td>\n";
@@ -402,7 +412,6 @@ function toptab ( $selected, $fileref, $tabname )
 function emitHeader( $title, $tab )
 {
 
-$mainHelpUrl = h(site_url("help/user_guide.php"));
 $steelBlue = h(site_url("css/SteelBlue.css"));
 
 ?>
@@ -422,12 +431,12 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
   <tr> 
     <td valign="top" class="tabsBg">
 
-<table width="99%" border="0" cellspacing="0" class="tabsBg" cellpadding="0">
+<table width="100%" border="0" cellspacing="0" class="tabsBg" cellpadding="0">
   <tr height="48">
-    <td valign="middle" width="380">
+    <td valign="middle" width="300">
         <img src="<?php echo h(site_url('images/CBS+Primary+Logo+2023-Gold.webp')); ?>"
-             width="320"
-             style="display:block; margin-left:12px;">
+             width="300" alt="Congregation Beth Sholom Logo"
+             style="display:block; margin-left:24px;">
     </td>
 
     <td valign="middle" align="center">
@@ -438,14 +447,12 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
             <?php  toptab ($tab == 3, "4viewnames.php", "Names" ); ?>
             <?php  toptab ($tab == 4, "6reports.php", "Reports" ); ?>
             <?php  toptab ($tab == 5, "7minhag.php", "Minhag" ); ?>
+            <?php  toptab (false, "help/user_guide.php", "User Guide", "PageHelp" ); ?>
           </tr>
         </table>
     </td>
 
-    <td align="right" valign="middle" width="180">
-    <a href="<?php echo $mainHelpUrl ?>" target="PageHelp" class="textSmallUnderBlue"
-           target="WWHFrame" class="textSmallUnderBlue">User Guide</a>
-    </td>
+    <td width="300">&nbsp;</td>
   </tr>
 </table>
 
@@ -457,39 +464,10 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
   </tr>
   <tr>
     <td>
-        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" class="pageShell">
           <tr>
-            <td valign="top" width="180">
-
-                <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                  <tr align="left" valign="top"> 
-                    <td height="5" align="right">
-
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td valign="top" colspan="2" height="220">
-
-                        <table width="98%" border="0" align="center" class=botBorder cellpadding="1" cellspacing="1">
-                          <tr>
-                            <td>
-                    </td>
-                  </tr>
-                </table>
-
-            </td>
-          </tr>
-        </table>
-
-    </td>
-    <td width="2"><img src="<?php echo h(site_url('images/trans.gif')); ?>" width=1 height=1></td>
-
-    <td width="4" valign="top" align="left">
-
-    </td>
-
-    <td valign="top">
+            <td class="pageSideGutter">&nbsp;</td>
+            <td valign="top" class="pageMainContent">
 
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
@@ -516,6 +494,7 @@ function emitFooter()
             </tr>
          </table>
        </td>    
+       <td class="pageSideGutter">&nbsp;</td>
     </tr>
        </table>
 
@@ -529,23 +508,16 @@ function emitFooter()
 <?php
 }
 
-// Emit the copyright rows used inside a screen's main content table.
+// Emit the compact footer row used inside a screen's main content table.
 function emitCopyright()
 {
 ?>
 
         <tr>
-            <td colspan="3" height="30"></td>
-        </tr>
-
-        <tr>
-            <td colspan="3" height="10">&nbsp;</td>
-        </tr>
-
-        <tr>
-            <td colspan="3" height="10" >
-            <span class="textSmall">Yahrzeit Controller V3</span> <br>
-            <span class="textSmall">copyright &copy; 2007, 2015, 2026 AMS Consulting</span> <br>
+            <td colspan="3" class="pageCopyrightCell">
+                <span class="textSmall">Yahrzeit Controller V3</span><br>
+                <span class="textSmall">copyright &copy; 2007, 2015, 2026 AMS Consulting</span>
+            </td>
         </tr>
 
 <?php

@@ -267,9 +267,8 @@ configured controller host and port.
 
 <p>
 If the controller is reachable but the visible wall does not match the
-expected display, use command preview, controller status, and manual test
-operations carefully to separate database, scheduling, transport, and hardware
-issues.
+expected display, use command preview and the manual wall-wide operations
+carefully to separate database, scheduling, transport, and hardware issues.
 </p>
 
 <h3>When in Doubt</h3>

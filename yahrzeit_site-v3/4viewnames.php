@@ -196,7 +196,7 @@ function viewnames_render_main_page()
     emitHeader(VIEWNAMES_TITLE, VIEWNAMES_TAB);
     emitTopOfScreen(VIEWNAMES_TITLE, VIEWNAMES_DESCRIPTION, VIEWNAMES_HELPFILE);
 ?>
-    <table cellspacing="0" cellpadding="4" width="90%" border="0" class="botBorder">
+    <table cellspacing="0" cellpadding="4" width="100%" border="0" class="botBorder">
         <tr>
             <td width="35%"></td>
             <td width="40%"></td>
@@ -225,15 +225,10 @@ function viewnames_render_main_page()
             </td>
         </tr>
 
-        <tr>
-            <td colspan="3" height="10"></td>
-        </tr>
-
 <?php
         emitCopyright();
 ?>
     </table>
-    <br>&nbsp;<br>
 <?php
     emitFooter();
 }

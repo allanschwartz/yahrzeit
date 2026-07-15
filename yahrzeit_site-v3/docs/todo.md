@@ -15,7 +15,7 @@ Priority markers:
 ### `bin/yahrzeit`
 
 - Works.
-- Main operator-facing command wrapper.
+- Shared scheduler/web execution stage and controller transport.
 
 
 ### `bin/yahrzeit_engine.php`
@@ -141,7 +141,6 @@ Priority markers:
 
 - Works.
 - **[B]** Refactor `emitMessagePage()` to use CSS/div layout instead of tables.
-- **[B]** Refactor `emitTopOfScreen()` to use CSS/div layout instead of tables.
 - **[B]** Eventually modernize the whole table-based page shell.
 
 ### `include/names.inc.php`
