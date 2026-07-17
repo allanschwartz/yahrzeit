@@ -1,7 +1,7 @@
 <?php
 /*
  * NAME
- *      4viewnames.php
+ *      4names.php
  *
  * DESCRIPTION
  *      Read-only memorial-name browser for the CBS Yahrzeit Wall.
@@ -49,9 +49,9 @@ $minhag = read_minhag_ini();
 
 const VIEWNAMES_TITLE = "Yahrzeit Names";
 const VIEWNAMES_DESCRIPTION = "List observed Yahrzeits. Click on a name to view that individual record.";
-const VIEWNAMES_TAB = 3;
-const VIEWNAMES_HELPFILE = "help/4viewnames.php";
-const VIEWNAMES_PAGE = "4viewnames.php";
+const VIEWNAMES_TAB = 4;
+const VIEWNAMES_HELPFILE = "help/4names.php";
+const VIEWNAMES_PAGE = "4names.php";
 
 
 // -----------------------------------------------------------------------------

@@ -42,7 +42,11 @@ Priority markers:
 
 - OK.
 
-### `1viewpanels.php`
+### `1yizkor.php`
+
+- OK.
+
+### `2panels.php`
 
 - OK.
 
@@ -50,7 +54,7 @@ Priority markers:
 
 - OK.
 
-### `4viewnames.php`
+### `4names.php`
 
 - OK.
 
@@ -74,7 +78,11 @@ Priority markers:
 
 - OK.
 
-### `help/1viewpanels.php`
+### `help/1yizkor.php`
+
+- OK.
+
+### `help/2panels.php`
 
 - OK.
 
@@ -82,7 +90,7 @@ Priority markers:
 
 - OK.
 
-### `help/4viewnames.php`
+### `help/4names.php`
 
 - OK.
 
@@ -132,9 +140,10 @@ Priority markers:
 
 ---
 
-## Data / Deployment Issues
+## CBS On-Site Questions and Data
 
-- **[A] (at CBS)** Fix known audit defect: Emile Kingsley uses unknown panel `col58`.
-- **[A] (at CBS)** Use CBS's latest yahrzeits-rev*.csv; review minhag.ini
-- **[A] (at CBS)** Review the MINHAG policy with the rabbi or Ritual Committee
-- **[B] (at CBS)** Confirm CBS Yizkor service timing
+- **[A] (at CBS)** Fix the known audit defect: Emile Kingsley uses unknown panel `col58`.
+- **[A] (at CBS)** Obtain and install CBS's latest `yahrzeits-rev*.csv` file.
+- **[A] (at CBS)** Review the saved Minhag policy with the rabbi or Ritual Committee.
+- **[B] (at CBS)** Ask whether all Yizkor and memorial observances can share one lighting schedule or need separate times for each observance (for example, morning Yizkor services versus an evening Yom HaShoah event).
+- **[B] (at CBS)** Ask whether CBS wants an operator to turn on the Yizkor lights manually during the service.

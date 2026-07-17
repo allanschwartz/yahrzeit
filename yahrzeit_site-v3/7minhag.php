@@ -56,7 +56,7 @@ require_once "include/misc.inc.php";
 require_once "include/date_support.inc.php";
 
 const MINHAG_TITLE = "Yahrzeit Minhag";
-const MINHAG_TAB = 5;
+const MINHAG_TAB = 6;
 const MINHAG_HELPFILE = "help/7minhag.php";
 
 function minhag_page_description($minhag)

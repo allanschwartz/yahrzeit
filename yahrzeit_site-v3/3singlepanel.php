@@ -53,7 +53,7 @@ const SINGLE_PANEL_TITLE = "Single Yahrzeit Panel";
 const SINGLE_PANEL_DESCRIPTION =
     "View the memorial names assigned to one physical Yahrzeit Wall panel. " .
     "Click a name to view the memorial record for that individual.";
-const SINGLE_PANEL_TAB = 2;
+const SINGLE_PANEL_TAB = 3;
 const SINGLE_PANEL_HELPFILE = "help/3singlepanel.php";
 
 
@@ -114,7 +114,7 @@ function single_panel_load_panel($panelid)
 function single_panel_render_message_page($message)
 {
     emitHeader(SINGLE_PANEL_TITLE, SINGLE_PANEL_TAB);
-    emitMessagePage($message, "click here to return to the Panels page", "1viewpanels.php");
+    emitMessagePage($message, "click here to return to the Panels page", "2panels.php");
     emitFooter();
 }
 

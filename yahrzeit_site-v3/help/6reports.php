@@ -17,7 +17,7 @@ require_once "../include/misc.inc.php";
 // help/6reports.php
 $title = "Reports Help";
 $description = "Help for Yahrzeit reports, audit, preview, CSV download, and CSV upload.";
-$tab = 4;         // Reports
+$tab = 5;         // Reports
 $helpfile = "";  // no nested page-help link on a help page
 
 emitHeader($title, $tab);
@@ -25,7 +25,7 @@ emitTopOfScreen($title, $description, "");
 ?>
 
 <div class="helpBox">
-    <div class="helpTitle">Reports and Audit Help</div>
+    <div class="helpTitle boldText">Yahrzeit Reports and Audit Help</div>
 
     <div class="helpBody">
 

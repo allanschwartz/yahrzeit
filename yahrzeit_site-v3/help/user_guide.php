@@ -124,7 +124,8 @@ each page.
 
 <ul>
     <li><strong>Home</strong> &mdash; shows current date, Hebrew date, sunset-related times, wall configuration, and memorial database summary information.</li>
-    <li><strong>Panels</strong> &mdash; shows the physical panel layout and provides limited wall-wide manual lighting controls.</li>
+    <li><strong>Yizkor</strong> &mdash; shows upcoming Yizkor dates and provides immediate wall-wide Yahrzeit, Yizkor, all-on, and all-off lighting controls.</li>
+    <li><strong>Panels</strong> &mdash; shows the physical panel layout and the memorial names assigned to each panel.</li>
     <li><strong>Single Panel</strong> &mdash; shows one physical panel as a database view of assigned memorial names and locations.</li>
     <li><strong>Names</strong> &mdash; searches and reviews memorial records.</li>
     <li><strong>Single Name</strong> &mdash; reviews one memorial record in detail.</li>
@@ -140,9 +141,10 @@ on the wall, open the memorial record or view the relevant panel.
 </p>
 
 <p>
-To review upcoming observances, use the Reports page. Day, week, next-week,
-month, and next-month reports list names whose yahrzeits fall in the selected
-period.
+To review upcoming Yahrzeit observances, use the Reports page. Day, week,
+next-week, month, and next-month reports list names whose yahrzeits fall in the
+selected period. The next enabled Yizkor dates are shown on the Yizkor page and
+in the Minhag preview.
 </p>
 
 <p>
@@ -190,10 +192,10 @@ as appropriate to confirm the intended behavior.
 <h3>Manual Wall Operations</h3>
 
 <p>
-The Panels page may provide manual wall-wide operations such as all on, all
-off, and Yizkor. These controls are useful for testing, maintenance, or
-special operator action. They are not normally required for daily scheduled
-operation.
+The Yizkor page provides manual wall-wide operations: all on, all off,
+the normal Yahrzeit display, and full-wall Yizkor lighting. These controls
+are useful for testing, maintenance, or special operator action. They are not
+normally required for daily scheduled operation.
 </p>
 
 <p>

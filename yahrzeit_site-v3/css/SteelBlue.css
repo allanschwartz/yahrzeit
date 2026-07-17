@@ -2,14 +2,14 @@
 
 .text {
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 75%;
+    font-size: 13px;
     text-decoration: none;
     color: #000000
 }
 
 .boldText {
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 75%;
+    font-size: 13px;
     font-weight: bold;
     text-decoration: none;
     color: #000000
@@ -21,7 +21,7 @@ a:hover {
 
 .header1 {
     font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 75%;
+    font-size: 13px;
     font-weight: bold;
     color: #003399
 }
@@ -32,7 +32,7 @@ a:hover {
 
 .header2 {
     font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 75%;
+    font-size: 13px;
     font-weight: bold;
     color: #000066
 }
@@ -226,6 +226,34 @@ a:hover {
 /*------------------------ Property sheets ---------------- */
 
 TABLE.botBorder TD {border-bottom:1px solid #DAE6FA}
+
+table.homeSummary a {
+    font-weight: bold;
+}
+
+.lightingControlCell {
+    text-align: center;
+}
+
+.yizkorScheduleCell {
+    padding: 10px 8px;
+}
+
+.lightingButtonGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(150px, 220px));
+    gap: 8px;
+    justify-content: center;
+    margin: 14px auto;
+}
+
+.lightingButton {
+    width: 100%;
+    height: auto;
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 13px;
+}
 
 TABLE.NobotBorder TD {border-bottom:thin none}
 
@@ -618,6 +646,17 @@ TABLE.rowBorder TD {
 }
 
 @media screen and (max-width: 1100px) {
+    .siteBrandCell,
+    .siteHeaderSpacer {
+        width: 250px;
+    }
+
+    .siteLogo {
+        width: 250px;
+        height: auto;
+        margin-left: 16px !important;
+    }
+
     .tabSelectedBeg,
     .tabSelectedEnd,
     .tabUnselectedBeg,

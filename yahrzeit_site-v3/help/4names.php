@@ -1,23 +1,23 @@
 <?php
 /*
  * NAME
- *      help/4viewnames.php
+ *      help/4names.php
  *
  * DESCRIPTION
- *      Help page for the memorial-name browser.
+ *      Help page for the memorial-name viewer.
  *
  *      This page explains how to search and review memorial records on
- *      4viewnames.php.
+ *      4names.php.
  */
 ?>
 
 <?php
 require_once "../include/misc.inc.php";
 
-// help/4viewnames.php
+// help/4names.php
 $title = "View Names Help";
 $description = "Help for searching and reviewing memorial records.";
-$tab = 3;         // Names
+$tab = 4;         // Names
 $helpfile = "";  // no nested page-help link on a help page
 
 emitHeader($title, $tab);
@@ -25,13 +25,13 @@ emitTopOfScreen($title, $description, "");
 ?>
 
 <div class="helpBox">
-    <div class="helpTitle">View Names Help</div>
+    <div class="helpTitle boldText">Yahrzeit Names</div>
 
     <div class="helpBody">
 
 
 <p>
-The View Names page is a read-only browser for the Yahrzeit Wall memorial
+The View Names page is a read-only viewer of the Yahrzeit Wall memorial
 database.
 </p>
 
@@ -69,9 +69,17 @@ lighting policy. It is not a live electrical reading from the controller.
 <h3>Editing Records</h3>
 
 <p>
-This page does not edit memorial records. Use the Reports page to download
-or upload the CSV memorial database, and run an audit after any replacement
-file is installed.
+This page does not provide controls for adding or deleting memorial records.
+</p>
+
+<p>
+Each name is a link to a page where you can view and edit the individual
+memorial record.
+</p>
+
+<p>
+Use the <a href="5reports.php">Reports</a> page to download or upload the CSV memorial database, and run
+an audit after any replacement file is installed.
 </p>
 
 <h3>Location</h3>

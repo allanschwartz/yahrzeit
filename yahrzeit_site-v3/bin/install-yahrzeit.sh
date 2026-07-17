@@ -343,9 +343,10 @@ sudo systemctl reload apache2 || true
 # Syntax checks. These are not exhaustive, but they catch some mistakes.
 
 php -l 0yahrzeit.php
-php -l 1viewpanels.php
+php -l 1yizkor.php
+php -l 2panels.php
 php -l 3singlepanel.php
-php -l 4viewnames.php
+php -l 4names.php
 php -l 5singlename.php
 php -l 6reports.php
 php -l 7minhag.php

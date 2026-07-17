@@ -16,7 +16,8 @@
  *
  *      Most maintenance tasks are reached through the navigation tabs:
  *
- *          - Panels: view panel geometry and manual wall-wide operations
+ *          - Panels: view panel geometry
+ *          - Yizkor: perform manual wall-wide lighting operations
  *          - Names: browse memorial records
  *          - Reports: run reports, audit the database, preview commands,
  *            and maintain the CSV database
@@ -91,11 +92,11 @@ function controller_summary_lines($timestamp = null)
     $litCount   = yahrzeit_lit_person_count($timestamp);
 
     return [
-        h($panelCount) . ' panels defined (click on <a href="1viewpanels.php">Panels</a>)',
-        h($nameCount) . ' names defined (click on <a href="4viewnames.php">Names</a>)',
+        h($panelCount) . ' panels defined (click on <a href="2panels.php">Panels</a>)',
+        h($nameCount) . ' names defined (click on <a href="4names.php">Names</a>)',
         h($litCount) . ' memorial lights are lit now.',
         'Reports, audits, command previews, and CSV maintenance are available on the <a href="6reports.php">Reports</a> screen',
-        'Manual lighting operations are available from the <a href="1viewpanels.php">Panels</a> screen'
+        'Manual lighting operations are available from the <a href="1yizkor.php">Yizkor</a> screen'
     ];
 }
 
@@ -149,7 +150,7 @@ function yahrzeit_next_shabbat_lighting_line()
 // Rendering helpers
 // -----------------------------------------------------------------------------
 
-function yahrzeit_render_scheduled_events($minhag, $timestamp = null)
+function yahrzeit_render_scheduled_events($timestamp = null)
 {
     if ($timestamp === null) {
         $timestamp = time();
@@ -159,11 +160,6 @@ function yahrzeit_render_scheduled_events($minhag, $timestamp = null)
 
     echo "Today's sunset in San Francisco is at " . h($todaySunsetText) . ".<br>\n";
     echo yahrzeit_next_shabbat_lighting_line() . "<br>\n";
-
-    $observances = next_yizkor_observances($minhag, $timestamp);
-    echo "<br><b>Next Yizkor events:</b><br>\n";
-
-    emit_yizkor_observance_table($observances);
 }
 
 function yahrzeit_render_main_page()
@@ -175,7 +171,7 @@ function yahrzeit_render_main_page()
     emitTopOfScreen(YAHRZEIT_TITLE, yahrzeit_page_description(), YAHRZEIT_HELPFILE);
 ?>
 
-    <table cellSpacing=0 cellPadding=4 width=100% border=0 class="botBorder">
+    <table cellSpacing=0 cellPadding=4 width=100% border=0 class="botBorder homeSummary">
         <tr>
             <td width="35%"></td>
             <td width="40%"></td>
@@ -218,7 +214,7 @@ function yahrzeit_render_main_page()
             </td>
             <td colspan="2" class="text">
 <?php
-                yahrzeit_render_scheduled_events($minhag, $render_timestamp);
+                yahrzeit_render_scheduled_events($render_timestamp);
 ?>
                 <br>
             </td>
@@ -228,28 +224,26 @@ function yahrzeit_render_main_page()
             <td height="25" align="left" valign="top" class="text">
                 Configured Policy Summary
             </td>
-            <td class="text">
+            <td colspan="2" class="text">
 <?php
                 foreach (yahrzeit_minhag_summary_lines() as $line) {
                     echo $line . "<br>\n";
                 }
 ?>
             </td>
-            <td id="notused">&nbsp;</td>
         </tr>
 
         <tr>
             <td height="25" align="left" valign="top" class="text">
                 Controller Summary
             </td>
-            <td class="text">
+            <td colspan="2" class="text">
 <?php
                 foreach (controller_summary_lines($render_timestamp) as $line) {
                     echo $line . "<br>\n";
                 }
 ?>
             </td>
-            <td id="notused">&nbsp;</td>
         </tr>
 
         <tr>

@@ -53,7 +53,7 @@
      */
     $title = "Single Yahrzeit Name";
     $description = "View or modify this individual's Yahrzeit observance.";
-    $tab = 3;         // Names
+    $tab = 4;         // Names
     $helpfile = "help/5singlename.php";
 
    
@@ -234,7 +234,7 @@
                 "Adding memorial records from this screen is disabled. " .
                 "Use the Reports CSV import workflow for additions.",
                 "click here to return to Names",
-                "4viewnames.php"
+                "4names.php"
             );
             emitFooter();
             exit;
@@ -471,7 +471,7 @@
         emitHeader($title, $tab);
 
         if (!$saved) {
-            emitMessagePage($message, "click here to return", "4viewnames.php");
+            emitMessagePage($message, "click here to return", "4names.php");
         } else {
             [$auditOk, $auditMessage] = single_name_run_audit();
             $result = $message . "<br>Backup saved as " . h($backup) . ".<br>" . h($auditMessage);
@@ -480,7 +480,7 @@
                 $result .= "<br>Please review the Reports audit before making another edit.";
             }
 
-            emitMessagePage($result, "click here to continue", "4viewnames.php");
+            emitMessagePage($result, "click here to continue", "4names.php");
         }
 
         emitFooter();

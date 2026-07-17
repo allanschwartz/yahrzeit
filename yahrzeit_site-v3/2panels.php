@@ -1,35 +1,23 @@
 <?php
 /*
  * NAME
- *      1viewpanels.php
+ *      2panels.php
  *
  * DESCRIPTION
- *      Panel overview and manual wall-control screen for the CBS Yahrzeit Wall.
+ *      Panel overview screen for the CBS Yahrzeit Wall.
  *
  *      This page displays the static panel geometry for the physical wall and
  *      provides a clickable wall overview for browsing individual panels.
  *
- *      It also provides limited manual lighting operations, such as:
- *
- *          - restore normal policy-driven Yahrzeit lighting
- *          - turn all LEDs off
- *          - turn all LEDs on
- *          - turn on Yizkor lighting
- *
- *      Panel geometry is read from include/panels.inc.php. Manual lighting
- *      operations are performed by calling bin/yahrzeit so that the web page
- *      uses the same controller path as the scheduler and command-line tools.
+ *      Panel geometry is read from include/panels.inc.php.
  *
  * BLUF
- *      This page is for viewing the physical wall layout and performing
- *      limited manual wall-wide lighting operations.
+ *      This page is for viewing the physical wall layout.
  *
  *      It should not define panel geometry, calculate yahrzeit dates, or
  *      generate controller command streams directly.
  *
  * NOTES
- *      Manual lighting operations send commands to the controller immediately.
- *
  *      The physical wall geometry is static application data. The old
  *      add/modify/delete panel workflow has intentionally been removed.
  *
@@ -37,8 +25,7 @@
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
- *      Modernized as a read-only panel overview and manual-control screen
- *      in 2026.
+ *      Modernized as a read-only panel overview screen in 2026.
  *
  * COPYRIGHT NOTICE
  *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
@@ -55,8 +42,8 @@ global $minhag;
 $minhag = read_minhag_ini();
 
 const PANELS_TITLE = "View Yahrzeit Panels";
-const PANELS_TAB = 2;
-const PANELS_HELPFILE = "help/1viewpanels.php";
+const PANELS_TAB = 3;
+const PANELS_HELPFILE = "help/2panels.php";
 
 const PANEL_IMAGE_AREAS = [
     "col1a" => "25,0,140,130",
@@ -94,57 +81,7 @@ const PANEL_IMAGE_AREAS = [
 
 function panels_description()
 {
-    $minhag = read_minhag_ini();
-    $synagogue = h($minhag['synagogueName'] ?? "Congregation Beth Sholom");
-
-    return "View the physical Yahrzeit panel geometry installed at $synagogue. " .
-           "Click a panel in the photo, or click a panel ID in the table, " .
-           "to view the names assigned to that panel. " .
-           "<p>Below are manual wall-wide lighting operations: all off, all on, " .
-           "Yahrzeit, and Yizkor. " .
-           "These operations send commands to the wall immediately.";
-}
-
-// -----------------------------------------------------------------------------
-// Manual wall operations
-// -----------------------------------------------------------------------------
-
-function run_yahrzeit_operation($operation)
-{
-    $allowed = [
-        "scheduled" => "",
-        "all-off" => "--all-off",
-        "all-on"  => "--all-on",
-        "yizkor"  => "--yizkor",
-    ];
-
-    if (!isset($allowed[$operation])) {
-        return [false, "Unsupported lighting operation: $operation"];
-    }
-
-    $script = __DIR__ . "/bin/yahrzeit";
-
-    if (!is_executable($script)) {
-        return [false, "Yahrzeit command script is not executable: $script"];
-    }
-
-    $cmd = escapeshellarg($script);
-    if ($allowed[$operation] != "") {
-        $cmd .= " " . escapeshellarg($allowed[$operation]);
-    }
-    $cmd .= " 2>&1";
-
-    exec($cmd, $output, $rc);
-
-    return [$rc == 0, implode("\n", $output)];
-}
-
-function panels_handle_post()
-{
-    $operation = $_POST['lighting_operation'] ?? "";
-    [$ok, $message] = run_yahrzeit_operation($operation);
-
-    panels_render_operation_result_page($operation, $ok, $message);
+    return "View the physical Yahrzeit Wall and open any panel to see its assigned memorial names.";
 }
 
 // -----------------------------------------------------------------------------
@@ -258,8 +195,6 @@ function panels_render_main_page()
     emitTopOfScreen(PANELS_TITLE, panels_description(), PANELS_HELPFILE);
 ?>
 
-    <form name="viewpanels" action="<?php echo h($_SERVER['PHP_SELF']); ?>" method="POST">
-
     <table cellspacing="0" cellpadding="4" width="100%" border="0" class="botBorder">
         <tr>
             <td width="35%"></td>
@@ -289,72 +224,10 @@ function panels_render_main_page()
             </td>
         </tr>
 
-        <tr>
-            <td colspan="3" class="header2Bg" align="left" height="25">
-                <span class="boldText">Manual / Special Wall-Wide Lighting Operations</span><br>
-                <span class="textSmall">These controls send commands to the wall immediately. Use them only for testing, maintenance, or special operator action.</span>
-            </td>
-        </tr>
-
-        <tr>
-            <td width="35%" height="25" align="left" valign="top" class="text">
-                Manual lighting controls
-            </td>
-            <td width="40%" colspan="2" class="text">
-                <button type="submit" name="lighting_operation" value="all-off" class="button">
-                    Turn all lights off
-                </button>
-
-                <button type="submit" name="lighting_operation" value="all-on" class="button">
-                    Turn all lights on
-                </button>
-                <br>
-
-                <button type="submit" name="lighting_operation" value="scheduled" class="button">
-                    Yahrzeit lights
-                </button>
-
-                <button type="submit" name="lighting_operation" value="yizkor" class="button">
-                    Yizkor lights
-                </button>
-            </td>
-        </tr>
-
 <?php
         emitCopyright();
 ?>
     </table>
-    </form>
-<?php
-    emitFooter();
-}
-
-function panels_render_operation_result_page($operation, $ok, $message)
-{
-    $titleText = $ok ? "Lighting operation completed" : "Lighting operation failed";
-
-    emitHeader(PANELS_TITLE, PANELS_TAB);
-    emitTopOfScreen($titleText,
-                    "Result from manual lighting operation: " . $operation,
-                    PANELS_HELPFILE);
-?>
-
-    <table cellspacing="0" cellpadding="4" width="100%" border="0" class="botBorder">
-        <tr>
-            <td class="text">
-                <pre><?php echo h($titleText . "\n\n" . $message); ?></pre>
-            </td>
-        </tr>
-        <tr>
-            <td class="text">
-                <a href="1viewpanels.php">Return to the Panels page</a>
-            </td>
-        </tr>
-<?php
-        emitCopyright();
-?>
-    </table>
-
 <?php
     emitFooter();
 }
@@ -367,17 +240,12 @@ function panels_main()
 {
     $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
-    if ($method == 'POST') {
-        panels_handle_post();
-        return;
-    }
-
     if ($method == 'GET') {
         panels_render_main_page();
         return;
     }
 
-    die("This script only works with GET and POST requests.");
+    die("This script only works with GET requests.");
 }
 
 panels_main();

@@ -50,7 +50,7 @@ require_once "include/misc.inc.php";
 
 const REPORTS_TITLE       = "Yahrzeit Reports";
 const REPORTS_DESCRIPTION = "Generate Yahrzeit reports, preview controller commands, and export or import the Yahrzeit database.";
-const REPORTS_TAB         = 4;
+const REPORTS_TAB         = 5;
 const REPORTS_HELPFILE    = "help/6reports.php";
 const REPORTS_CSV_FILE    = "yahrzeits-rev4.csv";
 
@@ -335,19 +335,24 @@ function reports_render_main_page()
                 Select a report and an anchor date.
             </span>
         </td>
-        <td colspan="2" class="text">
+        <td colspan="2" >
+            <span class="text">
             <input type="radio" name="report_kind" value="day" checked> Selected day<br>
             <input type="radio" name="report_kind" value="week"> This week<br>
             <input type="radio" name="report_kind" value="next-week"> Next week<br>
             <input type="radio" name="report_kind" value="month"> This month<br>
             <input type="radio" name="report_kind" value="next-month"> Next month<br>
+            </span>
             <br>
+            <span class="text">
             Anchor date:
+            </span>
             <input type="date" name="report_date" value="<?php echo h($today); ?>" class="formStyle">
             <br>
             <span class="textsmall">
-                Week reports use the same Erev Shabbat-to-Erev Shabbat period as automatic lighting.<br>
-                On Friday, This week begins that evening; Next week selects the following period.
+                Week reports use the Erev Shabbat-to-Erev Shabbat period.<br>
+                On Friday, <strong>This week</strong> starts that evening.<br>
+                <strong>Next week</strong> starts the following Friday evening.
             </span>
         </td>
     </tr>

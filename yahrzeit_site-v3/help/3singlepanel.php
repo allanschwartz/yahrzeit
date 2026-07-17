@@ -17,7 +17,7 @@ require_once "../include/misc.inc.php";
 // help/3singlepanel.php
 $title = "Single Panel Help";
 $description = "Help for viewing one physical panel and its assigned memorial names.";
-$tab = 2;         // panels
+$tab = 3;         // Panels
 $helpfile = "";  // no nested page-help link on a help page
 
 emitHeader($title, $tab);
@@ -25,7 +25,7 @@ emitTopOfScreen($title, $description, "");
 ?>
 
 <div class="helpBox">
-    <div class="helpTitle">Single Panel Help</div>
+    <div class="helpTitle boldText">Single Panel</div>
 
     <div class="helpBody">
 
@@ -43,9 +43,9 @@ Open locations are shown as empty or open.
 </p>
 
 <p>
-The LED image beside each memorial shows whether that light should currently
-be lit according to the memorial record and saved synagogue policy. The panel
-summary also gives the number of memorial lights that should be lit now.
+The LED image beside each memorial shows whether that memorial light should be
+lit now. The panel summary also gives the total number of memorial lights that
+should be lit.
 </p>
 
 <h3>Assigned Names</h3>
@@ -53,14 +53,6 @@ summary also gives the number of memorial lights that should be lit now.
 <p>
 The names shown on this page come from the memorial database. The row and
 column layout comes from the fixed panel geometry.
-</p>
-
-<h3>Not a Live Controller View</h3>
-
-<p>
-The displayed LED state is calculated by the application. This page does not
-query the controller and therefore does not prove whether an LED is actually
-on, off, working, or physically wired correctly.
 </p>
 
 <h3>Finding Problems</h3>

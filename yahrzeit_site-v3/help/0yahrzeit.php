@@ -15,6 +15,8 @@
 require_once "../include/misc.inc.php";
 
 // help/0yahrzeit.php
+$minhag = read_minhag_ini();
+$controllerTitle = ($minhag['synagogueName'] ?? "") . " Yahrzeit Controller";
 $title = "Yahrzeit Wall Home Help";
 $description = "Help for the Yahrzeit Wall home and status page.";
 $tab = 0;         // Yahrzeit
@@ -25,7 +27,7 @@ emitTopOfScreen($title, $description, "");
 ?>
 
 <div class="helpBox">
-    <div class="helpTitle">Yahrzeit Wall Home Help</div>
+    <div class="helpTitle boldText"><?php echo h($controllerTitle); ?></div>
 
     <div class="helpBody">
 
@@ -35,31 +37,49 @@ application. It summarizes the current date, scheduling context, wall
 configuration, and memorial database.
 </p>
 
-<h3>Current Date Information</h3>
+<h3>Date / Time</h3>
 
 <p>
-The page may show the current English/Gregorian date, Hebrew date, sunset
-time, and upcoming Shabbat-related times. These values help explain the
-current scheduling context for yahrzeit and Yizkor lighting.
+The Date / Time row shows the current civil date and time followed by the
+current Hebrew date.
 </p>
 
-<p>
-The <strong>Next Yizkor events</strong> list shows the next civil date of each
-Yizkor observance enabled on the Minhag page. The list follows the configured
-Pesach and Shavuot day choices and is sorted by upcoming date.
-</p>
+<h3>Addresses</h3>
 
 <p>
 The Addresses row shows the server address used for the current web request
-and the controller address stored in <code>bin/yahrzeit-controller.conf</code>.
+and the controller hostname or IP address stored in
+<code>bin/yahrzeit-controller.conf</code>.
 </p>
 
-<h3>Wall Summary</h3>
+<h3>Scheduled Events</h3>
 
 <p>
-The page shows counts for configured wall panels, memorial records, and
-memorial lights currently lit under the saved policy. These counts come from
-the application’s panel geometry, memorial database, and lighting rules.
+The Scheduled Events row shows today's sunset and the next scheduled time at
+which the week's Yahrzeit lights will be selected.
+</p>
+
+<h3>Configured Policy Summary</h3>
+
+<p>
+This row summarizes the synagogue-wide Yahrzeit and Yizkor policy currently
+saved on the Minhag page, including the calendar and lighting-time choices.
+</p>
+
+<h3>Controller Summary</h3>
+
+<p>
+The Controller Summary shows the number of configured wall panels, memorial
+records, and memorial lights expected to be lit under the current policy. The
+lit count is calculated from the database and policy; it is not electrical
+feedback from the wall.
+</p>
+
+<p>
+Links in this summary lead directly to panel views, name searches, reports,
+database maintenance, command previews, and manual lighting operations. The
+wall photograph below the summary is a visual reference and does not show live
+LED status.
 </p>
 
 <h3>Navigation</h3>
@@ -69,10 +89,12 @@ Use the navigation tabs to reach the main maintenance screens.
 </p>
 
 <ul>
-    <li><strong>Panels</strong> — view the physical panel layout and use limited manual wall-wide lighting controls.</li>
-    <li><strong>Names</strong> — search and review memorial records.</li>
-    <li><strong>Reports</strong> — run yahrzeit reports, audit the database, preview controller commands, and maintain the CSV database.</li>
-    <li><strong>Minhag</strong> — review or update synagogue-wide lighting policy.</li>
+    <li><strong>Yizkor</strong> &mdash; use immediate wall-wide Yahrzeit, Yizkor, all-on, or all-off lighting controls.</li>
+    <li><strong>Panels</strong> &mdash; view the physical panel layout and its assigned memorial names.</li>
+    <li><strong>Names</strong> &mdash; search and review memorial records.</li>
+    <li><strong>Reports</strong> &mdash; run Yahrzeit reports, audit the database, preview controller commands, and maintain the CSV database.</li>
+    <li><strong>Minhag</strong> &mdash; review or update synagogue-wide lighting policy.</li>
+    <li><strong>User Guide</strong> &mdash; open the complete operator and maintenance guide.</li>
 </ul>
 
 <h3>Informational Only</h3>

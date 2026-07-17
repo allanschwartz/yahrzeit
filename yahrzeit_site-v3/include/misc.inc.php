@@ -433,9 +433,9 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
 
 <table width="100%" border="0" cellspacing="0" class="tabsBg" cellpadding="0">
   <tr height="48">
-    <td valign="middle" width="300">
+    <td valign="middle" width="300" class="siteBrandCell">
         <img src="<?php echo h(site_url('images/CBS+Primary+Logo+2023-Gold.webp')); ?>"
-             width="300" alt="Congregation Beth Sholom Logo"
+             width="300" class="siteLogo" alt="Congregation Beth Sholom Logo"
              style="display:block; margin-left:24px;">
     </td>
 
@@ -443,16 +443,17 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
         <table border="0" cellspacing="0" cellpadding="0" align="center">
           <tr>
             <?php  toptab ($tab == 1, "0yahrzeit.php", "Yahrzeit" ); ?>
-            <?php  toptab ($tab == 2, "1viewpanels.php", "Panels" ); ?>
-            <?php  toptab ($tab == 3, "4viewnames.php", "Names" ); ?>
-            <?php  toptab ($tab == 4, "6reports.php", "Reports" ); ?>
-            <?php  toptab ($tab == 5, "7minhag.php", "Minhag" ); ?>
+            <?php  toptab ($tab == 2, "1yizkor.php", "Yizkor" ); ?>
+            <?php  toptab ($tab == 3, "2panels.php", "Panels" ); ?>
+            <?php  toptab ($tab == 4, "4names.php", "Names" ); ?>
+            <?php  toptab ($tab == 5, "6reports.php", "Reports" ); ?>
+            <?php  toptab ($tab == 6, "7minhag.php", "Minhag" ); ?>
             <?php  toptab (false, "help/user_guide.php", "User Guide", "PageHelp" ); ?>
           </tr>
         </table>
     </td>
 
-    <td width="300">&nbsp;</td>
+    <td width="300" class="siteHeaderSpacer">&nbsp;</td>
   </tr>
 </table>
 

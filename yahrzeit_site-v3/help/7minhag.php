@@ -18,7 +18,7 @@ require_once "../include/misc.inc.php";
 // help/7minhag.php
 $title = "Minhag Settings Help";
 $description = "Help for synagogue-wide Yahrzeit and Yizkor lighting policy.";
-$tab = 5;         // Minhag
+$tab = 6;         // Minhag
 $helpfile = "";  // no nested page-help link on a help page
 
 emitHeader($title, $tab);
@@ -26,7 +26,7 @@ emitTopOfScreen($title, $description, "");
 ?>
 
 <div class="helpBox">
-    <div class="helpTitle">Minhag Settings Help</div>
+    <div class="helpTitle boldText">Yahrzeit Minhag</div>
 
     <div class="helpBody">
 
@@ -45,8 +45,8 @@ the English/Gregorian date stored for each memorial record.
 
 <p>
 The normal Yahrzeit update may run at a fixed clock time. It may instead run
-a selected number of minutes before sunset. Because sunset changes through
-the year, the appliance automatically refreshes that cron time.
+a selected number of minutes before sunset. Because sunset changes throughout
+the year, the appliance automatically schedules the operation.
 </p>
 
 <h3>Yahrzeit Lighting Option</h3>
@@ -61,15 +61,24 @@ following Friday.
 <h3>Yizkor Lighting</h3>
 
 <p>
-The Yizkor section controls which holidays and observances are treated as
-full-wall Yizkor lighting days. Common Yizkor observances include Yom Kippur,
-Shemini Atzeret, Pesach, and Shavuot.
+Yizkor is observed four times during the year: on Yom Kippur, Shemini Atzeret,
+Pesach, and Shavuot. The Yizkor section controls full-wall lighting for those
+services.
 </p>
 
 <p>
 Pesach and Shavuot have day-number choices because communities differ about
 which day Yizkor is observed. Use the setting that matches Congregation Beth
 Sholom practice — that is, the day on which Yizkor services are held.
+</p>
+
+<h3>Other Yizkor Date</h3>
+
+<p>
+An optional <strong>Other</strong> date may be specified for a special full-wall
+memorial observance on a selected Hebrew date, such as Tisha B’Av (9 Av), Yom
+HaShoah (27 Nisan), or Yom HaZikaron (4 Iyar). Whether to add such an observance
+depends on local practice and synagogue custom.
 </p>
 
 <p>
@@ -79,25 +88,18 @@ using the preview to verify the revised dates.
 </p>
 
 <p>
-The Minhag page determines which holidays and observances are treated as
-Yizkor days. The Yizkor on and off times become the run times of the two
-Yizkor scheduler phases. On other dates those phases do nothing.
-</p>
-
-<h3>Other Yizkor Date</h3>
-
-<p>
-The optional “Other” date can be used for a special full-wall observance on
-a specified Hebrew date, such as a community memorial day. Examples might
-include Yom HaZikaron or Yom HaShoah, depending on local practice.
+The <strong>Yizkor Light On/Off Times</strong> section is used to define the
+run times of the Yizkor lighting. Similar to the Yahrzeit lighting, the
+Yizkor lighting may run at a fixed clock time or a selected number of minutes
+before sunset.
 </p>
 
 <h3>Saving Changes</h3>
 
 <p>
 Press Save to write the updated settings to <code>data/minhag.ini</code>.
-After the configuration is saved, the appliance regenerates its managed cron
-block and displays the installed lines.
+After the configuration is saved, the appliance regenerates the schedule in
+its managed cron block and displays the installed lines.
 </p>
 
 <p>
@@ -117,11 +119,11 @@ policies retain those recurring patterns as a fail-safe while refreshing the
 clock time automatically.
 </p>
 
-<pre>
-cd /path/to/yahrzeit_site-v3
-bin/fix-up-crontab --dry-run
+<code>
+cd /path/to/yahrzeit_site-v3<br>
+bin/fix-up-crontab --dry-run<br>
 sudo bin/fix-up-crontab
-</pre>
+</code>
 
 <p>
 The installer records the intended appliance account in

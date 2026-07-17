@@ -15,9 +15,9 @@
 require_once "../include/misc.inc.php";
 
 // help/5singlename.php
-$title = "Memorial Record Name Help";
+$title = "Memorial Record Help";
 $description = "Help for reviewing one memorial record in detail.";
-$tab = 3;         // Reports
+$tab = 4;         // Names
 $helpfile = "";  // no nested page-help link on a help page
 
 emitHeader($title, $tab);
@@ -25,7 +25,7 @@ emitTopOfScreen($title, $description, "");
 ?>
 
 <div class="helpBox">
-    <div class="helpTitle">Memorial Record Help</div>
+    <div class="helpTitle boldText">Single Yahrzeit Name</div>
 
     <div class="helpBody">
 
@@ -63,8 +63,9 @@ download, edit, upload, and audit the CSV memorial database.
 <h3>After Changes</h3>
 
 <p>
-After changing memorial data, run the audit from the Reports page before
-relying on scheduled lighting.
+After saving a change, the application automatically audits the memorial
+database. If the audit reports a problem, use the Reports page to review the
+details before making another edit.
 </p>
 
    </div>
