@@ -14,7 +14,7 @@
 #                      -> bin/yahrzeit_engine.php
 #                          -> controller command stream
 #                      -> nc
-#                          -> Arduino V3 controller
+#                          -> Arduino controller
 #
 #      bin/yahrzeit is the shared execution and transport stage used by the
 #      scheduler and web screens. It provides one common path for:
@@ -27,7 +27,7 @@
 #
 #      For normal lighting, this script runs bin/yahrzeit_engine.php to generate the
 #      line-oriented controller command stream, then transmits that stream to
-#      the Arduino V3 controller using nc.
+#      the Arduino controller using nc.
 #
 #      Report and audit modes also use bin/yahrzeit_engine.php, but do not transmit
 #      anything to the controller.
@@ -101,6 +101,7 @@ NC_DELAY="${ENV_NC_DELAY:-${NC_DELAY:-0.05}}"
 POST_SEND_DELAY="${ENV_POST_SEND_DELAY:-${POST_SEND_DELAY:-0.5}}"
 TIMEOUT_CMD="${ENV_TIMEOUT_CMD:-${TIMEOUT_CMD:-timeout}}"
 NC_TIMEOUT="${ENV_NC_TIMEOUT:-${NC_TIMEOUT:-5}}"
+NC_QUIT_DELAY="${NC_QUIT_DELAY:-1}"
 
 if [[ -z "$CONTROLLER_HOST" || "$CONTROLLER_HOST" =~ [[:space:]] ]]; then
     echo "ERROR: invalid CONTROLLER_HOST in $CONTROLLER_CONFIG_FILE" >&2
@@ -467,6 +468,34 @@ slowcat() {
     sleep "$POST_SEND_DELAY"
 }
 
+# OpenBSD netcat on Ubuntu supports -q, which closes the client a specified
+# number of seconds after stdin reaches EOF. The macOS netcat uses -w for its
+# final-read timeout instead.
+select_nc_quit_option() {
+    if nc -h 2>&1 | grep -q -- '-q seconds'; then
+        printf '%s\n' -q
+    else
+        printf '%s\n' -w
+    fi
+}
+
+# Record every command result when a controller transaction fails. Normally the
+# automation log contains only a compact summary; the expanded response is
+# retained only when it is needed for diagnosis.
+log_controller_failure_results() {
+    local response_file="$1"
+
+    awk '
+        /\|/ { previous = $0 }
+        /^(OK|Eh\?|ERR )/ {
+            command = previous
+            sub(/^.*\|[[:space:]]*/, "", command)
+            printf "CONTROLLER result command=%c%s%c result=%c%s%c\n",
+                   39, command, 39, 39, $0, 39
+        }
+    ' "$response_file" >&2
+}
+
 # Either print the generated command stream or transmit it to the controller.
 #
 # In --dry-run mode, the command stream is simply printed to
@@ -487,18 +516,20 @@ transmit_commands() {
 
     local summary_mode="${YAHRZEIT_LOG_SUMMARY:-0}"
     local response_file=""
+    local nc_quit_option
+    nc_quit_option="$(select_nc_quit_option)"
     if [[ "$summary_mode" == "1" ]]; then
         response_file="$(mktemp)"
-        echo "TRANSPORT start mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT timeout=${NC_TIMEOUT}s expected_commands=$expected_commands"
+        echo "TRANSPORT start mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT timeout=${NC_TIMEOUT}s quit_delay=${NC_QUIT_DELAY}s expected_commands=$expected_commands"
     fi
 
     set +e
     if [[ "$summary_mode" == "1" ]]; then
         slowcat "$NC_DELAY" |
-            "$TIMEOUT_CMD" "$NC_TIMEOUT" nc "$CONTROLLER_HOST" "$CONTROLLER_PORT" >"$response_file"
+            "$TIMEOUT_CMD" "$NC_TIMEOUT" nc "$nc_quit_option" "$NC_QUIT_DELAY" "$CONTROLLER_HOST" "$CONTROLLER_PORT" >"$response_file"
     else
         slowcat "$NC_DELAY" |
-            "$TIMEOUT_CMD" "$NC_TIMEOUT" nc "$CONTROLLER_HOST" "$CONTROLLER_PORT"
+            "$TIMEOUT_CMD" "$NC_TIMEOUT" nc "$nc_quit_option" "$NC_QUIT_DELAY" "$CONTROLLER_HOST" "$CONTROLLER_PORT"
     fi
     local status=("${PIPESTATUS[@]}")
     set -e
@@ -517,28 +548,28 @@ transmit_commands() {
     fi
 
     if [[ "$transmit_status" -eq 124 ]]; then
+        [[ -z "$response_file" ]] || log_controller_failure_results "$response_file"
         [[ -z "$response_file" ]] || rm -f "$response_file"
         echo "ERROR: controller transmit timed out mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT timeout=${NC_TIMEOUT}s nc_status=$transmit_status slowcat_status=$slowcat_status response_lines=$response_lines response_bytes=$response_bytes controller_ok=$controller_ok controller_errors=$controller_errors" >&2
         return 124
     fi
 
     if [[ "$transmit_status" -ne 0 ]]; then
+        [[ -z "$response_file" ]] || log_controller_failure_results "$response_file"
         [[ -z "$response_file" ]] || rm -f "$response_file"
         echo "ERROR: controller transmit failed mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT nc_status=$transmit_status slowcat_status=$slowcat_status response_lines=$response_lines response_bytes=$response_bytes controller_ok=$controller_ok controller_errors=$controller_errors" >&2
         return "$transmit_status"
     fi
 
     if [[ "$slowcat_status" -ne 0 ]]; then
+        [[ -z "$response_file" ]] || log_controller_failure_results "$response_file"
         [[ -z "$response_file" ]] || rm -f "$response_file"
         echo "ERROR: controller command stream failed mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT nc_status=$transmit_status slowcat_status=$slowcat_status response_lines=$response_lines response_bytes=$response_bytes controller_ok=$controller_ok controller_errors=$controller_errors" >&2
         return "$slowcat_status"
     fi
 
     if [[ "$summary_mode" == "1" && "$controller_errors" -gt 0 ]]; then
-        awk '
-            /^(Eh\?|ERR )/ { print "CONTROLLER error: " previous " => " $0 }
-            { previous = $0 }
-        ' "$response_file" >&2
+        log_controller_failure_results "$response_file"
         rm -f "$response_file"
         echo "ERROR: controller rejected commands mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT response_lines=$response_lines response_bytes=$response_bytes controller_ok=$controller_ok controller_errors=$controller_errors" >&2
         return 65
@@ -551,6 +582,7 @@ transmit_commands() {
     fi
 
     if [[ "$summary_mode" == "1" && "$controller_ok" -ne "$expected_commands" ]]; then
+        log_controller_failure_results "$response_file"
         rm -f "$response_file"
         echo "ERROR: incomplete controller response mode=$MODE host=$CONTROLLER_HOST port=$CONTROLLER_PORT expected_ok=$expected_commands controller_ok=$controller_ok response_lines=$response_lines response_bytes=$response_bytes" >&2
         return 67
