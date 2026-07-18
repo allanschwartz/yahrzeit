@@ -25,7 +25,7 @@
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
- *      Modernized as a read-only panel overview screen in 2026.
+ *      Modernized for PHP 8 and the Yahrzeit V3 release in 2026.
  *
  * COPYRIGHT NOTICE
  *      Copyright (c) 2008, 2026, by Allan M. Schwartz.

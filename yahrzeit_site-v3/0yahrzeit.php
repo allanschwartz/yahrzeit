@@ -40,8 +40,7 @@
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
- *      Modernized as the home/status page for the PHP 8 / Arduino V3 version
- *      in 2026.
+ *      Modernized for PHP 8 and the Yahrzeit V3 release in 2026.
  *
  * COPYRIGHT NOTICE
  *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
@@ -59,7 +58,7 @@ $minhag = read_minhag_ini();
 
 date_default_timezone_set("America/Los_Angeles");
 
-const YAHRZEIT_TITLE    = "Yahrzeit Controller";
+const YAHRZEIT_TITLE    = "Yahrzeit Wall";
 const YAHRZEIT_TAB      = 1;
 const YAHRZEIT_HELPFILE = "help/0yahrzeit.php";
 
@@ -71,8 +70,8 @@ function yahrzeit_page_description()
 {
     global $minhag;
 
-    return "Home and status page for the Yahrzeit panels at " .
-           h($minhag['synagogueName'] ?? "") . ".";
+    return "Home and status page for the " .
+           h($minhag['synagogueName'] ?? "") . " Yahrzeit Wall.";
 }
 
 /** Return the server address used for this web request. */

@@ -33,7 +33,7 @@
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
- *      Modernized as a read-only panel-detail view in 2026.
+ *      Modernized for PHP 8 and the Yahrzeit V3 release in 2026.
  *
  * COPYRIGHT NOTICE
  *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
@@ -203,7 +203,7 @@ function single_panel_render_main_page($panelid, $panel, $completePanel, $timest
 
         <tr>
             <td colspan="3" class="header2Bg" align="left" height="25">
-                <span class="boldText"><?php echo h($panelid); ?></span>
+                <span class="boldText">Panel <?php echo h($panelid); ?></span>
             </td>
         </tr>
 

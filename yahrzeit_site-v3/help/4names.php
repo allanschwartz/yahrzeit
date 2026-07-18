@@ -78,8 +78,9 @@ memorial record.
 </p>
 
 <p>
-Use the <a href="5reports.php">Reports</a> page to download or upload the CSV memorial database, and run
-an audit after any replacement file is installed.
+Use the <a href="../6reports.php">Reports</a> page to download or upload the
+CSV memorial database, and run an audit after any replacement file is
+installed.
 </p>
 
 <h3>Location</h3>

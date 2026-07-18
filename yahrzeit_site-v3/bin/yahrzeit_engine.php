@@ -70,7 +70,7 @@
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
- *      Modernized for the Arduino V3 controller and PHP 8 in 2026.
+ *      Modernized PHP 8 and the Arduino controller version V3 in 2026.
  *
  * COPYRIGHT NOTICE
  *      Copyright (c) 2008, 2026, by Allan M. Schwartz.

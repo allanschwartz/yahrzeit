@@ -34,7 +34,7 @@ cron
       -> bin/yahrzeit_engine.php
         -> controller command stream
           -> nc TCP connection
-            -> Arduino V3 controller
+            -> Arduino controller
 ```
 
 The web screens use the same underlying code where possible. Reports, audits,
@@ -132,7 +132,7 @@ installer remembers the previously recorded `CONTROLLER_HOST` before updating
 the checkout, installs the current tracked configuration, and asks whether to
 keep that address or enter a replacement. The configuration file itself is not
 preserved. The fixed port and transport defaults update with the software. The
-Arduino V3 firmware must use the matching address and port.
+Arduino constroller firmware must use the matching address and port.
 
 For a one-command diagnostic override, use environment variables:
 

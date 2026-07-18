@@ -18,8 +18,7 @@
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
- *      Modernized in 2026 by replacing the old editable panel database with
- *      static geometry for the Arduino V3 controller and yahrzeit_site-v3.
+ *      Modernized for PHP 8 and the Yahrzeit V3 release in 2026.
  *
  * COPYRIGHT NOTICE
  *      Copyright (c) 2008, 2026, by Allan M. Schwartz.

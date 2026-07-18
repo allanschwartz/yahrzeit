@@ -15,7 +15,7 @@
 require_once "../include/misc.inc.php";
 
 // help/2panels.php
-$title = "View Panels Help";
+$title = "View Yahrzeit Panels Help";
 $description = "Help for viewing the physical Yahrzeit Wall and its panels.";
 $tab = 3;         // Panels
 $helpfile = "";  // no nested page-help link on a help page

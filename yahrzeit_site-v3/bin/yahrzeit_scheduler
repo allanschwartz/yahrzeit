@@ -42,7 +42,7 @@
  *                      -> bin/yahrzeit_engine.php
  *                          -> controller command stream
  *                      -> nc
- *                          -> Arduino V3 controller
+ *                          -> Arduino controller
  *
  * BLUF
  *      cron decides WHEN scheduled phases run.

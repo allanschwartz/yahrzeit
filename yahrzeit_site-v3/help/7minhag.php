@@ -6,9 +6,9 @@
  * DESCRIPTION
  *      Help page for the Minhag configuration screen.
  *
- *      This page explains the synagogue-policy settings used by the CBS
- *      Yahrzeit Wall. It is intended for the ritual committee, office staff,
- *      or technical volunteer responsible for maintaining the wall.
+ *      This page explains the synagogue-policy settings used by the Yahrzeit
+ *      Wall. It is intended for the ritual committee, office staff, or
+ *      technical volunteer responsible for maintaining the wall.
  */
 ?>
 
@@ -16,6 +16,12 @@
 require_once "../include/misc.inc.php";
 
 // help/7minhag.php
+$minhag = read_minhag_ini();
+$synagogueName = trim($minhag['synagogueName'] ?? "");
+if ($synagogueName === "") {
+    $synagogueName = "the synagogue";
+}
+
 $title = "Minhag Settings Help";
 $description = "Help for synagogue-wide Yahrzeit and Yizkor lighting policy.";
 $tab = 6;         // Minhag
@@ -68,8 +74,9 @@ services.
 
 <p>
 Pesach and Shavuot have day-number choices because communities differ about
-which day Yizkor is observed. Use the setting that matches Congregation Beth
-Sholom practice — that is, the day on which Yizkor services are held.
+which day Yizkor is observed. Use the setting that matches
+<?php echo h($synagogueName); ?> practice &mdash; that is, the day on which
+Yizkor services are held.
 </p>
 
 <h3>Other Yizkor Date</h3>

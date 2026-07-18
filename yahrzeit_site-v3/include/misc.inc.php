@@ -31,7 +31,7 @@
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
- *      Modernized for the Arduino V3 controller and PHP 8 in 2026.
+ *      Modernized for PHP 8 and the Yahrzeit V3 release in 2026.
  *
  * COPYRIGHT NOTICE
  *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
@@ -338,7 +338,7 @@ function emitTopOfScreen($title, $description, $helpfile = "")
         $helpUrl = h(site_url($helpfile));
         $pageHelpLink = <<<ENDOFTEXT
                 <a href="$helpUrl"
-                   target="WWHFrame" class="textSmallUnderBlue">Page Help</a>
+                   target="pagehelp" class="textSmallUnderBlue">Page Help</a>
 ENDOFTEXT;
     }
 
@@ -448,7 +448,7 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
             <?php  toptab ($tab == 4, "4names.php", "Names" ); ?>
             <?php  toptab ($tab == 5, "6reports.php", "Reports" ); ?>
             <?php  toptab ($tab == 6, "7minhag.php", "Minhag" ); ?>
-            <?php  toptab (false, "help/user_guide.php", "User Guide", "PageHelp" ); ?>
+            <?php  toptab (false, "help/8userguide.php", "User Guide", "userguide" ); ?>
           </tr>
         </table>
     </td>

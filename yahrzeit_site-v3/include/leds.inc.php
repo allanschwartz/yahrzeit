@@ -10,7 +10,7 @@
  *      This file no longer talks directly to serial hardware, sockets, or
  *      device files.  It emits the line-oriented controller command stream
  *      consumed by bin/yahrzeit, which is responsible for transmitting the
- *      stream to the Arduino V3 controller.
+ *      stream to the Arduino controller.
  *
  *      Higher-level code decides what should be lit. This file only translates
  *      those decisions into controller commands.
@@ -23,8 +23,7 @@
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
- *      Modernized for the Arduino V3 controller and the bin/yahrzeit wrapper
- *      in 2026.
+ *      Modernized for PHP 8 and the Yahrzeit V3 release in 2026.
  *
  * COPYRIGHT NOTICE
  *      Copyright (c) 2008, 2026, by Allan M. Schwartz.

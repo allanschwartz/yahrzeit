@@ -29,7 +29,7 @@
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
  *      Split out as shared date-support code during the PHP 8 /
- *      Arduino V3 modernization in 2026.
+ *      Modernized for PHP 8 and the Yahrzeit V3 release in 2026.
  *
  * COPYRIGHT NOTICE
  *      Copyright (c) 2008, 2026, by Allan M. Schwartz.

@@ -60,7 +60,7 @@ range, and duplicate memorial records assigned to the same LED position.
 
 <p>
 The preview option shows the command stream that would be sent to the
-controller for the selected date. It does not transmit commands to the wall.
+controller today. It does not transmit commands to the wall.
 </p>
 
 <h3>Download CSV</h3>
