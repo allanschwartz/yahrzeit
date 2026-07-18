@@ -100,7 +100,7 @@ CONTROLLER_PORT="${ENV_CONTROLLER_PORT:-${CONTROLLER_PORT:-2001}}"
 NC_DELAY="${ENV_NC_DELAY:-${NC_DELAY:-0.05}}"
 POST_SEND_DELAY="${ENV_POST_SEND_DELAY:-${POST_SEND_DELAY:-0.5}}"
 TIMEOUT_CMD="${ENV_TIMEOUT_CMD:-${TIMEOUT_CMD:-timeout}}"
-NC_TIMEOUT="${ENV_NC_TIMEOUT:-${NC_TIMEOUT:-5}}"
+NC_TIMEOUT="${ENV_NC_TIMEOUT:-${NC_TIMEOUT:-10}}"
 NC_QUIT_DELAY="${NC_QUIT_DELAY:-1}"
 
 if [[ -z "$CONTROLLER_HOST" || "$CONTROLLER_HOST" =~ [[:space:]] ]]; then
@@ -472,10 +472,10 @@ slowcat() {
 # number of seconds after stdin reaches EOF. The macOS netcat uses -w for its
 # final-read timeout instead.
 select_nc_quit_option() {
-    if nc -h 2>&1 | grep -q -- '-q seconds'; then
-        printf '%s\n' -q
-    else
+    if [[ "$(uname -s)" == "Darwin" ]]; then
         printf '%s\n' -w
+    else
+        printf '%s\n' -q
     fi
 }
 
