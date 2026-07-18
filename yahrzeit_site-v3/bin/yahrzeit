@@ -479,15 +479,15 @@ select_nc_quit_option() {
     fi
 }
 
-# Record every command result when a controller transaction fails. Normally the
-# automation log contains only a compact summary; the expanded response is
-# retained only when it is needed for diagnosis.
+# Record each rejected command when a controller transaction fails. Normally
+# the automation log contains only a compact summary; successful command
+# results remain represented by the summary counts.
 log_controller_failure_results() {
     local response_file="$1"
 
     awk '
         /\|/ { previous = $0 }
-        /^(OK|Eh\?|ERR )/ {
+        /^(Eh\?|ERR )/ {
             command = previous
             sub(/^.*\|[[:space:]]*/, "", command)
             printf "CONTROLLER result command=%c%s%c result=%c%s%c\n",
