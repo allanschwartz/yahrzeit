@@ -32,7 +32,7 @@
       <a href="#overview">Overview and boundaries</a>
       <div class="group">
         Screens
-      </div><a href="#home">0yahrzeit.php</a><a href="#yizkor-screen">1yizkor.php</a><a href="#panels-screen">2panels.php</a><a href="#single-panel">3singlepanel.php</a><a href="#names-screen">4names.php</a><a href="#single-name">5singlename.php</a><a href="#reports">6reports.php</a><a href="#minhag">7minhag.php</a>
+      </div><a href="#home">0yahrzeit.php</a><a href="#yizkor-screen">1yizkor.php</a><a href="#panels-screen">2panels.php</a><a href="#single-panel">3singlepanel.php</a><a href="#names-screen">4names.php</a><a href="#single-name">5singlename.php</a><a href="#reports">6reports.php</a><a href="#minhag">7minhag.php</a><a href="#user-guide">8userguide.php</a>
       <div class="group">
         Includes
       </div><a href="#misc">misc.inc.php</a><a href="#dates">date_support.inc.php</a><a href="#names-module">names.inc.php</a><a href="#panels-module">panels.inc.php</a><a href="#leds">leds.inc.php</a>
@@ -275,6 +275,25 @@
           <dd>Captures and persists policy values, then delegates cron generation to the appliance helper; it does not generate lighting commands.</dd>
         </dl>
       </article>
+      <article id="user-guide">
+        <h3>User Guide</h3>
+        <div class="path">
+          8userguide.php
+        </div>
+        <dl>
+          <dt>Kind / purpose</dt>
+          <dd>Top-level operator and maintenance guide for the Yahrzeit Wall.</dd>
+          <dt>Depends on</dt>
+          <dd><code>include/misc.inc.php</code>, the saved Minhag configuration,
+          application screenshots, and the individual Page Help files.</dd>
+          <dt>Likely dependents</dt>
+          <dd>The top navigation and people operating or maintaining the appliance.</dd>
+          <dt>Data I/O</dt>
+          <dd>Reads the saved Minhag configuration for the synagogue name; does not write data.</dd>
+          <dt>Boundary</dt>
+          <dd>Documentation and navigation only; it performs no controller operation or data mutation.</dd>
+        </dl>
+      </article>
     </section>
     <section>
       <h2>Include modules</h2>
@@ -487,7 +506,7 @@
       </article>
     </section>
     <section id="todos">
-      <h2>Unclear areas and human-review TODOs</h2>
+      <h2>Unclear areas or future TODOs</h2>
       <article>
         <ul>
           <li><strong>Authority/authentication:</strong> no access-control mechanism was established from these listed files.

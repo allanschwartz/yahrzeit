@@ -106,7 +106,7 @@ Priority markers:
 
 - OK.
 
-### `help/8userguide.php`
+### `8userguide.php`
 
 - OK.
 
@@ -142,8 +142,7 @@ Priority markers:
 
 ## CBS On-Site Questions and Data
 
-- **[A] (at CBS)** Install the latest CBS data/yahrzeits-rev4.csv
+- **[A] (at CBS)** Install the latest CBS `data/yahrzeits-rev4.csv`, verify `minhag.ini` and `yahrzeit-controller.conf`
 - **[A] (at CBS)** Fix the known audit defect: Emile Kingsley uses unknown panel `col58`.
-- **[A] (at CBS)** Obtain and install CBS's latest `yahrzeits-rev*.csv` file.
 - **[A] (at CBS)** Review the saved Minhag policy with the rabbi or Ritual Committee.
 - **[B] (at CBS)** Ask whether all Yizkor and memorial observances can share one lighting schedule or need separate times for each observance (for example, morning Yizkor services versus an evening Yom HaShoah event).

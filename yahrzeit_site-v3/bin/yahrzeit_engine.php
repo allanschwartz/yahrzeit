@@ -77,16 +77,6 @@
  *      All rights reserved.
  */
 
-/*
- * TODO
- *      Keep this file as the command-line orchestration layer:
- *      parse options, select mode, read data, and call lighting,
- *      report, or audit functions.
- *
- *      Possible future split:
- *          include/audit_support.inc.php  validation and duplicate-location checks
- */
-
 require_once dirname(__DIR__) . "/include/misc.inc.php";
 require_once site_root() . "/include/panels.inc.php";
 require_once site_root() . "/include/names.inc.php";

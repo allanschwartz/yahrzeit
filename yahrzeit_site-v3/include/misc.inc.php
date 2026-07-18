@@ -448,7 +448,7 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
             <?php  toptab ($tab == 4, "4names.php", "Names" ); ?>
             <?php  toptab ($tab == 5, "6reports.php", "Reports" ); ?>
             <?php  toptab ($tab == 6, "7minhag.php", "Minhag" ); ?>
-            <?php  toptab (false, "help/8userguide.php", "User Guide", "userguide" ); ?>
+            <?php  toptab ($tab == 8, "8userguide.php", "User Guide", "userguide" ); ?>
           </tr>
         </table>
     </td>
