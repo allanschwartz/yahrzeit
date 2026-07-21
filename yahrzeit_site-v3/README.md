@@ -32,7 +32,8 @@ cron
   -> bin/yahrzeit_scheduler
     -> bin/yahrzeit
       -> bin/yahrzeit_engine.php
-        -> controller command stream
+        -> include/yahrzeit_policy.inc.php
+          -> controller command stream
           -> nc TCP connection
             -> Arduino controller
 ```
@@ -46,7 +47,7 @@ and command previews are intended to be safe; live wall operations call
 - `bin/` - command-line tools, scheduler, engine, and installer.
 - `include/` - shared PHP helpers for dates, names, panels, LED mapping,
   lighting policy, and page layout.
-- `data/` - live CSV data, `minhag.ini`, backups, and scheduler log.
+- `data/` - live CSV data, `minhag.ini`, backups, and the automation log.
 - `help/` - help pages shown by the web UI.
 - `docs/` - project notes and generated/internal documentation.
 - `css/`, `images/`, `js/` - legacy browser-side assets used by the screen
@@ -56,10 +57,12 @@ and command previews are intended to be safe; live wall operations call
 
 - `data/yahrzeits-rev4.csv` - memorial database.
 - `data/minhag.ini` - synagogue lighting policy and display settings.
+- `bin/yahrzeit-controller.conf` - controller hostname/address and TCP port.
 - `bin/yahrzeit` - shared scheduler/web execution stage and controller transport.
 - `bin/yahrzeit_engine.php` - decides what should be lit or reported.
 - `bin/yahrzeit_scheduler` - cron-facing scheduled phase runner.
 - `bin/fix-up-crontab` - installs the policy-derived managed cron block.
+- `include/yahrzeit_policy.inc.php` - shared day/week lighting decisions.
 - `include/panels.inc.php` - static wall/panel geometry.
 - `include/leds.inc.php` - maps panel/person locations to controller commands.
 
@@ -132,7 +135,7 @@ installer remembers the previously recorded `CONTROLLER_HOST` before updating
 the checkout, installs the current tracked configuration, and asks whether to
 keep that address or enter a replacement. The configuration file itself is not
 preserved. The fixed port and transport defaults update with the software. The
-Arduino constroller firmware must use the matching address and port.
+Arduino controller firmware must use the matching address and port.
 
 For a one-command diagnostic override, use environment variables:
 
@@ -145,12 +148,15 @@ CONTROLLER_HOST=192.168.86.240 CONTROLLER_PORT=2001 bin/yahrzeit --dry-run
 From this directory, syntax-check the PHP and shell files with:
 
 ```sh
-for f in [0-9]*.php include/*.inc.php help/*.php bin/yahrzeit_engine.php bin/yahrzeit_scheduler; do
+for f in index.php [0-9]*.php include/*.inc.php help/*.php \
+         bin/yahrzeit_engine.php bin/yahrzeit_scheduler bin/fix-up-crontab \
+         tests/*.php; do
     php -l "$f"
 done
 
-bash -n bin/yahrzeit
-bash -n bin/install-yahrzeit.sh
+for f in bin/yahrzeit bin/install-yahrzeit.sh; do
+    bash -n "$f"
+done
 ```
 
 Run data/audit checks that do not transmit:
@@ -167,12 +173,15 @@ Only run these when the controller IP is correct and it is safe to talk to the
 wall:
 
 ```sh
+bin/yahrzeit
 bin/yahrzeit --all-off
 bin/yahrzeit --all-on
 bin/yahrzeit --yizkor
 ```
 
-Use them carefully.
+The default command applies normal Yahrzeit lighting. Use all four commands
+carefully: without `--dry-run`, each transmits to the controller and changes
+the wall.
 
 ## Scheduled Operation
 
@@ -212,10 +221,11 @@ filesystem protections stay enabled.
 
 ## Data Backup And Restore
 
-The most important live data file is:
+The two appliance-specific live data files are:
 
 ```text
 data/yahrzeits-rev4.csv
+data/minhag.ini
 ```
 
 The web Reports page can export and import this CSV. The upload path creates a
@@ -227,7 +237,12 @@ Before replacing the appliance or doing major maintenance, copy:
 data/yahrzeits-rev4.csv
 data/minhag.ini
 data/backups/
+bin/yahrzeit-controller.conf
 ```
+
+The controller configuration is replaceable software configuration rather
+than memorial data, but retaining it records the controller address selected
+for that appliance.
 
 ## Updating The Appliance
 

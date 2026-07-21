@@ -26,8 +26,9 @@
  *      The displayed grid is based on the memorial database and static panel
  *      geometry. It is not a live electrical query of the controller.
  *
- *      If a name appears in the wrong position, use the Reports page to run
- *      the database audit and then correct the CSV memorial database.
+ *      If a name appears in the wrong position, open that individual's Single
+ *      Name page to correct the panel location. Use Reports to audit the
+ *      database or to replace the CSV in a batch-maintenance operation.
  *
  * HISTORY
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
@@ -76,6 +77,14 @@ function single_panel_person_is_reserved($person)
     return str_contains(strtoupper(single_panel_person_display_name($person)), "RESERVED");
 }
 
+/**
+ * Build a row/column map of memorials assigned to one panel.
+ *
+ * Records without positive row/column values are ignored. If the CSV contains
+ * a duplicate position, the later record replaces the earlier one.
+ *
+ * @return array<int, array<int, array<string, mixed>>>
+ */
 function single_panel_build_complete_panel($panelid)
 {
     $completePanel = [];

@@ -40,7 +40,8 @@
  *              -> bin/yahrzeit_scheduler
  *                  -> bin/yahrzeit
  *                      -> bin/yahrzeit_engine.php
- *                          -> controller command stream
+ *                          -> include/yahrzeit_policy.inc.php
+ *                              -> controller command stream
  *                      -> nc
  *                          -> Arduino controller
  *
@@ -173,6 +174,7 @@ function timestamp_line($message)
     echo date("Y-m-d H:i:s", $ts) . "  " . $message . "\n";
 }
 
+/** Prefix captured child-process output with this run's timestamp and label. */
 function timestamp_child_output($label, $lines)
 {
     foreach ($lines as $line) {
@@ -180,6 +182,7 @@ function timestamp_child_output($label, $lines)
     }
 }
 
+/** Log the phase result and elapsed time, then return its exit status. */
 function finish_phase($phase, $status, $started_at)
 {
     $duration_ms = (int)round((microtime(true) - $started_at) * 1000);
@@ -187,6 +190,7 @@ function finish_phase($phase, $status, $started_at)
     return $status;
 }
 
+/** Return enabled Yizkor observances whose next occurrence is today. */
 function yizkor_reasons_today($minhag, $now)
 {
     $reasons = array();
@@ -202,6 +206,11 @@ function yizkor_reasons_today($minhag, $now)
     return $reasons;
 }
 
+/**
+ * Run the shared wrapper with compact transport logging enabled.
+ *
+ * Scheduler dry-run logs the proposed command without invoking the wrapper.
+ */
 function run_yahrzeit_command($args, $reason, $opts)
 {
     $cmd = escapeshellarg(__DIR__ . "/yahrzeit");
@@ -228,7 +237,13 @@ function run_yahrzeit_command($args, $reason, $opts)
     return $rc;
 }
 
-/** Refresh moving sunset-based cron times and include its result in this log. */
+/**
+ * Refresh moving sunset-based cron times and include its result in this log.
+ *
+ * A normal Yahrzeit phase refreshes only when Yahrzeit time follows sunset.
+ * The daily cron-refresh phase forces regeneration because either Yahrzeit or
+ * Yizkor timing may have placed that phase in the managed block.
+ */
 function refresh_sunset_crontab($minhag, $opts, $force = false)
 {
     if (!$force && ($minhag['yahrzeitLightTime'] ?? 'setTime') != 'atSunset') {

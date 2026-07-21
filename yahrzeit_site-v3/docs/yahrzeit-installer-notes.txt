@@ -57,13 +57,17 @@
 #   - netcat for controller communication
 #   - coreutils timeout support
 #   - OpenSSH server enabled and started
+#   - cron enabled and started
+#   - AppArmor disabled on this dedicated appliance
 #   - /var/www/html/yahrzeit symlink to the checked-out application
+#   - a root-page redirect to /yahrzeit/
 #   - PHP PCRE JIT disabled, to avoid executable-memory warnings on hardened
 #     server environments
 #   - local syntax and audit checks
 #   - policy-derived cron entries owned by the appliance administrator account
-#   - three months of compressed weekly scheduler logs under data/
+#   - three months of compressed weekly automation logs under data/
 #   - controller address requested interactively and stored in the application
+#   - data/minhag.ini and data/yahrzeits-rev4.csv preserved during updates
 #   - a narrow Apache systemd exception allowing writes to the application
 #     data directory and access to the cron helper's sudoers authorization
 #
@@ -90,8 +94,10 @@
 #
 #   3. Confirm bin/yahrzeit-controller.conf before live testing.
 #
-#   4. Review the managed cron block printed by the installer. Save the Minhag
-#      page, or run sudo bin/fix-up-crontab, whenever the schedule changes.
+#   4. Review the managed cron block printed by the installer. Saving the
+#      Minhag page refreshes this block. To repair it manually, run:
+#
+#        sudo bin/fix-up-crontab
 #
 #   5. Review scheduled-operation history when needed:
 #

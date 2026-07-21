@@ -116,7 +116,12 @@ Priority markers:
 
 ### `include/date_support.inc.php`
 
-- OK.
+- **[B]** Correct the English-date day-only year-boundary case: with date
+  context set to December 31, January 1 should match "tomorrow," but
+  `english_day_matches_today_or_tomorrow()` constructs January 1 in the old
+  civil year. CBS uses Hebrew-date observance, so this is not a CBS operational
+  issue. A pending regression case documents it in
+  `tests/yahrzeit_engine_policy_test.php`.
 
 ### `include/leds.inc.php`
 

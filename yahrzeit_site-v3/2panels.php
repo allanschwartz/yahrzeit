@@ -111,8 +111,14 @@ function panels_person_is_reserved($person)
     return str_contains(strtoupper($name), "RESERVED");
 }
 
-// Count the same valid, non-reserved panel positions shown by the panel-detail
-// screen.  A later CSV record at a duplicate position wins, as it does there.
+/**
+ * Count policy-active LEDs by panel using the panel-detail collision rules.
+ *
+ * Invalid locations are ignored. At a duplicate position, the later CSV
+ * record replaces the earlier one before the count is calculated.
+ *
+ * @return array<string, int>
+ */
 function panels_lit_counts($timestamp)
 {
     $cells = [];

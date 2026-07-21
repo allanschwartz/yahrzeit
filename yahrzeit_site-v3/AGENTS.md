@@ -28,7 +28,9 @@ Important boundaries:
 - include/panels.inc.php handles static panel geometry.
 - include/date_support.inc.php handles date/sunset/Hebrew-date helpers.
 - include/leds.inc.php handles LED/panel mapping.
-- bin/yahrzeit_engine.php decides what should be lit.
+- include/yahrzeit_policy.inc.php decides which memorial records are active.
+- bin/yahrzeit_engine.php applies policy and emits reports, audits, or command
+  text.
 - screen PHP files should mostly render pages and dispatch GET/POST actions.
 
 File size / maintainability guidelines:
@@ -43,12 +45,22 @@ File size / maintainability guidelines:
 Validation commands:
 
 ```sh
-for f in [0-9]*.php include/*.inc.php help/*.php bin/*.php bin/yahrzeit_scheduler; do
+for f in index.php [0-9]*.php include/*.inc.php help/*.php \
+         bin/yahrzeit_engine.php bin/yahrzeit_scheduler bin/fix-up-crontab \
+         tests/*.php; do
     php -l "$f"
 done
 
-bash -n bin/yahrzeit
-bash -n bin/install-yahrzeit.sh
+for f in bin/yahrzeit bin/install-yahrzeit.sh; do
+    bash -n "$f"
+done
+
+php tests/yahrzeit_engine_policy_test.php
 ```
+
+Run `tests/yahrzeit_engine_policy_test.php` after changes to date handling,
+memorial-record mapping, policy, reports, or the lighting engine. The test must
+exit successfully; explicitly reported known issues remain tracked in
+`docs/todo.md` until corrected.
 
 Do not run commands that transmit to the physical controller unless explicitly asked.

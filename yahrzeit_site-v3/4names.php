@@ -25,8 +25,9 @@
  *      controller commands.
  *
  * NOTES
- *      This page is intentionally read-only. Database editing, CSV upload,
- *      reports, and audit checks belong on the Reports screen.
+ *      This list is read-only, but each name links to the Single Name screen
+ *      for editing that existing record. Batch CSV replacement, reports, and
+ *      audit checks belong on the Reports screen.
  *
  * HISTORY
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
@@ -90,6 +91,11 @@ function viewnames_search_text($person)
     ]));
 }
 
+/**
+ * Return whether every whitespace-separated search term occurs in the record.
+ *
+ * The searchable text combines name, dates, option tokens, and location.
+ */
 function viewnames_person_matches_query($person, $query)
 {
     $query = strtolower(trim($query));

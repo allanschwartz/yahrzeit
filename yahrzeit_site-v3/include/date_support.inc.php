@@ -9,7 +9,7 @@
  *      date helper functions for the CBS Yahrzeit Wall application.
  *
  *      This file contains reusable date calculations used by the home/status
- *      page, reports, scheduler/engine logic, and future dashboard summaries.
+ *      and Yizkor pages, reports, scheduler, engine, policy, and cron helper.
  *
  * BLUF
  *      Date calculations live here.
@@ -28,8 +28,8 @@
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
- *      Split out as shared date-support code during the PHP 8 /
- *      Modernized for PHP 8 and the Yahrzeit V3 release in 2026.
+ *      Split out as shared date-support code and modernized for PHP 8 and the
+ *      Yahrzeit V3 release in 2026.
  *
  * COPYRIGHT NOTICE
  *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
@@ -394,6 +394,9 @@ function next_yizkor_observances($minhag, $timestamp = null)
  *
  * The scheduled engine runs late in the civil day, when tomorrow's date may
  * already be the active Hebrew observance after sunset.
+ *
+ * The candidate is constructed in today's civil year. Consequently, January
+ * 1 does not match "tomorrow" when the established context is December 31.
  */
 function english_day_matches_today_or_tomorrow($month, $day)
 {

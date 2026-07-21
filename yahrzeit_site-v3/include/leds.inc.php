@@ -42,6 +42,7 @@ const LED_PANEL_MAPPING = [
 ];
 
 
+/** Return the controller's one-based panel number, or an empty string. */
 function yz_panel_number($panelId)
 {
     return LED_PANEL_MAPPING[$panelId] ?? "";
@@ -75,7 +76,7 @@ function yz_lighton($person)
 }
 
 
-// Emit the controller's wall-wide "all on" or "all off" command.
+// Emit the supplied controller wall-wide state token as an "all" command.
 function led_all( $onoff )
 {
     echo "all $onoff\n";

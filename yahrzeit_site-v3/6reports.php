@@ -88,6 +88,14 @@ function reports_today()
     return date('Y-m-d');
 }
 
+/**
+ * Run bin/yahrzeit with shell-escaped arguments and capture combined output.
+ *
+ * Callers in this screen supply only report, audit, or dry-run arguments, so
+ * these observed call paths do not transmit controller commands.
+ *
+ * @return array{0: int, 1: string} Exit status and combined output.
+ */
 function reports_run_yahrzeit($args)
 {
     $script = reports_yahrzeit_script();
@@ -124,6 +132,13 @@ function reports_valid_kind($kind)
     return isset(REPORTS_VALID_KINDS[$kind]);
 }
 
+/**
+ * Apply the upload gate before replacing the live memorial CSV.
+ *
+ * This is deliberately a coarse structural check: at most 5,000 rows and
+ * more than 100 non-header rows having at least eight fields. The full audit
+ * runs only after a structurally acceptable upload replaces the live file.
+ */
 function reports_uploaded_csv_looks_valid($filename)
 {
     if (($fp = fopen($filename, "r")) === false) {
@@ -188,6 +203,14 @@ function reports_handle_preview()
     return [$status == 0, "Controller command preview (exit $status)", $output];
 }
 
+/**
+ * Back up and atomically replace the live CSV, then run the database audit.
+ *
+ * A nonzero audit result is returned to the operator but does not roll back a
+ * structurally accepted upload; the pre-upload backup remains available.
+ *
+ * @return array{0: bool, 1: string, 2: string}
+ */
 function reports_handle_upload()
 {
     $live = reports_data_path(REPORTS_CSV_FILE);
@@ -240,6 +263,7 @@ function reports_handle_upload()
     return [true, $message, $audit_output];
 }
 
+/** Stream the live memorial CSV as a browser download, then terminate. */
 function reports_download_csv()
 {
     $csv = reports_data_path(REPORTS_CSV_FILE);

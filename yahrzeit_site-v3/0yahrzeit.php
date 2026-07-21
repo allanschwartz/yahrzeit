@@ -33,8 +33,9 @@
  *      Sunset and Hebrew-date information is displayed to help maintainers
  *      understand the current scheduling context.
  *
- *      The actual lighting decisions are made by bin/yahrzeit_engine.php.
- *      Scheduled timing decisions are made by bin/yahrzeit_scheduler.
+ *      The engine applies include/yahrzeit_policy.inc.php to decide which
+ *      memorials are active. bin/fix-up-crontab derives scheduled times;
+ *      bin/yahrzeit_scheduler decides whether a scheduled phase applies.
  *
  * HISTORY
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
@@ -80,6 +81,14 @@ function yahrzeit_server_address()
     return $_SERVER['SERVER_ADDR'] ?? "unknown";
 }
 
+/**
+ * Return trusted-HTML summary lines for configured wall data and operations.
+ *
+ * The light count is a policy calculation from the CSV, not a live query of
+ * controller state.
+ *
+ * @return array<int, string>
+ */
 function controller_summary_lines($timestamp = null)
 {
     if ($timestamp === null) {
@@ -104,6 +113,7 @@ function yahrzeit_label($value, $labels)
     return $labels[$value] ?? $value;
 }
 
+/** Return trusted-HTML summary lines for the saved lighting policy. */
 function yahrzeit_minhag_summary_lines()
 {
     global $minhag;
@@ -131,6 +141,7 @@ function yahrzeit_minhag_summary_lines()
     ];
 }
 
+/** Return the home-page statement based on the next Friday's CBS sunset. */
 function yahrzeit_next_shabbat_lighting_line()
 {
     $nextErevShabbat = next_erev_shabbat_timestamp();

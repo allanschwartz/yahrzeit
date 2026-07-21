@@ -7,8 +7,8 @@
  * DESCRIPTION
  *      Shared lighting-policy helpers for the CBS Yahrzeit Wall.
  *
- *      This module decides whether a memorial should be lit under the current
- *      database, Minhag, and date policy.  It does not parse CSV records,
+ *      This module decides whether a mapped memorial record should be lit
+ *      under the current Minhag and date policy. It does not parse CSV records,
  *      render pages, map LEDs, emit controller commands, or transmit data.
  *
  *      Callers must load the normal shared modules first: names.inc.php and
@@ -170,11 +170,21 @@ function yahrzeit_person_matches_observance_window($person, $window, $timestamp 
     return false;
 }
 
+/**
+ * Match one memorial against the established today/tomorrow date context.
+ *
+ * set_yahrzeit_date_context() must have been called first.
+ */
 function yahrzeit_person_is_observed_today($person)
 {
     return yahrzeit_person_matches_observance_window($person, "today");
 }
 
+/**
+ * Match one memorial against the active Saturday-through-Friday window.
+ *
+ * set_yahrzeit_date_context() must have been called for the same timestamp.
+ */
 function yahrzeit_person_is_observed_this_week($person, $timestamp = null)
 {
     return yahrzeit_person_matches_observance_window($person, "week", $timestamp);
@@ -214,6 +224,7 @@ function yahrzeit_person_lighting_decision($person, $timestamp = null)
     return ['should_light' => false, 'reason' => 'not active'];
 }
 
+/** Return only the Boolean result of yahrzeit_person_lighting_decision(). */
 function yahrzeit_person_should_light_now($person, $timestamp = null)
 {
     $decision = yahrzeit_person_lighting_decision($person, $timestamp);

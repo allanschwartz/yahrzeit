@@ -6,13 +6,13 @@
  * DESCRIPTION
  *      Minhag configuration screen for the CBS Yahrzeit Wall.
  *
- *      This page lets an authorized maintainer review and update the local
- *      synagogue customs that affect Yahrzeit and Yizkor lighting.
+ *      This page lets a maintainer review and update the local synagogue
+ *      customs that affect Yahrzeit and Yizkor lighting. Authentication and
+ *      authorization, if required, must be supplied outside this page.
  *
  *      The settings include:
  *
  *          - whether yahrzeits follow the English or Hebrew date
- *          - whether English-date yahrzeits begin at nightfall
  *          - whether each yahrzeit is observed for one day or a full week
  *          - normal-Yahrzeit run time and Yizkor start/end times
  *          - which Yizkor holidays are observed
@@ -23,16 +23,17 @@
  *
  *          data/minhag.ini
  *
- *      These settings are read by bin/yahrzeit_engine.php when deciding what
- *      should be lit, and by bin/yahrzeit_scheduler when deciding when
- *      scheduled lighting actions are due.
+ *      The engine and shared policy module use these settings when deciding
+ *      what should be lit. bin/fix-up-crontab uses them to derive scheduled
+ *      times, and bin/yahrzeit_scheduler decides whether a scheduled phase
+ *      applies on a given day.
  *
  * BLUF
  *      This page edits synagogue policy, not individual memorial records.
  *
  *      yahrzeit_engine.php decides WHAT should be lit using these settings.
- *      yahrzeit_scheduler decides WHEN scheduled lighting actions are due
- *      using these settings.
+ *      fix-up-crontab decides WHEN scheduled phases run.
+ *      yahrzeit_scheduler decides WHETHER each phase applies today.
  *
  * NOTES
  *      This page writes only known configuration keys. Unknown POST fields
@@ -431,6 +432,12 @@ function minhag_render_save_result($config_ok, $cron_result = null)
     emitFooter();
 }
 
+/**
+ * Save posted Minhag configuration, then refresh the managed cron block.
+ *
+ * A cron-refresh failure does not roll back a successful configuration save;
+ * the result page tells the maintainer that the prior schedule may remain.
+ */
 function minhag_handle_post()
 {
     $new_minhag = minhag_build_from_post();

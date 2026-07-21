@@ -14,11 +14,12 @@
  *
  *          data/yahrzeits-rev4.csv
  *
- *      Memorial records are read through include/names.inc.php so that this
- *      page does not depend directly on the CSV column order.
+ *      Memorial records are mapped through include/names.inc.php. When one
+ *      record is saved, this page preserves the Rev4 historical fields,
+ *      unknown option tokens, and any trailing columns from that CSV row.
  *
  * BLUF
- *      This page is for reviewing one memorial record in detail.
+ *      This page is for reviewing or correcting one existing memorial record.
  *
  *      Editing replaces only the selected CSV record.  All other CSV lines
  *      are copied unchanged into a replacement file before an atomic rename.
@@ -208,8 +209,14 @@
         return [true, "Memorial record saved.", basename($backup)];
     }
 
-    // bin/yahrzeit forces non-transmission in --audit mode.  Audit failure is
-    // reported after a successful save; it does not discard the preserved backup.
+    /**
+     * Run the non-transmitting database audit after a successful edit.
+     *
+     * Audit failure is reported but does not roll back the saved record or
+     * discard its backup.
+     *
+     * @return array{0: bool, 1: string}
+     */
     function single_name_run_audit()
     {
         $script = __DIR__ . "/bin/yahrzeit";

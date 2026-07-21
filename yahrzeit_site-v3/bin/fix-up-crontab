@@ -87,6 +87,7 @@ function cron_options($argv)
     return $options;
 }
 
+/** Validate a 12-hour clock setting and return cron minute/hour fields. */
 function cron_clock_fields($hour, $minute, $ampm)
 {
     if (!preg_match('/^\d{1,2}$/', trim((string)$hour)) ||
@@ -112,6 +113,12 @@ function cron_clock_fields($hour, $minute, $ampm)
     return [$minute, $hour];
 }
 
+/**
+ * Return the next future cron minute/hour at a sunset-relative offset.
+ *
+ * Weekly calculation advances to Friday and then in seven-day increments;
+ * daily calculation advances one day at a time.
+ */
 function cron_sunset_fields($now, $minutes, $repeat)
 {
     if (!preg_match('/^-?\d{1,3}$/', trim((string)$minutes))) {
@@ -149,6 +156,7 @@ function cron_shell_quote($value)
     return "'" . str_replace("'", "'\\''", $value) . "'";
 }
 
+/** Return one scheduler cron line with output appended to automation.log. */
 function cron_scheduler_line($minute, $hour, $days, $phase, $site_dir)
 {
     return sprintf(
@@ -246,6 +254,12 @@ function cron_managed_block($minhag, $now)
     return implode("\n", $lines);
 }
 
+/**
+ * Replace or append the marked block while preserving unrelated cron lines.
+ *
+ * Duplicate, unmatched, or incomplete markers are rejected rather than
+ * risking an ambiguous crontab rewrite.
+ */
 function cron_replace_managed_block($current, $managed)
 {
     $output = [];
@@ -290,6 +304,12 @@ function cron_replace_managed_block($current, $managed)
     return rtrim(implode("\n", $output), "\r\n") . "\n";
 }
 
+/**
+ * Return the installer-recorded cron owner.
+ *
+ * Dry-run and file-test modes may fall back to the current account when the
+ * installer-owned account file is absent; live installation may not.
+ */
 function cron_target_user($allow_missing)
 {
     if (!is_readable(CRON_USER_FILE)) {
@@ -323,6 +343,11 @@ function cron_current_account()
     cron_fail("could not determine the current account");
 }
 
+/**
+ * Build a crontab read/install command for the configured account.
+ *
+ * Root uses crontab -u; a non-root caller must already be that account.
+ */
 function cron_system_command($target_user, $temporary_file = '')
 {
     $command = ['crontab'];
@@ -342,6 +367,7 @@ function cron_system_command($target_user, $temporary_file = '')
     return implode(' ', array_map('escapeshellarg', $command));
 }
 
+/** Read the test file or installed user crontab; no crontab means empty. */
 function cron_read_current($options, $target_user)
 {
     if ($options['crontab_file'] !== '') {
@@ -361,6 +387,7 @@ function cron_read_current($options, $target_user)
     return implode("\n", $output) . (count($output) ? "\n" : '');
 }
 
+/** Install content into the test file or configured user's crontab. */
 function cron_install($content, $options, $target_user)
 {
     if ($options['crontab_file'] !== '') {

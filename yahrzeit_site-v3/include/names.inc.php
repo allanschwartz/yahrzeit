@@ -8,10 +8,10 @@
  *      Memorial-name database access functions for the CBS Yahrzeit Wall.
  *
  *      This file reads and maps the Yahrzeit CSV database into associative
- *      PHP records used by the web screens, reports, scheduler, and lighting
- *      engine.  Each record represents one memorialized person and includes
- *      name, English yahrzeit date, Hebrew yahrzeit date, per-person options,
- *      and physical LED location.
+ *      PHP records used by the web screens, reports, policy module, and
+ *      lighting engine. Each record represents one memorialized person and
+ *      includes name, English yahrzeit date, Hebrew yahrzeit date, per-person
+ *      options, and physical LED location.
  *
  *      The original design used a small procedural "object" layer:
  *
@@ -85,6 +85,14 @@ function yahrzeit_split_full_name($full_name)
 }
 
 
+/**
+ * Parse a legacy Gregorian date field into month-name, day, and year fields.
+ *
+ * Years 01 through 99 are interpreted as 1901 through 1999. An empty or
+ * unparseable value returns the same array shape with empty values.
+ *
+ * @return array{monthName: string, day: int|string, year: int|string}
+ */
 function yahrzeit_parse_english_date_field($date_str)
 {
 
@@ -123,6 +131,15 @@ function yahrzeit_parse_english_date_field($date_str)
 }
 
 
+/**
+ * Parse a legacy Hebrew date field into day, normalized month, and year.
+ *
+ * Month spelling is normalized by closest_hebrew_month(); malformed or empty
+ * input returns the same array shape with empty values.
+ *
+ * @return array{day: string, monthName: string, monthNum: int|string,
+ *     year: string}
+ */
 function yahrzeit_parse_hebrew_date_field($date_str)
 {
 
@@ -167,6 +184,7 @@ function yahrzeit_parse_hebrew_date_field($date_str)
 }
 
 
+/** Parse a panel-column-row location string into its three mapped fields. */
 function yahrzeit_parse_location_field($location_str)
 {
     [$panel, $column, $row] = array_pad(explode("-", trim($location_str)), 3, "");
@@ -258,6 +276,10 @@ function yahrzeit_person_options_text($person)
 
 /**
  * Serialize one mapped memorial record in Rev4 CSV column order.
+ *
+ * Only option flags represented by YAHRZEIT_OPTION_FIELDS are serialized.
+ * Callers that edit one existing row must separately preserve unknown option
+ * tokens and trailing CSV columns when required.
  *
  * @return array<int, string|int>
  */
@@ -420,7 +442,7 @@ function yahrzeit_putObj( $row, $person )
     $yahrzeit_records[$row] = $person;
 }
 
-/** Return a mapped-record template for a new or empty memorial. */
+/** Return the complete mapped-record shape with empty/default values. */
 function yahrzeit_blank_person()
 {
     return array(
@@ -455,11 +477,13 @@ function yahrzeit_blank_person()
 // ---------------------------------------------------------------------------
 // Person display and date-policy helpers
 // ---------------------------------------------------------------------------
+/** Return one mapped memorial's display name in first-name-last-name order. */
 function yahrzeit_person_name($person)
 {
     return trim(($person['firstName'] ?? "") . " " . ($person['lastName'] ?? ""));
 }
 
+/** Return one mapped memorial's panel-column-row location string. */
 function yahrzeit_person_location($person)
 {
     $panel  = $person['panelId'] ?? "";

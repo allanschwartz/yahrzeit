@@ -32,13 +32,43 @@
       <a href="#overview">Overview and boundaries</a>
       <div class="group">
         Screens
-      </div><a href="#home">0yahrzeit.php</a><a href="#yizkor-screen">1yizkor.php</a><a href="#panels-screen">2panels.php</a><a href="#single-panel">3singlepanel.php</a><a href="#names-screen">4names.php</a><a href="#single-name">5singlename.php</a><a href="#reports">6reports.php</a><a href="#minhag">7minhag.php</a><a href="#user-guide">8userguide.php</a>
+      </div>
+      <a href="#home">0yahrzeit.php</a>
+      <a href="#yizkor-screen">1yizkor.php</a>
+      <a href="#panels-screen">2panels.php</a>
+      <a href="#single-panel">3singlepanel.php</a>
+      <a href="#names-screen">4names.php</a>
+      <a href="#single-name">5singlename.php</a>
+      <a href="#reports">6reports.php</a>
+      <a href="#minhag">7minhag.php</a>
+      <a href="#user-guide">8userguide.php</a>
       <div class="group">
         Includes
-      </div><a href="#misc">misc.inc.php</a><a href="#dates">date_support.inc.php</a><a href="#names-module">names.inc.php</a><a href="#panels-module">panels.inc.php</a><a href="#leds">leds.inc.php</a>
+      </div>
+      <a href="#dates">date_support.inc.php</a>
+      <a href="#leds">leds.inc.php</a>
+      <a href="#misc">misc.inc.php</a>
+      <a href="#names-module">names.inc.php</a>
+      <a href="#panels-module">panels.inc.php</a>
+      <a href="#policy">yahrzeit_policy.inc.php</a>
       <div class="group">
-        CLI / scheduler
-      </div><a href="#wrapper">bin/yahrzeit</a><a href="#engine">yahrzeit_engine.php</a><a href="#scheduler">yahrzeit_scheduler</a>
+        bin programs
+      </div>
+      <a href="#cron-helper">fix-up-crontab</a>
+      <a href="#installer">install-yahrzeit.sh</a>
+      <a href="#wrapper">yahrzeit</a>
+      <a href="#engine">yahrzeit_engine.php</a>
+      <a href="#scheduler">yahrzeit_scheduler</a>
+      <div class="group">
+        Tests
+      </div>
+      <a href="#policy-test">yahrzeit_engine_policy_test.php</a>
+      <div class="group">
+        Data / configuration
+      </div>
+      <a href="#controller-config">yahrzeit-controller.conf</a>
+      <a href="#minhag-data">minhag.ini</a>
+      <a href="#memorial-data">yahrzeits-rev4.csv</a>
       <div class="group">
         Review notes
       </div><a href="#todos">Unclear areas / TODOs</a>
@@ -47,7 +77,7 @@
   <main>
     <header>
       <h2>PHP Internal Map</h2>
-      <p>Standalone developer documentation generated from the current source headers, functions, constants, includes, and call paths.
+      <p>Standalone developer documentation audited against the current source files, functions, constants, includes, and call paths.
       It records observed behavior only; where the code does not establish an answer, it says <em>unclear</em>.</p>
     </header>
     <section id="overview">
@@ -58,20 +88,32 @@
       </div>
       <article>
         <h3>Observed control path</h3>
-        <p><code>cron → bin/yahrzeit_scheduler → bin/yahrzeit → bin/yahrzeit_engine.php → command stream → nc → Arduino controller</code>.
-        The scheduler selects whether a scheduled phase applies; the wrapper handles transport; the engine decides which memorial LEDs should be lit.</p>
+        <p><code>cron → bin/yahrzeit_scheduler → bin/yahrzeit → bin/yahrzeit_engine.php → include/yahrzeit_policy.inc.php → command stream → nc → Arduino controller</code>.
+        Cron supplies the policy-derived time, the scheduler decides whether a
+        phase applies, the wrapper selects and transports an operation, the
+        engine walks the memorial records, and the policy module decides which
+        records are active.</p>
+        <p><strong>Schedule-maintenance path:</strong>
+        <code>7minhag.php → /usr/local/sbin/yahrzeit-fix-crontab → bin/fix-up-crontab → user crontab</code>.
+        The same repository helper is called by the scheduler's
+        <code>cron-refresh</code> phase for moving sunset times.</p>
         <p><strong>Controller boundary:</strong> controller interaction is confined to a small number of well-defined paths.</p>
         <ul>
           <li><code>1yizkor.php</code> is the only web screen that can initiate an immediate controller operation.</li>
           <li><code>bin/yahrzeit_scheduler</code> initiates automatic operations.</li>
           <li><code>bin/yahrzeit</code> is the only component that transmits commands over the network.</li>
-          <li><code>bin/yahrzeit_engine.php</code> and <code>include/leds.inc.php</code> generate command text but do not transmit it.</li>
+          <li><code>bin/yahrzeit_engine.php</code>, <code>include/yahrzeit_policy.inc.php</code>, and <code>include/leds.inc.php</code> decide or generate command text but do not transmit it.</li>
           <li><code>names.inc.php</code> owns parsing and writing the memorial CSV.</li>
           <li><code>panels.inc.php</code> owns static panel geometry.</li>
           <li><code>date_support.inc.php</code> owns Gregorian/Hebrew date, sunset, and Shabbat helpers.</li>
           <li><code>leds.inc.php</code> owns the mapping from panel IDs/person locations to controller command text.
           It does not transmit.</li>
-          <li>Screen files primarily render legacy table-based pages and handle their GET/POST flows.</li>
+          <li><code>index.php</code> only redirects to <code>0yahrzeit.php</code>.
+          The eight files under <code>help/</code> render documentation through
+          <code>misc.inc.php</code>; only Home Help and Minhag Help read
+          <code>minhag.ini</code>. None writes data or contacts the controller.</li>
+          <li>Top-level screen files primarily render legacy table-based pages
+          and handle their GET/POST flows.</li>
         </ul>
       </article>
     </section>
@@ -90,39 +132,21 @@
           <dd><code>yahrzeit_page_description</code>, <code>yahrzeit_server_address</code>, <code>controller_summary_lines</code>, <code>yahrzeit_minhag_summary_lines</code>, <code>yahrzeit_render_main_page</code>, <code>yahrzeit_main</code>.</dd>
           <dt>Constants / globals</dt>
           <dd><code>YAHRZEIT_TITLE</code>, <code>YAHRZEIT_TAB</code>, <code>YAHRZEIT_HELPFILE</code>; global <code>$minhag</code>, initialized with <code>read_minhag_ini()</code>.</dd>
-          <dt>Depends on</dt>
-          <dd><code>include/misc.inc.php</code>, <code>panels.inc.php</code>, <code>names.inc.php</code>, <code>date_support.inc.php</code>.</dd>
-          <dt>Likely dependents</dt>
+          <dt>Direct includes</dt>
+          <dd><code>date_support.inc.php</code>, <code>misc.inc.php</code>,
+          <code>names.inc.php</code>, <code>panels.inc.php</code>, and
+          <code>yahrzeit_policy.inc.php</code>.</dd>
+          <dt>Call / link relationships</dt>
           <dd><code>index.php</code> redirects here; navigation and result pages link here.
           No PHP file directly includes this screen.</dd>
           <dt>Data I/O</dt>
-          <dd>Reads <code>data/minhag.ini</code> through the misc module and <code>data/yahrzeits-rev4.csv</code> through the names module.
-          No writes.</dd>
-          <dt>Boundary</dt>
-          <dd>Status rendering only; lighting decisions remain in <code>bin/yahrzeit_engine.php</code>.</dd>
-        </dl>
-      </article>
-      <article id="panels-screen">
-        <h3>Panel overview</h3>
-        <div class="path">
-          2panels.php
-        </div>
-        <dl>
-          <dt>Kind / purpose</dt>
-          <dd>GET-only screen showing the clickable physical panel layout, static geometry, and calculated lit counts.</dd>
-          <dt>Major functions</dt>
-          <dd><code>panels_description</code>, <code>panels_render_image_map</code>, <code>panels_lit_counts</code>, <code>panels_render_geometry_table</code>, <code>panels_main</code>.</dd>
-          <dt>Constants / globals</dt>
-          <dd><code>PANELS_TITLE</code>, <code>PANELS_TAB</code>, <code>PANELS_HELPFILE</code>, <code>PANEL_IMAGE_AREAS</code>.</dd>
-          <dt>Depends on</dt>
-          <dd><code>include/misc.inc.php</code>, <code>panels.inc.php</code>, <code>names.inc.php</code>, <code>date_support.inc.php</code>, <code>yahrzeit_policy.inc.php</code>, and the panel image.</dd>
-          <dt>Likely dependents</dt>
-          <dd>Linked by the home screen; links onward to <code>3singlepanel.php</code>.</dd>
-          <dt>Data I/O</dt>
-          <dd>Reads Minhag policy and the memorial CSV through shared modules.
-          Panel geometry is code constants, not a data file.</dd>
-          <dt>Boundary</dt>
-          <dd>Displays panel geometry and assignments; immediate wall control belongs to <code>1yizkor.php</code>.</dd>
+          <dd>Reads <code>data/minhag.ini</code>,
+          <code>bin/yahrzeit-controller.conf</code>, and
+          <code>data/yahrzeits-rev4.csv</code> through shared helpers. No
+          writes.</dd>
+          <dt>Controller boundary</dt>
+          <dd>No controller operation. The displayed lit count is computed by
+          <code>yahrzeit_policy.inc.php</code>; it is not read from the wall.</dd>
         </dl>
       </article>
       <article id="yizkor-screen">
@@ -137,19 +161,56 @@
           <dd><code>yizkor_run_operation</code>, <code>yizkor_render_main_page</code>, <code>yizkor_render_result_page</code>, <code>yizkor_main</code>.</dd>
           <dt>Constants / globals</dt>
           <dd><code>YIZKOR_TITLE</code>, <code>YIZKOR_DESCRIPTION</code>, <code>YIZKOR_TAB</code>, <code>YIZKOR_HELPFILE</code>.</dd>
-          <dt>Depends on</dt>
-          <dd><code>include/misc.inc.php</code>, <code>include/date_support.inc.php</code>, and executable <code>bin/yahrzeit</code>.</dd>
-          <dt>Likely dependents</dt>
+          <dt>Direct includes / calls</dt>
+          <dd>Includes <code>date_support.inc.php</code> and
+          <code>misc.inc.php</code>; POST actions execute
+          <code>bin/yahrzeit</code>.</dd>
+          <dt>Call / link relationships</dt>
           <dd>Linked by the home screen, top navigation, and User Guide.</dd>
           <dt>Data I/O</dt>
           <dd>Reads Yizkor policy from <code>data/minhag.ini</code>.
           It performs no direct project data writes.
           The normal Yahrzeit operation reads policy and memorial data through the command wrapper and engine.</dd>
-          <dt>Controller</dt>
+          <dt>Controller boundary</dt>
           <dd><span class="caution">Yes, on POST.</span>
           Runs normal Yahrzeit, all-off, all-on, or Yizkor commands immediately through <code>bin/yahrzeit</code>.</dd>
-          <dt>Boundary</dt>
-          <dd>Renders dates calculated by the date-support module and owns manual web dispatch; policy editing, command generation, scheduling, and transport remain in their shared layers.</dd>
+          <dt>Role boundary</dt>
+          <dd>Renders dates calculated by date support and dispatches four
+          permitted operations. It does not edit policy, generate the normal
+          per-person stream, schedule work, or implement network transport.</dd>
+        </dl>
+      </article>
+      <article id="panels-screen">
+        <h3>Panel overview</h3>
+        <div class="path">
+          2panels.php
+        </div>
+        <dl>
+          <dt>Kind / purpose</dt>
+          <dd>GET-only screen showing a clickable wall photograph, the static
+          panel geometry, and calculated lit counts for each panel.</dd>
+          <dt>Major functions</dt>
+          <dd><code>panels_description</code>, <code>panels_render_image_map</code>,
+          <code>panels_lit_counts</code>, <code>panels_render_geometry_table</code>,
+          <code>panels_render_main_page</code>, <code>panels_main</code>.</dd>
+          <dt>Constants / globals</dt>
+          <dd><code>PANELS_TITLE</code>, <code>PANELS_TAB</code>,
+          <code>PANELS_HELPFILE</code>, <code>PANEL_IMAGE_AREAS</code>; global
+          <code>$minhag</code> is initialized by <code>read_minhag_ini()</code>.</dd>
+          <dt>Direct includes</dt>
+          <dd><code>date_support.inc.php</code>, <code>misc.inc.php</code>,
+          <code>names.inc.php</code>, <code>panels.inc.php</code>, and
+          <code>yahrzeit_policy.inc.php</code>.</dd>
+          <dt>Call / link relationships</dt>
+          <dd>Linked from the common navigation and Home page; links each image
+          area and table row to <code>3singlepanel.php</code>.</dd>
+          <dt>Data I/O</dt>
+          <dd>Reads <code>data/minhag.ini</code> and
+          <code>data/yahrzeits-rev4.csv</code> through shared modules. Panel
+          geometry and image-map coordinates are PHP constants. No writes.</dd>
+          <dt>Controller boundary</dt>
+          <dd>No controller operation. Lit counts are policy calculations over
+          the memorial database, not a live query of controller state.</dd>
         </dl>
       </article>
       <article id="single-panel">
@@ -165,16 +226,19 @@
           <dd><code>single_panel_build_complete_panel</code>, <code>single_panel_load_panel</code>, <code>single_panel_render_cell</code>, <code>single_panel_render_panel_table</code>, <code>single_panel_main</code>.</dd>
           <dt>Constants / globals</dt>
           <dd><code>SINGLE_PANEL_TITLE</code>, <code>SINGLE_PANEL_DESCRIPTION</code>, <code>SINGLE_PANEL_TAB</code>, <code>SINGLE_PANEL_HELPFILE</code>.</dd>
-          <dt>Depends on</dt>
-          <dd><code>include/misc.inc.php</code>, <code>panels.inc.php</code>, <code>names.inc.php</code>, <code>date_support.inc.php</code>.</dd>
-          <dt>Likely dependents</dt>
+          <dt>Direct includes</dt>
+          <dd><code>date_support.inc.php</code>, <code>misc.inc.php</code>,
+          <code>names.inc.php</code>, <code>panels.inc.php</code>, and
+          <code>yahrzeit_policy.inc.php</code>.</dd>
+          <dt>Call / link relationships</dt>
           <dd>Linked by <code>2panels.php</code>.
           It links individual non-reserved records to <code>5singlename.php</code>.</dd>
           <dt>Data I/O</dt>
-          <dd>Reads the memorial CSV via <code>yahrzeit_readDB()</code>.
-          No writes.</dd>
-          <dt>Boundary</dt>
-          <dd>Uses static geometry to render cells and the names module to populate them; it does not own either representation.</dd>
+          <dd>Reads <code>data/minhag.ini</code> and the memorial CSV through
+          shared modules. No writes.</dd>
+          <dt>Controller boundary</dt>
+          <dd>No controller operation. LED images show policy calculations,
+          not queried electrical state.</dd>
         </dl>
       </article>
       <article id="names-screen">
@@ -190,15 +254,17 @@
           <dd><code>viewnames_english_date</code>, <code>viewnames_hebrew_date</code>, <code>viewnames_search_text</code>, <code>viewnames_person_matches_query</code>, <code>viewnames_render_names_table</code>, <code>viewnames_main</code>.</dd>
           <dt>Constants / globals</dt>
           <dd><code>VIEWNAMES_TITLE</code>, <code>VIEWNAMES_DESCRIPTION</code>, <code>VIEWNAMES_TAB</code>, <code>VIEWNAMES_HELPFILE</code>, <code>VIEWNAMES_PAGE</code>.</dd>
-          <dt>Depends on</dt>
-          <dd><code>include/misc.inc.php</code>, <code>date_support.inc.php</code>, <code>names.inc.php</code>.</dd>
-          <dt>Likely dependents</dt>
+          <dt>Direct includes</dt>
+          <dd><code>date_support.inc.php</code>, <code>misc.inc.php</code>,
+          <code>names.inc.php</code>, and <code>yahrzeit_policy.inc.php</code>.</dd>
+          <dt>Call / link relationships</dt>
           <dd>Linked by the home screen and other navigation; it links records to <code>5singlename.php</code>.</dd>
           <dt>Data I/O</dt>
-          <dd>Reads the memorial CSV.
-          No writes.</dd>
-          <dt>Boundary</dt>
-          <dd>Searches mapped person records; CSV parsing remains exclusively in the names module.</dd>
+          <dd>Reads <code>data/minhag.ini</code> and the memorial CSV through
+          shared modules. No writes.</dd>
+          <dt>Controller boundary</dt>
+          <dd>No controller operation. The Lit column is a shared-policy
+          calculation; CSV parsing remains in <code>names.inc.php</code>.</dd>
         </dl>
       </article>
       <article id="single-name">
@@ -208,23 +274,32 @@
         </div>
         <dl>
           <dt>Kind / purpose</dt>
-          <dd>Screen.
-          Shows and edits an existing memorial record or provides an add-record form.</dd>
+          <dd>GET/POST screen that shows and edits one existing memorial
+          record. Requests without a valid record index display a message
+          directing additions to the Reports CSV-import workflow.</dd>
           <dt>Major functions</dt>
-          <dd><code>post_value</code>; GET and POST flow is written in top-level procedural code rather than a named main function.</dd>
+          <dd><code>post_value</code>,
+          <code>single_name_write_one_csv_record</code>, and
+          <code>single_name_run_audit</code>; GET/POST dispatch remains in
+          top-level procedural code.</dd>
           <dt>Constants / globals</dt>
           <dd>Page metadata is local variables: <code>$title</code>, <code>$description</code>, <code>$tab</code>, <code>$helpfile</code>; initializes <code>$minhag</code>.</dd>
-          <dt>Depends on</dt>
-          <dd><code>include/misc.inc.php</code>, <code>names.inc.php</code>, <code>date_support.inc.php</code>.</dd>
-          <dt>Likely dependents</dt>
+          <dt>Direct includes / calls</dt>
+          <dd>Includes <code>date_support.inc.php</code>,
+          <code>misc.inc.php</code>, and <code>names.inc.php</code>. After a
+          successful save, executes <code>bin/yahrzeit --audit</code>.</dd>
+          <dt>Call / link relationships</dt>
           <dd>Linked by <code>3singlepanel.php</code> and <code>4names.php</code>.</dd>
           <dt>Data I/O</dt>
-          <dd>Reads the memorial CSV on GET/POST.
-          On POST it calls <code>single_name_write_one_csv_record()</code>
-          which carefully only changes a single line of <code>data/yahrzeits-rev4.csv</code>.</dd>
-          <dt>Boundary</dt>
-          <dd>Uses the names module for the record store and CSV serialization.
-          It preserves legacy table/form layout.
+          <dd>Reads <code>data/minhag.ini</code> and the live CSV. A successful
+          POST writes a replacement CSV beside the live file, copies the live
+          file to <code>data/backups/yahrzeits-rev4.edit.TIMESTAMP.csv</code>,
+          and atomically renames the replacement over the live CSV. Other CSV
+          lines, historical fields, unknown option tokens, and trailing fields
+          are preserved.</dd>
+          <dt>Controller boundary</dt>
+          <dd>No controller operation. The post-save audit is forced
+          non-transmitting by <code>bin/yahrzeit --audit</code>.</dd>
         </dl>
       </article>
       <article id="reports">
@@ -240,16 +315,20 @@
           <dd><code>reports_run_yahrzeit</code>, validation helpers, <code>reports_handle_report</code>, <code>reports_handle_audit</code>, <code>reports_handle_preview</code>, <code>reports_handle_upload</code>, <code>reports_download_csv</code>, <code>reports_main</code>.</dd>
           <dt>Constants / globals</dt>
           <dd><code>REPORTS_TITLE</code>, <code>REPORTS_DESCRIPTION</code>, <code>REPORTS_TAB</code>, <code>REPORTS_HELPFILE</code>, <code>REPORTS_CSV_FILE</code>, <code>REPORTS_VALID_KINDS</code>.</dd>
-          <dt>Depends on</dt>
-          <dd><code>include/misc.inc.php</code>, <code>bin/yahrzeit</code>, and the live CSV/backup directory.</dd>
-          <dt>Likely dependents</dt>
+          <dt>Direct includes / calls</dt>
+          <dd>Includes only <code>misc.inc.php</code>. Report, audit, and
+          preview actions execute <code>bin/yahrzeit</code>.</dd>
+          <dt>Call / link relationships</dt>
           <dd>Linked by the home screen and navigation.
           No source file directly includes it.</dd>
           <dt>Data I/O</dt>
-          <dd>Reads/downloads <code>data/yahrzeits-rev4.csv</code>.
-          Upload makes a timestamped backup in <code>data/backups/</code>, stages an upload, and replaces the live CSV.</dd>
-          <dt>Boundary</dt>
-          <dd>Delegates report/audit/command generation to the CLI engine via the wrapper; it does not duplicate date, geometry, or command logic.</dd>
+          <dd>Downloads the live CSV. Upload first performs a structural
+          plausibility check, copies the live file to a timestamped backup,
+          moves the upload into <code>data/</code>, atomically renames it over
+          the live CSV, and then runs an audit.</dd>
+          <dt>Controller boundary</dt>
+          <dd>No transmission: report and audit modes force non-transmission,
+          and Preview invokes <code>bin/yahrzeit --dry-run</code>.</dd>
         </dl>
       </article>
       <article id="minhag">
@@ -265,14 +344,19 @@
           <dd><code>minhag_page_description</code>, <code>minhag_post_value</code>, <code>minhag_build_from_post</code>, <code>minhag_render_form</code>, <code>minhag_update_crontab</code>, <code>minhag_handle_post</code>, <code>minhag_main</code>.</dd>
           <dt>Constants / globals</dt>
           <dd><code>MINHAG_TITLE</code>, <code>MINHAG_TAB</code>, <code>MINHAG_HELPFILE</code>.</dd>
-          <dt>Depends on</dt>
-          <dd><code>include/misc.inc.php</code>, <code>date_support.inc.php</code>, and the privileged appliance cron helper.</dd>
-          <dt>Likely dependents</dt>
+          <dt>Direct includes / calls</dt>
+          <dd>Includes <code>date_support.inc.php</code> and
+          <code>misc.inc.php</code>. After a successful save, executes
+          <code>sudo -n /usr/local/sbin/yahrzeit-fix-crontab</code>; that
+          root-owned installer artifact drops to the configured cron user and
+          invokes <code>bin/fix-up-crontab</code>.</dd>
+          <dt>Call / link relationships</dt>
           <dd>Home screen links here; <code>misc.inc.php</code>, engine, and scheduler consume the saved Minhag data.</dd>
           <dt>Data I/O</dt>
           <dd>Reads and writes <code>data/minhag.ini</code> through <code>read_minhag_ini()</code>/<code>write_minhag_ini()</code>, then requests regeneration of the managed crontab block.</dd>
-          <dt>Boundary</dt>
-          <dd>Captures and persists policy values, then delegates cron generation to the appliance helper; it does not generate lighting commands.</dd>
+          <dt>Controller boundary</dt>
+          <dd>No controller operation. It persists policy and requests cron
+          regeneration; it does not generate lighting commands.</dd>
         </dl>
       </article>
       <article id="user-guide">
@@ -283,44 +367,24 @@
         <dl>
           <dt>Kind / purpose</dt>
           <dd>Top-level operator and maintenance guide for the Yahrzeit Wall.</dd>
-          <dt>Depends on</dt>
-          <dd><code>include/misc.inc.php</code>, the saved Minhag configuration,
-          application screenshots, and the individual Page Help files.</dd>
-          <dt>Likely dependents</dt>
-          <dd>The top navigation and people operating or maintaining the appliance.</dd>
+          <dt>Functions / globals</dt>
+          <dd>No functions. Local page variables hold metadata and the
+          synagogue name.</dd>
+          <dt>Direct includes / links</dt>
+          <dd>Includes <code>misc.inc.php</code>; links to application and Page
+          Help files and embeds images from <code>screenshots/</code>.</dd>
+          <dt>Call / link relationships</dt>
+          <dd>Linked from the common top navigation in
+          <code>misc.inc.php</code>.</dd>
           <dt>Data I/O</dt>
           <dd>Reads the saved Minhag configuration for the synagogue name; does not write data.</dd>
-          <dt>Boundary</dt>
+          <dt>Controller boundary</dt>
           <dd>Documentation and navigation only; it performs no controller operation or data mutation.</dd>
         </dl>
       </article>
     </section>
     <section>
       <h2>Include modules</h2>
-      <article id="misc">
-        <h3>Shared site, configuration, and layout helpers</h3>
-        <div class="path">
-          include/misc.inc.php
-        </div>
-        <dl>
-          <dt>Kind / purpose</dt>
-          <dd>Include/module.
-          Shared paths, Minhag configuration, HTML escaping, option helpers, and page header/navigation/footer rendering.</dd>
-          <dt>Major functions</dt>
-          <dd><code>site_root</code>, <code>site_url</code>, <code>read_minhag_ini</code>, <code>write_minhag_ini</code>, <code>myBool</code>, <code>yahrzeit_controller_host</code>, <code>h</code>, <code>emitHeader</code>, <code>emitTopOfScreen</code>, <code>emitFooter</code>, <code>emitCopyright</code>.</dd>
-          <dt>Constants / globals</dt>
-          <dd>Global <code>$tab</code>; Minhag defaults are local to <code>read_minhag_ini()</code>.</dd>
-          <dt>Depends on</dt>
-          <dd>PHP filesystem/INI/HTML functions and site assets referenced by its render helpers.</dd>
-          <dt>Likely dependents</dt>
-          <dd>All listed screen files, <code>bin/yahrzeit_engine.php</code>, and <code>bin/yahrzeit_scheduler</code>.</dd>
-          <dt>Data I/O</dt>
-          <dd>Reads <code>bin/yahrzeit-controller.conf</code> and reads and writes <code>data/minhag.ini</code>.</dd>
-          <dt>Boundary</dt>
-          <dd>General support only.
-          It deliberately does not own dates, names CSV parsing, geometry, or LED commands.</dd>
-        </dl>
-      </article>
       <article id="dates">
         <h3>Date and calendar support</h3>
         <div class="path">
@@ -331,17 +395,82 @@
           <dd>Include/module.
           Shared Gregorian/Hebrew date, San Francisco sunset, leap-year, Shabbat, and yahrzeit-window helpers.</dd>
           <dt>Major functions</dt>
-          <dd><code>closest_hebrew_month</code>, <code>cbs_sunset_timestamp</code>, <code>next_erev_shabbat_timestamp</code>, <code>current_hebrew_date_string</code>, <code>set_yahrzeit_date_context</code>, <code>hebrew_year_for_timestamp</code>, <code>english_day_matches_today_or_tomorrow</code>, <code>english_day_matches_yahrzeit_week</code>, <code>is_erev_shabbat_for_lighting</code>.</dd>
+          <dd><code>closest_hebrew_month</code>,
+          <code>cbs_sunset_timestamp</code>,
+          <code>next_erev_shabbat_timestamp</code>,
+          <code>current_hebrew_date_string</code>,
+          <code>set_yahrzeit_date_context</code>,
+          <code>next_yizkor_observances</code>,
+          <code>english_day_matches_today_or_tomorrow</code>, and
+          <code>is_erev_shabbat_for_lighting</code>.</dd>
           <dt>Constants / globals</dt>
           <dd><code>ENGLISH_MONTH_NAMES</code>, <code>ENGLISH_MONTH_MAPPING</code>, <code>HEBREW_MONTH_NAMES</code>, <code>HEBREW_MONTH_MAPPING</code>, <code>CBS_LATITUDE</code>, <code>CBS_LONGITUDE</code>; context globals such as <code>$today_month</code>, <code>$hebrewMonthName</code>, <code>$hebrewYear</code>.</dd>
-          <dt>Depends on</dt>
-          <dd>PHP Calendar extension functions and PHP date/sun functions.</dd>
-          <dt>Likely dependents</dt>
-          <dd>Home, name-related screens, Minhag screen, engine, and scheduler; <code>names.inc.php</code> uses its month constants/helpers.</dd>
+          <dt>Direct includes</dt>
+          <dd>None. Uses PHP Calendar-extension and date/sun functions.</dd>
+          <dt>Observed callers</dt>
+          <dd>Home, Yizkor, Panels, Single Panel, Names, Single Name, and Minhag
+          screens; <code>names.inc.php</code>, <code>yahrzeit_policy.inc.php</code>,
+          <code>fix-up-crontab</code>, the engine, and the scheduler.</dd>
           <dt>Data I/O</dt>
           <dd>No data-file reads or writes.</dd>
           <dt>Boundary</dt>
           <dd>Date mechanics only; page rendering and controller emission belong elsewhere.</dd>
+        </dl>
+      </article>
+      <article id="leds">
+        <h3>LED/panel command mapping</h3>
+        <div class="path">
+          include/leds.inc.php
+        </div>
+        <dl>
+          <dt>Kind / purpose</dt>
+          <dd>Include/module that emits line-oriented controller command text
+          for one mapped memorial or a wall-wide operation.</dd>
+          <dt>Functions / constant</dt>
+          <dd><code>yz_panel_number</code>, <code>yz_lighton</code>,
+          <code>led_all</code>, <code>led_data_refresh</code>; constant
+          <code>LED_PANEL_MAPPING</code>.</dd>
+          <dt>Direct includes</dt>
+          <dd>None. <code>yz_lighton()</code> expects a mapped person record.</dd>
+          <dt>Observed callers</dt>
+          <dd><code>bin/yahrzeit_engine.php</code> only.</dd>
+          <dt>Data I/O</dt>
+          <dd>No file I/O. Commands and diagnostic comments go to stdout.</dd>
+          <dt>Controller boundary</dt>
+          <dd>Generates text but does not open a socket or transmit it.</dd>
+        </dl>
+      </article>
+      <article id="misc">
+        <h3>Shared site, configuration, and layout helpers</h3>
+        <div class="path">
+          include/misc.inc.php
+        </div>
+        <dl>
+          <dt>Kind / purpose</dt>
+          <dd>Include/module for paths, Minhag persistence, controller-host
+          display, HTML escaping, form helpers, and common page rendering.</dd>
+          <dt>Major functions</dt>
+          <dd><code>site_root</code>, <code>site_url</code>,
+          <code>read_minhag_ini</code>, <code>write_minhag_ini</code>,
+          <code>myBool</code>, <code>yahrzeit_controller_host</code>,
+          <code>h</code>, <code>emitMessagePage</code>,
+          <code>emitTopOfScreen</code>,
+          <code>emit_yizkor_observance_table</code>, <code>emitHeader</code>,
+          and <code>emitFooter</code>.</dd>
+          <dt>Constants / globals</dt>
+          <dd>No constants; declares global <code>$tab</code>. Minhag defaults
+          are local to <code>read_minhag_ini()</code>.</dd>
+          <dt>Direct includes</dt>
+          <dd>None.</dd>
+          <dt>Observed callers</dt>
+          <dd>All top-level and Page Help screens, <code>fix-up-crontab</code>,
+          <code>yahrzeit_engine.php</code>, and <code>yahrzeit_scheduler</code>.</dd>
+          <dt>Data I/O</dt>
+          <dd>Reads <code>bin/yahrzeit-controller.conf</code>. Reads and
+          atomically replaces <code>data/minhag.ini</code>.</dd>
+          <dt>Boundary</dt>
+          <dd>Does not own dates, memorial parsing, panel geometry, lighting
+          policy, or controller commands.</dd>
         </dl>
       </article>
       <article id="names-module">
@@ -357,13 +486,16 @@
           <dd><code>yahrzeit_person_from_csv_row</code>, <code>yahrzeit_readDB</code>, <code>yahrzeit_writeDB</code>, <code>yahrzeit_getObj</code>, <code>yahrzeit_putObj</code>, <code>yahrzeit_blank_person</code>, <code>yahrzeit_person_name</code>, <code>yahrzeit_person_location</code>, <code>yahrzeit_person_uses_hebrew_date</code>.</dd>
           <dt>Constants / globals</dt>
           <dd><code>YAHRZEIT_OPTION_FIELDS</code>; global <code>$yahrzeit_record_count</code>, <code>$yahrzeit_records</code>, and reads global <code>$minhag</code> for default date choice.</dd>
-          <dt>Depends on</dt>
+          <dt>Implicit prerequisites</dt>
           <dd><code>site_root()</code> from misc and month constants/<code>closest_hebrew_month()</code> from date support.
-          Load order supplies these dependencies.</dd>
-          <dt>Likely dependents</dt>
-          <dd>Home, panel/detail/name screens, engine, and any future CSV maintenance code.</dd>
+          This module contains no <code>require</code>; callers supply load order.</dd>
+          <dt>Observed callers</dt>
+          <dd>Home, Panels, Single Panel, Names, Single Name, the engine, and
+          <code>yahrzeit_policy.inc.php</code>.</dd>
           <dt>Data I/O</dt>
-          <dd>Reads and writes <code>data/yahrzeits-rev4.csv</code>.</dd>
+          <dd><code>yahrzeit_readDB()</code> reads the live CSV.
+          <code>yahrzeit_writeDB()</code> rewrites it without backup, but no
+          current source-tree call site invokes that low-level writer.</dd>
           <dt>Boundary</dt>
           <dd>Canonical owner of memorial record parsing and writing.
           Other code should use mapped person records rather than parse CSV columns directly.</dd>
@@ -382,9 +514,9 @@
           <dd><code>panel_readDB</code>, <code>panel_numrows</code>, <code>panel_getObj</code>, <code>panel_getObj_byId</code>.</dd>
           <dt>Constants / globals</dt>
           <dd><code>PANEL_STATIC_GEOMETRY</code>; no module globals.</dd>
-          <dt>Depends on</dt>
+          <dt>Direct includes</dt>
           <dd>No application include files.</dd>
-          <dt>Likely dependents</dt>
+          <dt>Observed callers</dt>
           <dd>Home, panel overview/detail screens, and engine audit logic.</dd>
           <dt>Data I/O</dt>
           <dd>No file reads or writes; geometry is a PHP constant.</dd>
@@ -393,33 +525,113 @@
           It does not calculate dates, parse names, or generate LED commands.</dd>
         </dl>
       </article>
-      <article id="leds">
-        <h3>LED/panel command mapping</h3>
+      <article id="policy">
+        <h3>Shared lighting policy</h3>
         <div class="path">
-          include/leds.inc.php
+          include/yahrzeit_policy.inc.php
         </div>
         <dl>
           <dt>Kind / purpose</dt>
-          <dd>Include/module.
-          Emits line-oriented controller command text from a person location or wall-wide action.</dd>
+          <dd>Include/module that decides whether a mapped memorial is active
+          for the configured day-only or Saturday-through-Friday observance.</dd>
           <dt>Major functions</dt>
-          <dd><code>yz_panel_number</code>, <code>yz_lighton</code>, <code>yz_lightoff</code>, <code>led_all</code>, <code>led_data_refresh</code>.</dd>
+          <dd><code>yahrzeit_lighting_week_range</code>,
+          <code>yahrzeit_next_lighting_week_range</code>,
+          <code>yahrzeit_person_matches_observance_window</code>,
+          <code>yahrzeit_person_lighting_decision</code>,
+          <code>yahrzeit_person_should_light_now</code>, and
+          <code>yahrzeit_lit_person_count</code>.</dd>
           <dt>Constants / globals</dt>
-          <dd><code>LED_PANEL_MAPPING</code>, mapping the 21 static panel IDs to controller panel numbers.</dd>
-          <dt>Depends on</dt>
-          <dd>No direct application includes; expects a mapped person record where applicable.</dd>
-          <dt>Likely dependents</dt>
-          <dd><code>bin/yahrzeit_engine.php</code>.</dd>
+          <dd>No constants; reads global <code>$minhag</code> and date-context
+          globals populated by <code>set_yahrzeit_date_context()</code>.</dd>
+          <dt>Implicit prerequisites</dt>
+          <dd>Uses functions/constants from <code>date_support.inc.php</code>
+          and <code>names.inc.php</code> but contains no <code>require</code>.
+          Callers supply load order.</dd>
+          <dt>Observed callers</dt>
+          <dd>Home, Panels, Single Panel, Names, the engine, and the policy
+          equivalence test.</dd>
           <dt>Data I/O</dt>
-          <dd>No file reads or writes.</dd>
-          <dt>Boundary</dt>
-          <dd>Maps decisions to commands.
-          It must not decide calendar policy or which names are active.</dd>
+          <dd>No direct file writes. <code>yahrzeit_lit_person_count()</code>
+          loads the memorial CSV through <code>names.inc.php</code>.</dd>
+          <dt>Controller boundary</dt>
+          <dd>Returns decisions/counts only; emits and transmits no commands.</dd>
         </dl>
       </article>
     </section>
     <section>
-      <h2>Command-line and scheduler files</h2>
+      <h2>bin programs</h2>
+      <article id="cron-helper">
+        <h3>Managed crontab generator and installer</h3>
+        <div class="path">
+          bin/fix-up-crontab
+        </div>
+        <dl>
+          <dt>Kind / purpose</dt>
+          <dd>Executable PHP CLI that derives schedule lines from Minhag,
+          replaces only the marked CBS block, and preserves unrelated entries
+          in the target user's crontab.</dd>
+          <dt>Major functions</dt>
+          <dd><code>cron_options</code>, <code>cron_clock_fields</code>,
+          <code>cron_sunset_fields</code>, <code>cron_managed_block</code>,
+          <code>cron_replace_managed_block</code>,
+          <code>cron_target_user</code>, <code>cron_read_current</code>,
+          <code>cron_install</code>, and <code>cron_main</code>.</dd>
+          <dt>Constants</dt>
+          <dd><code>CRON_BEGIN</code>, <code>CRON_END</code>, and
+          <code>CRON_USER_FILE</code> (<code>/etc/yahrzeit-cron-user</code>).</dd>
+          <dt>Direct includes / tools</dt>
+          <dd>Includes <code>date_support.inc.php</code> and
+          <code>misc.inc.php</code>; invokes the system <code>crontab</code>
+          command except in test-file mode.</dd>
+          <dt>Observed call paths</dt>
+          <dd><code>yahrzeit_scheduler</code> executes this helper directly.
+          The installer creates and invokes a root-owned privileged wrapper;
+          <code>7minhag.php</code> invokes that same wrapper, which then runs
+          this helper as the configured cron user.</dd>
+          <dt>Data I/O</dt>
+          <dd>Reads <code>data/minhag.ini</code> and normally
+          <code>/etc/yahrzeit-cron-user</code>; reads and writes the selected
+          user's crontab. Test options may instead read/write supplied files.</dd>
+          <dt>Controller boundary</dt>
+          <dd>No controller operation. Generated cron lines later invoke the
+          scheduler and redirect its output to <code>data/automation.log</code>.</dd>
+        </dl>
+      </article>
+      <article id="installer">
+        <h3>Ubuntu/Debian appliance installer</h3>
+        <div class="path">
+          bin/install-yahrzeit.sh
+        </div>
+        <dl>
+          <dt>Kind / purpose</dt>
+          <dd>Bash installer/updater for the complete appliance. Installs
+          packages, deploys the sparse Git checkout, configures Apache,
+          permissions, cron repair, sudo, logging, and verification.</dd>
+          <dt>Functions / state</dt>
+          <dd>No shell functions. Environment-overridable path, branch,
+          controller-host, and cron-user variables drive top-level steps.</dd>
+          <dt>Project-file handling</dt>
+          <dd>Across a forced Git update it preserves
+          <code>data/minhag.ini</code>, <code>data/yahrzeits-rev4.csv</code>,
+          and the previously recorded controller host. It then updates
+          <code>bin/yahrzeit-controller.conf</code>, creates the backup
+          directory and automation log, and sets runtime permissions.</dd>
+          <dt>System writes</dt>
+          <dd>Installs packages and creates Apache, systemd, sudoers,
+          logrotate, web-link/root-redirect, cron-owner, and privileged-wrapper
+          configuration outside the repository.</dd>
+          <dt>Observed callers</dt>
+          <dd>Manual installer invocation only; no project source calls it.</dd>
+          <dt>Validation</dt>
+          <dd>Runs selected syntax checks, the audit and command preview, the
+          policy test, Apache configuration validation, and
+          <code>fix-up-crontab</code>.</dd>
+          <dt>Controller boundary</dt>
+          <dd>No transmission. Its wrapper checks use <code>--audit</code> and
+          <code>--dry-run</code>.</dd>
+        </dl>
+      </article>
       <article id="wrapper">
         <h3>Command wrapper and transport</h3>
         <div class="path">
@@ -430,22 +642,31 @@
           <dd>Bash execution and transport stage used by the scheduler and web screens.
           It selects an operational mode, invokes the PHP engine as needed, prints non-transmitting streams, or transports streams to the Arduino controller.</dd>
           <dt>Major functions</dt>
-          <dd><code>usage</code>, <code>set_mode</code>, PHP discovery helpers, <code>run_yahrzeitd</code>, <code>emit_yahrzeit</code>, <code>emit_audit</code>, <code>emit_report</code>, direct emitters, <code>slowcat</code>, <code>transmit_commands</code>, <code>run_logged_operation</code>.</dd>
+          <dd><code>set_mode</code>, <code>find_yahrzeit_php</code>,
+          <code>run_yahrzeitd</code>, <code>emit_commands</code>,
+          <code>slowcat</code>, <code>select_nc_quit_option</code>,
+          <code>log_controller_failure_results</code>,
+          <code>transmit_commands</code>, and
+          <code>run_logged_operation</code>.</dd>
           <dt>Constants / global state</dt>
           <dd>Shell variables including <code>CONTROLLER_HOST</code> and <code>CONTROLLER_PORT</code> sourced from <code>bin/yahrzeit-controller.conf</code>; transport timing defaults; <code>MODE</code>, <code>TRANSMIT</code>, <code>REPORT_KIND</code>, and <code>REPORT_DATE</code>.</dd>
-          <dt>Depends on</dt>
+          <dt>Direct dependencies</dt>
           <dd><code>bin/yahrzeit_engine.php</code> for normal/audit/report paths; PHP with Calendar extension; <code>nc</code> and a timeout command for transmission.</dd>
-          <dt>Likely dependents</dt>
+          <dt>Observed callers</dt>
           <dd><code>1yizkor.php</code>, <code>6reports.php</code>, <code>bin/yahrzeit_scheduler</code>, cron/manual operators.</dd>
           <dt>Data I/O</dt>
           <dd>Sources <code>bin/yahrzeit-controller.conf</code> for the controller connection.
           Engine modes read project data through PHP modules.
           The wrapper has no project data write path.</dd>
-          <dt>Controller</dt>
+          <dt>Controller boundary</dt>
           <dd><span class="caution">Yes by default.</span> <code>--dry-run</code> prints instead.
           Audit/report modes force non-transmission.</dd>
-          <dt>Boundary</dt>
-          <dd>Owns transport and direct controller operations; it should not own calendar or Minhag rules.</dd>
+          <dt>Role boundary</dt>
+          <dd>Owns the only observed TCP/<code>nc</code> transport path and the
+          hard-coded Yizkor/all-on/all-off streams. In scheduler summary mode
+          it validates response counts and reports timeout, transport,
+          controller rejection, empty-response, and incomplete-response
+          failures. Calendar and per-person lighting rules remain outside it.</dd>
         </dl>
       </article>
       <article id="engine">
@@ -461,18 +682,22 @@
           <dd><code>parse_options</code>, <code>yz_main</code>, <code>emit_audit_report</code>, <code>emit_yahrzeit_report</code>, <code>report_date_range</code>, <code>yahrzeit_candidate_dates_in_range</code>, <code>yz_process_person</code>.</dd>
           <dt>Constants / globals</dt>
           <dd>Global <code>$options</code>, <code>$minhag</code>, and date-context globals populated by <code>set_yahrzeit_date_context()</code>.</dd>
-          <dt>Depends on</dt>
-          <dd><code>misc.inc.php</code>, <code>panels.inc.php</code>, <code>names.inc.php</code>, <code>leds.inc.php</code>, <code>date_support.inc.php</code>, and <code>yahrzeit_policy.inc.php</code>.</dd>
-          <dt>Likely dependents</dt>
+          <dt>Direct includes</dt>
+          <dd><code>date_support.inc.php</code>, <code>leds.inc.php</code>,
+          <code>misc.inc.php</code>, <code>names.inc.php</code>,
+          <code>panels.inc.php</code>, and
+          <code>yahrzeit_policy.inc.php</code>.</dd>
+          <dt>Observed callers</dt>
           <dd><code>bin/yahrzeit</code> invokes it; <code>tests/yahrzeit_engine_policy_test.php</code> loads its functions for policy equivalence tests.
           It is also executable directly according to its header/usage.</dd>
           <dt>Data I/O</dt>
           <dd>Reads <code>data/minhag.ini</code> and memorial CSV through modules.
           Audit/report output goes to stdout.
           No project data writes observed.</dd>
-          <dt>Boundary</dt>
-          <dd>Canonical decision-maker for what should be lit, audited, or reported.
-          It must not contain cron timing, socket transport, or page layout.</dd>
+          <dt>Controller boundary</dt>
+          <dd>Orchestrates normal selection, audit, and reports. Shared policy
+          decides whether each person is active; LED helpers emit command text.
+          The engine itself does not open the controller connection.</dd>
         </dl>
       </article>
       <article id="scheduler">
@@ -489,20 +714,141 @@
           <dt>Constants / globals</dt>
           <dd>No file constants.
           Global <code>$argv</code> is used for usage text; global <code>$log_now</code> is used by timestamp logging.</dd>
-          <dt>Depends on</dt>
-          <dd><code>misc.inc.php</code>, <code>date_support.inc.php</code>, and <code>bin/yahrzeit</code>.</dd>
-          <dt>Likely dependents</dt>
+          <dt>Direct includes / calls</dt>
+          <dd>Includes <code>date_support.inc.php</code> and
+          <code>misc.inc.php</code>; executes <code>bin/yahrzeit</code> for
+          lighting phases and <code>bin/fix-up-crontab</code> for schedule
+          refresh.</dd>
+          <dt>Observed callers</dt>
           <dd>Cron (shown in header examples); not directly called by web screens.</dd>
           <dt>Data I/O</dt>
           <dd>Reads <code>data/minhag.ini</code>.
           It writes diagnostics to stdout/stderr; cron examples redirect output to <code>data/automation.log</code>, but that redirection is outside this script.</dd>
-          <dt>Controller</dt>
+          <dt>Controller boundary</dt>
           <dd><span class="caution">Indirectly yes.</span>
           Unless <code>--dry-run</code> is used, it calls <code>bin/yahrzeit</code>, which may transmit.</dd>
-          <dt>Boundary</dt>
-          <dd>Owns phase applicability, not controller protocol or active-name decisions.
-          Manual/web actions should call the wrapper directly.</dd>
+          <dt>Role boundary</dt>
+          <dd>Owns phase applicability and timestamped operational output, not
+          controller protocol or active-name decisions. It does not itself
+          open <code>automation.log</code>; generated cron redirection does.</dd>
         </dl>
+      </article>
+    </section>
+    <section>
+      <h2>Regression tests</h2>
+      <article id="policy-test">
+        <h3>Report and lighting policy equivalence</h3>
+        <div class="path">
+          tests/yahrzeit_engine_policy_test.php
+        </div>
+        <dl>
+          <dt>Kind / purpose</dt>
+          <dd>Executable PHP regression test. It verifies explicit week-range
+          boundaries and compares week/next-week report inclusion with normal
+          lighting decisions across Hebrew and English policy settings and
+          representative dates.</dd>
+          <dt>Direct includes</dt>
+          <dd>Loads <code>bin/yahrzeit_engine.php</code>, which transitively
+          loads the shared include modules. The engine entry point is guarded,
+          so loading its functions does not run the command generator.</dd>
+          <dt>Data I/O</dt>
+          <dd>Reads <code>data/minhag.ini</code> and
+          <code>data/yahrzeits-rev4.csv</code> through shared helpers. It writes
+          results only to stdout/stderr and does not modify project data.</dd>
+          <dt>Coverage / result</dt>
+          <dd>The current memorial database produces 50,796 report/lighting
+          comparisons in addition to explicit boundary cases. A known,
+          non-failing English-date December 31/January 1 case is reported as
+          pending and is tracked in <code>docs/todo.md</code>.</dd>
+          <dt>Observed callers</dt>
+          <dd>The appliance installer and the documented manual validation
+          process in <code>AGENTS.md</code> and <code>README.md</code>.</dd>
+          <dt>Controller boundary</dt>
+          <dd><span class="no">No controller operation.</span> It calls policy
+          and report functions directly; it does not invoke the transmitting
+          wrapper.</dd>
+        </dl>
+      </article>
+    </section>
+    <section>
+      <h2>Authoritative project data and configuration</h2>
+      <article id="controller-config">
+        <h3>Controller connection configuration</h3>
+        <div class="path">
+          bin/yahrzeit-controller.conf
+        </div>
+        <dl>
+          <dt>Kind / purpose</dt>
+          <dd>Shell-compatible appliance configuration containing
+          <code>CONTROLLER_HOST</code> and <code>CONTROLLER_PORT</code>.</dd>
+          <dt>Readers</dt>
+          <dd><code>bin/yahrzeit</code> sources both values;
+          <code>misc.inc.php</code> parses the host for display; the installer
+          sources the file while selecting the appliance-specific host.</dd>
+          <dt>Writers</dt>
+          <dd><code>install-yahrzeit.sh</code> replaces the
+          <code>CONTROLLER_HOST</code> line. No web screen writes it.</dd>
+          <dt>Controller boundary</dt>
+          <dd>Contains connection values only. The network connection is
+          opened by <code>bin/yahrzeit</code>.</dd>
+        </dl>
+      </article>
+      <article id="minhag-data">
+        <h3>Synagogue policy and schedule configuration</h3>
+        <div class="path">
+          data/minhag.ini
+        </div>
+        <dl>
+          <dt>Kind / purpose</dt>
+          <dd>INI configuration for synagogue identity, date method,
+          observance window, Yahrzeit timing, enabled Yizkor dates, and Yizkor
+          timing.</dd>
+          <dt>Readers</dt>
+          <dd><code>read_minhag_ini()</code> supplies saved values plus
+          defaults to screens, policy, engine, scheduler, and cron generation.</dd>
+          <dt>Writers</dt>
+          <dd><code>7minhag.php</code> calls
+          <code>write_minhag_ini()</code>, which writes beside the file and
+          atomically renames it. The installer preserves the appliance copy
+          across repository updates.</dd>
+          <dt>Boundary</dt>
+          <dd>Stores policy; it does not itself schedule or light anything.</dd>
+        </dl>
+      </article>
+      <article id="memorial-data">
+        <h3>Memorial database</h3>
+        <div class="path">
+          data/yahrzeits-rev4.csv
+        </div>
+        <dl>
+          <dt>Kind / purpose</dt>
+          <dd>Eight-column Rev4 CSV record store for names, English and Hebrew
+          dates, option tokens, historical location, and active panel/column/row
+          location. Additional trailing columns may exist and are preserved by
+          the single-record editor.</dd>
+          <dt>Readers</dt>
+          <dd><code>names.inc.php</code>, the Single Name editor, Reports
+          download/upload validation, and all callers that load mapped memorial
+          records through <code>yahrzeit_readDB()</code>.</dd>
+          <dt>Writers</dt>
+          <dd>Single Name atomically replaces one mapped record after making
+          an edit backup. Reports upload replaces the entire file after making
+          an upload backup. The installer preserves the appliance copy across
+          repository updates. <code>yahrzeit_writeDB()</code> can rewrite the
+          file but has no current source-tree caller.</dd>
+          <dt>Controller boundary</dt>
+          <dd>Contains memorial facts and locations only. Policy and engine
+          code turn those records into decisions and commands.</dd>
+        </dl>
+      </article>
+      <article>
+        <h3>Derived runtime artifacts</h3>
+        <p><code>data/backups/</code> contains timestamped edit/upload backups.
+        <code>data/automation.log</code> receives cron-redirected scheduler and
+        wrapper output and is rotated weekly by installer-created logrotate
+        configuration. The user's crontab, <code>/etc/yahrzeit-cron-user</code>,
+        and the installer's Apache/systemd/sudo/logrotate files are operational
+        state outside these three authoritative project files.</p>
       </article>
     </section>
     <section id="todos">

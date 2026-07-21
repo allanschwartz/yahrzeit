@@ -32,7 +32,7 @@
  *          with "#", so they remain harmless if mixed into a controller command
  *          stream.
  *
- *      -h, --help
+ *      --help
  *          Display usage.
  *
  * DESCRIPTION
@@ -70,7 +70,7 @@
  *      Version 1 created for Congregation Beth Sholom, 2007-2008
  *      by Allan M. Schwartz, allanschwartz@sbcglobal.net.
  *
- *      Modernized PHP 8 and the Arduino controller version V3 in 2026.
+ *      Modernized for PHP 8 and the Yahrzeit V3 release in 2026.
  *
  * COPYRIGHT NOTICE
  *      Copyright (c) 2008, 2026, by Allan M. Schwartz.
@@ -112,7 +112,7 @@ Options:
     -d N
         Set debug verbosity.
 
-    -h, --help
+    --help
         Show this help.
 
 Examples:
@@ -132,6 +132,7 @@ USAGE;
 }
 
 
+/** Parse command-line options, normalizing long-form audit to the short key. */
 function parse_options()
 {
     $options = getopt("ad:h:", array("audit", "date:", "help", "report:"));
@@ -250,6 +251,12 @@ function warn_log($message)
     echo "# WARNING: $message\n";
 }
 
+/**
+ * Return the requested base-date timestamp, or the current time.
+ *
+ * Direct engine invocation tolerates an invalid --date by warning and using
+ * today; bin/yahrzeit validates the date before invoking the engine.
+ */
 function selected_timestamp()
 {
     global $options;
@@ -270,6 +277,7 @@ function selected_timestamp()
 // Audit reporting
 // ---------------------------------------------------------------------------
 
+/** Return static panel geometry indexed by physical panel ID. */
 function build_panel_geometry_map()
 {
     $n = panel_readDB();
@@ -288,6 +296,12 @@ function build_panel_geometry_map()
     return $panels;
 }
 
+/**
+ * Audit loaded memorial locations against the static wall geometry.
+ *
+ * Returns nonzero for errors such as incomplete/unknown/out-of-range or
+ * duplicate locations. An unnamed record is reported only as a warning.
+ */
 function emit_audit_report()
 {
     $panels = build_panel_geometry_map();
@@ -362,18 +376,11 @@ function emit_audit_report()
     return ($errors == 0) ? 0 : 1;
 }
 
-
-// main function for the "yahrzeit_engine.php"
-//    does some date calculations
-//    reads entire yahrzeit database
-//    for each person in database, calls yz_process_person
-
-
-
 // ---------------------------------------------------------------------------
 // Yahrzeit range reports
 // ---------------------------------------------------------------------------
 
+/** Emit a human-readable report for one normalized date range. */
 function emit_yahrzeit_report($kind, $base_timestamp)
 {
     $range = report_date_range($kind, $base_timestamp);
@@ -453,6 +460,13 @@ function emit_yahrzeit_report($kind, $base_timestamp)
     return 0;
 }
 
+/**
+ * Resolve a report kind to inclusive local-midnight endpoints.
+ *
+ * Week ranges use the same Saturday-through-Friday helpers as lighting.
+ *
+ * @return array{0: int, 1: int, 2: string}|false
+ */
 function report_date_range($kind, $base_timestamp)
 {
     $kind = strtolower($kind);
@@ -492,6 +506,15 @@ function report_date_range($kind, $base_timestamp)
     return array($start, $end, $kind);
 }
 
+/**
+ * Return occurrences that make one memorial reportable in an inclusive range.
+ *
+ * The per-record HEB/ENG option or synagogue default selects the calendar.
+ * Reserved records and records without a usable selected date return no
+ * candidates. February 29 uses February 28 in non-leap Gregorian years.
+ *
+ * @return array<int, int> Sorted local-midnight timestamps.
+ */
 function yahrzeit_candidate_dates_in_range($person, $start_ts, $end_ts)
 {
 
@@ -584,6 +607,13 @@ function yahrzeit_candidate_dates_in_range($person, $start_ts, $end_ts)
 // Normal command-stream processing
 // ---------------------------------------------------------------------------
 
+/**
+ * Apply normal lighting policy to one mapped memorial record.
+ *
+ * Malformed locations are reported as command-stream comments. In normal
+ * mode, an active record emits one pixel-on command; audit mode emits only a
+ * diagnostic decision.
+ */
 function yz_process_person($person, $timestamp)
 {
     $first = isset($person['firstName']) ? $person['firstName'] : "";

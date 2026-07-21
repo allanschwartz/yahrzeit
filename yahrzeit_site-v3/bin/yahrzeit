@@ -12,7 +12,8 @@
 #              -> bin/yahrzeit_scheduler
 #                  -> bin/yahrzeit
 #                      -> bin/yahrzeit_engine.php
-#                          -> controller command stream
+#                          -> include/yahrzeit_policy.inc.php
+#                              -> controller command stream
 #                      -> nc
 #                          -> Arduino controller
 #
@@ -32,8 +33,8 @@
 #      Report and audit modes also use bin/yahrzeit_engine.php, but do not transmit
 #      anything to the controller.
 #
-#      Direct controller operations such as --all-on, and --all-off
-#      generate their command streams here and transmit directly.
+#      Direct controller operations --yizkor, --all-on, and --all-off generate
+#      their command streams here and transmit directly.
 #
 # BLUF
 #      cron decides WHEN scheduled phases run.
@@ -60,7 +61,7 @@
 #
 #      State-changing controller operations emit "save".
 #
-#      This script uses nc for transport. 
+#      This script uses nc for transport.
 #
 # HISTORY
 #      Version 3 created for Congregation Beth Sholom, 2007-2008
@@ -139,7 +140,7 @@ Reports / dry-run modes:
 
   --report KIND
       Run a yahrzeit report.  Output is printed; nothing is sent to the controller.
-      Planned KIND values: day, week, next-week, month, next-month.
+      KIND values: day, week, next-week, month, next-month.
 
   --date YYYY-MM-DD
       Optional report date.  Used by report modes; ignored by controller-only modes.
@@ -502,7 +503,9 @@ log_controller_failure_results() {
 # stdout for inspection.
 #
 # In normal mode, the stream is passed through slowcat and then into nc,
-# connecting to the Yahrzeit embedded controller
+# connecting to the Yahrzeit embedded controller. Scheduler summary mode also
+# validates controller result counts and distinguishes transport timeout,
+# transport failure, rejected commands, no response, and incomplete response.
 transmit_commands() {
     local expected_commands="${1:-0}"
 
@@ -595,6 +598,8 @@ transmit_commands() {
     return 0
 }
 
+# Generate the stream into a temporary file so scheduler logging can report a
+# command count and validate the same number of successful controller replies.
 run_logged_operation() {
     local command_file
     local generation_status=0

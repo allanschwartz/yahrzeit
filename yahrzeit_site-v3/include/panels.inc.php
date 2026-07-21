@@ -8,7 +8,8 @@
  *      Panel geometry definitions for the CBS Yahrzeit Wall.
  *
  *      The static panel IDs and dimensions are used to validate memorial
- *      locations, render panel views, and map locations to controller LEDs.
+ *      locations and render panel views. Controller panel-number mapping is
+ *      separately defined in include/leds.inc.php.
  *
  * NOTES
  *      These values must remain synchronized with the physical wall and the
@@ -65,16 +66,19 @@ function panel_readDB()
     return count(PANEL_STATIC_GEOMETRY);
 }
 
+/** Return the number of static panel definitions. */
 function panel_numrows()
 {
     return count(PANEL_STATIC_GEOMETRY);
 }
 
+/** Return one panel by zero-based position, or null when absent. */
 function panel_getObj($row)
 {
     return PANEL_STATIC_GEOMETRY[$row] ?? null;
 }
 
+/** Return one panel by physical panel ID, or null when absent. */
 function panel_getObj_byId($panelId)
 {
     foreach (PANEL_STATIC_GEOMETRY as $panel) {
