@@ -141,19 +141,11 @@ function yahrzeit_minhag_summary_lines()
     ];
 }
 
-/** Return the home-page statement based on the next Friday's CBS sunset. */
-function yahrzeit_next_shabbat_lighting_line()
+/** Return the home-page statement for the daily normal-lighting refresh. */
+function yahrzeit_daily_lighting_line()
 {
-    $nextErevShabbat = next_erev_shabbat_timestamp();
-    $fridaySunsetTimestamp = cbs_sunset_timestamp($nextErevShabbat);
-
-    if ($fridaySunsetTimestamp === false) {
-        return "This week's Shabbat sunset time is unknown.";
-    }
-
-    $fridaySunsetText = date("l F j, Y, g:i a", $fridaySunsetTimestamp);
-
-    return "On " . h($fridaySunsetText) . " this week's yahrzeits will be lit.";
+    return "Normal Yahrzeit lighting is refreshed every evening " .
+           "at the scheduled time.";
 }
 
 // -----------------------------------------------------------------------------
@@ -169,7 +161,7 @@ function yahrzeit_render_scheduled_events($timestamp = null)
     $todaySunsetText = cbs_sunset_time_string($timestamp);
 
     echo "Today's sunset in San Francisco is at " . h($todaySunsetText) . ".<br>\n";
-    echo yahrzeit_next_shabbat_lighting_line() . "<br>\n";
+    echo yahrzeit_daily_lighting_line() . "<br>\n";
 }
 
 function yahrzeit_render_main_page()

@@ -708,7 +708,9 @@
         <dl>
           <dt>Kind / purpose</dt>
           <dd>PHP command-line scheduler intended for cron.
-          Logs each phase, chooses whether requested Yizkor phases apply today, runs normal yahrzeit lighting, and refreshes moving sunset cron times.</dd>
+          Logs each phase, chooses whether requested Yizkor phases apply
+          today, reapplies normal Yahrzeit lighting every evening, and
+          refreshes moving sunset cron times.</dd>
           <dt>Major functions</dt>
           <dd><code>parse_options</code>, <code>yizkor_reasons_today</code>, <code>run_yahrzeit_command</code>, <code>refresh_sunset_crontab</code>, <code>finish_phase</code>, <code>main</code>.</dd>
           <dt>Constants / globals</dt>

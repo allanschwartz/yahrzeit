@@ -187,9 +187,10 @@ the wall.
 
 `bin/fix-up-crontab` reads `data/minhag.ini` and manages only the marked
 Yahrzeit block in the installation account's crontab. It preserves unrelated
-cron jobs. Weekly observance schedules normal lighting on Friday; day-only
-observance schedules it daily. Fixed times remain stable, while sunset-based
-times are recalculated automatically.
+cron jobs. Normal Yahrzeit lighting is reapplied every evening; the saved
+day-only or weekly observance determines which memorial lights are selected.
+Fixed times remain stable, while sunset-based times are recalculated for that
+evening automatically.
 
 Every managed cron invocation appends to `data/automation.log`. Each run records
 its phase, decision or action, controller transport summary, cron-repair

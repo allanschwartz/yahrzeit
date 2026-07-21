@@ -11,9 +11,11 @@
  *      Cron decides when each phase runs; this script decides whether
  *      the requested phase applies today.
  *
- *      The normal-yahrzeit phase is invoked either every Friday or every day,
- *      according to yahrzeitObservance. bin/fix-up-crontab derives its clock
- *      time from the saved fixed-time or sunset-based policy.
+ *      The normal-yahrzeit phase is invoked every evening so the intended
+ *      wall image is reapplied daily. bin/fix-up-crontab derives its clock
+ *      time from the saved fixed-time or sunset-based policy. The saved
+ *      yahrzeitObservance setting still determines whether that image
+ *      represents one day or the full Saturday-through-Friday week.
  *
  *      Supported phases:
  *

@@ -113,13 +113,8 @@ function cron_clock_fields($hour, $minute, $ampm)
     return [$minute, $hour];
 }
 
-/**
- * Return the next future cron minute/hour at a sunset-relative offset.
- *
- * Weekly calculation advances to Friday and then in seven-day increments;
- * daily calculation advances one day at a time.
- */
-function cron_sunset_fields($now, $minutes, $repeat)
+/** Return the next future daily cron time at a sunset-relative offset. */
+function cron_sunset_fields($now, $minutes)
 {
     if (!preg_match('/^-?\d{1,3}$/', trim((string)$minutes))) {
         cron_fail("invalid sunset offset in data/minhag.ini");
@@ -130,11 +125,6 @@ function cron_sunset_fields($now, $minutes, $repeat)
     }
 
     $candidate = strtotime('today', $now);
-    if ($repeat == 'weekly') {
-        while ((int)date('w', $candidate) != 5) {
-            $candidate = strtotime('+1 day', $candidate);
-        }
-    }
 
     while (true) {
         $sunset = cbs_sunset_timestamp($candidate);
@@ -147,7 +137,7 @@ function cron_sunset_fields($now, $minutes, $repeat)
             return [(int)date('i', $scheduled), (int)date('G', $scheduled)];
         }
 
-        $candidate = strtotime($repeat == 'weekly' ? '+7 days' : '+1 day', $candidate);
+        $candidate = strtotime('+1 day', $candidate);
     }
 }
 
@@ -187,13 +177,11 @@ function cron_managed_block($minhag, $now)
     if ($yizkor_time_policy == 'atSunset') {
         [$on_minute, $on_hour] = cron_sunset_fields(
             $now,
-            '-' . ltrim((string)($minhag['yizkorMinBefore'] ?? 0), '+-'),
-            'daily'
+            '-' . ltrim((string)($minhag['yizkorMinBefore'] ?? 0), '+-')
         );
         [$off_minute, $off_hour] = cron_sunset_fields(
             $now,
-            $minhag['yizkorMinAfter'] ?? 0,
-            'daily'
+            $minhag['yizkorMinAfter'] ?? 0
         );
         $dynamic_sunset = true;
     } else {
@@ -216,9 +204,6 @@ function cron_managed_block($minhag, $now)
     if (!in_array($observance, ['day', 'week'], true)) {
         cron_fail("invalid yahrzeitObservance in data/minhag.ini");
     }
-    $repeat = ($observance == 'week') ? 'weekly' : 'daily';
-    $days = ($observance == 'week') ? '* * 5' : '* * *';
-
     $yahrzeit_time_policy = $minhag['yahrzeitLightTime'] ?? 'setTime';
     if (!in_array($yahrzeit_time_policy, ['setTime', 'atSunset'], true)) {
         cron_fail("invalid yahrzeitLightTime in data/minhag.ini");
@@ -226,8 +211,7 @@ function cron_managed_block($minhag, $now)
     if ($yahrzeit_time_policy == 'atSunset') {
         [$yz_minute, $yz_hour] = cron_sunset_fields(
             $now,
-            '-' . ltrim((string)($minhag['yahrzeitMinBefore'] ?? 0), '+-'),
-            $repeat
+            '-' . ltrim((string)($minhag['yahrzeitMinBefore'] ?? 0), '+-')
         );
         $dynamic_sunset = true;
     } else {
@@ -238,7 +222,9 @@ function cron_managed_block($minhag, $now)
         );
     }
 
-    $lines[] = cron_scheduler_line($yz_minute, $yz_hour, $days, 'yahrzeit', $site_dir);
+    // Reapply the selected day/week wall image every evening. This also
+    // restores the intended state after electrical noise disturbs a driver.
+    $lines[] = cron_scheduler_line($yz_minute, $yz_hour, '* * *', 'yahrzeit', $site_dir);
 
     if ($dynamic_sunset) {
         $lines[] = cron_scheduler_line(

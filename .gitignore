@@ -12,5 +12,3 @@
 
 # Office temp files
 ~$*
-tmp/pdfs/render_pages.swift
-tmp/pdfs/repair_docx_prefixes.py

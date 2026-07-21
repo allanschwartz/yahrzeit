@@ -109,14 +109,15 @@ phase either performs one action or does nothing.
 1:00 PM    yahrzeit_scheduler --phase yizkor-off
            If today is a configured Yizkor day, restore normal yahrzeit lighting.
 
-Friday near sunset (weekly observance), or daily (day-only observance):
+Every evening at the configured fixed or sunset-relative time:
            yahrzeit_scheduler --phase yahrzeit
 </pre>
 
 <p>
 The application maintains its own marked block in the appliance crontab.
-Fixed times remain stable. Sunset-based times are recalculated automatically
-as sunset changes through the year.
+Normal Yahrzeit lighting is reapplied every evening. Fixed times remain
+stable. Sunset-based times are recalculated automatically as sunset changes
+through the year.
 </p>
 
 <p>

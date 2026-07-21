@@ -55,8 +55,8 @@ and the controller hostname or IP address stored in
 <h3>Scheduled Events</h3>
 
 <p>
-The Scheduled Events row shows today's sunset and the next scheduled time at
-which the week's Yahrzeit lights will be selected.
+The Scheduled Events row shows today's sunset and explains that normal
+Yahrzeit lighting is reapplied every evening at the scheduled time.
 </p>
 
 <h3>Configured Policy Summary</h3>

@@ -120,10 +120,10 @@ maintainer reruns the appliance installer or runs
 
 <p>
 <code>bin/fix-up-crontab</code> manages only the block between its Yahrzeit
-markers and preserves unrelated jobs. Weekly observance installs the normal
-Yahrzeit phase on Friday; day-only observance installs it every day. Sunset
-policies retain those recurring patterns as a fail-safe while refreshing the
-clock time automatically.
+markers and preserves unrelated jobs. The normal Yahrzeit phase runs every
+evening, reapplying the intended wall image. The day-only or weekly setting
+determines which memorial lights are selected; it does not change how often
+the wall is refreshed. Sunset policies refresh the clock time automatically.
 </p>
 
 <code>
