@@ -1,7 +1,3 @@
-#pragma once
-
-#include <Arduino.h>
-
 /**
  * @file        socket_thread.h
  *
@@ -24,27 +20,38 @@
  *              and incremental line input. It should not parse Yahrzeit
  *              command semantics or manipulate wall geometry directly.
  *
+ * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
+ *              version 2.0 revised in July 2015
+ *              version 3.0 revised in April 2026
+ *
+ * @author      Allan M. Schwartz, allanschwartz@sbcglobal.net
+ *
  * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
  *              All rights reserved.
  */
 
+#pragma once
+
+#include <Arduino.h>
+
 /**
- * @brief    Is the Ethernet ready for a socket connection
+ * @brief   Determine whether Ethernet hardware and link state permit socket
+ *          service.
  */
 bool    ethernetIsReady();
 
 /**
- * @brief    Initialize Ethernet with the configured network settings
+ * @brief   Initialize Ethernet with the configured static network settings.
  */
 void    ethernetInit();
 
 /**
- * @brief    Initialize and setup the Socket-based input 
+ * @brief   Begin listening on the command socket when Ethernet is ready.
  */
 void    socketInit();
 
 /**
- * @brief    Socket-based input main loop thread
+ * @brief   Service the nonblocking TCP command loop once.
  */
 void    socketThread();
 
@@ -52,11 +59,10 @@ void    socketThread();
 enum GetsReturns: byte {
     GETS_NOCONNECTION,
     GETS_NOCHAR,
-    GETS_PARTIAL,
     GETS_FULLCMD,
 };
 
 /**
- * @brief    Read a line from socket input
+ * @brief   Accumulate one newline-terminated command from the TCP client.
  */
 GetsReturns  socketGets(char inputBuf[], const unsigned maxsize, unsigned &index);

@@ -7,6 +7,15 @@
  *              shift that framebuffer into a chain of YYZ_PIXEL boards built
  *              from 74HC595-style serial-in / parallel-out registers.
  *
+ *              Coordinates at this layer are zero-based. Higher-level
+ *              one-based wall and panel mapping belongs to LedWall.
+ *
+ * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
+ *              version 2.0 revised in July 2015
+ *              version 3.0 revised in April 2026
+ *
+ * @author      Allan M. Schwartz, allanschwartz@sbcglobal.net
+ *
  * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
  *              All rights reserved.
  */
@@ -35,7 +44,7 @@ public:
     // ----------------------------------------------------------------------------
 
     /**
-     * @brief   Initialize hardware interface.
+     * @brief   Initialize control pins with LED outputs blanked.
      */
     void begin();
 
@@ -55,7 +64,7 @@ public:
     void clear();
 
     /**
-     * @brief   Refresh the physical display from the framebuffer.
+     * @brief   Shift and latch the framebuffer into the physical display.
      */
     void refresh();
 
@@ -75,22 +84,22 @@ public:
     void setBrightness(uint8_t brightness);
 
     /**
-     * @brief   Enable display output.
+     * @brief   Enable display output immediately at full brightness.
      */
     void on();
 
     /**
-     * @brief   Disable display output.
+     * @brief   Blank display output without changing the framebuffer.
      */
     void off();
 
     /**
-     * @brief   Save framebuffer to EEPROM.
+     * @brief   Save the complete fixed-size framebuffer to EEPROM.
      */
     void savePixels(int eepromOffset);
 
     /**
-     * @brief   Load framebuffer from EEPROM.
+     * @brief   Load the complete fixed-size framebuffer from EEPROM.
      */
     void loadPixels(int eepromOffset);
 

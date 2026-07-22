@@ -218,7 +218,8 @@ ResultIds LedWall::setPixel(bool pixelBit, byte row, byte col)
  * @param row        display row, 1-based
  * @param col        display column, 1-based
  *
- * @returns          true if the pixel is on, false otherwise
+ * @returns          true if the pixel is on; false if it is off or the
+ *                   coordinate is invalid
  */
 bool LedWall::pixelValue(byte row, byte col) const
 {
@@ -298,7 +299,8 @@ ResultIds LedWall::setPixelInPanel(bool pixelBit, byte row, byte col, byte panel
  * @param col        panel-local column, 1-based
  * @param panel      PANEL0 or panel number 1..displayConfig.nPanels
  *
- * @returns          true if the pixel is on, false otherwise
+ * @returns          true if the pixel is on; false if it is off or any
+ *                   panel-local coordinate is invalid
  */
 bool LedWall::pixelValueInPanel(byte row, byte col, byte panel) const
 {
@@ -338,7 +340,8 @@ bool LedWall::pixelValueInPanel(byte row, byte col, byte panel) const
 /**
  * @brief   Save the display framebuffer to EEPROM.
  *
- * Delegates persistence to YyzPixel, which owns the framebuffer layout.
+ * Delegates persistence to YyzPixel, which saves the fixed maximum-size
+ * framebuffer rather than only the active geometry.
  */
 void LedWall::savePixels()
 {
@@ -348,7 +351,8 @@ void LedWall::savePixels()
 /**
  * @brief   Load the display framebuffer from EEPROM.
  *
- * Delegates persistence to YyzPixel, which owns the framebuffer layout.
+ * Delegates persistence to YyzPixel, which loads the fixed maximum-size
+ * framebuffer. The caller is responsible for the validity of EEPROM data.
  */
 void LedWall::loadPixels()
 {
@@ -380,6 +384,9 @@ void LedWall::setBrightness(byte brightness)
  * @param panel      PANEL0 for whole display, or panel number 1..displayConfig.nPanels
  *
  * @returns          NO_ERROR or ERR_PANEL
+ *
+ * @note This updates the framebuffer only. Call refresh() to update the
+ *       physical display.
  */
 ResultIds LedWall::allOn(bool pixelBit, byte panel)
 {
@@ -411,7 +418,8 @@ ResultIds LedWall::allOn(bool pixelBit, byte panel)
  *
  * @param panel      PANEL0 or panel number 1..displayConfig.nPanels
  *
- * @returns          row count, or 0 for an invalid panel
+ * @returns          row count; PANEL0 returns the full-display row count and
+ *                   an invalid panel returns 0
  */
 byte LedWall::rowsInPanel(byte panel) const
 {
@@ -426,7 +434,8 @@ byte LedWall::rowsInPanel(byte panel) const
  *
  * @param panel      PANEL0 or panel number 1..displayConfig.nPanels
  *
- * @returns          column count, or 0 for an invalid panel
+ * @returns          column count; PANEL0 returns the full-display column count
+ *                   and an invalid panel returns 0
  */
 byte LedWall::colsInPanel(byte panel) const
 {
@@ -448,7 +457,7 @@ void LedWall::clear()
 }
 
 /**
- * @brief   Refresh the physical display from the framebuffer
+ * @brief   Shift the framebuffer to the hardware and latch the new display.
  */
 void LedWall::refresh()
 {

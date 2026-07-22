@@ -1,7 +1,8 @@
 /**
  * @file        serial_thread.ino
  *
- * @brief       Console Interface code for the Yahrzeit Project
+ * @brief       Nonblocking USB serial command input and shared diagnostic
+ *              formatting for the Yahrzeit Embedded Controller.
  *
  * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
  *              version 2.0 revised in July 2015
@@ -22,7 +23,10 @@
 // ----------------------------------------------------------------------------
 
 /**
- * @brief   Initializes the USB Serial port, which becomes our console
+ * @brief   Initialize the USB serial console at 115200 baud.
+ *
+ * Waits no more than three seconds for a host to open the USB serial port, so
+ * an unattended controller can complete startup without a connected monitor.
  */
 void serialInit()
 {
@@ -49,7 +53,7 @@ void serialInit()
 
 
 /**
- * @brief   Print a time-stamped prompt
+ * @brief   Write the current uptime followed by a command prompt.
  *
  * @param streamID    display output on the SOCKET or CONSOLE
  */
@@ -62,12 +66,11 @@ static void prompt( byte streamID )
 
 
 /**
- * @brief   Console main loop handling serial input
+ * @brief   Service the nonblocking serial command loop once.
  *
- *      Implements the console I/O gets(), puts() loop.
- *      In each call to serialThread, we either read one line and execute one command,
- *      or, if the line is not present, we return immediately, but keep state so we can
- *      resume reading the line
+ * Accumulates input across calls. When a newline or full buffer completes a
+ * command, dispatches it through CmdProc, writes the result, resets the input
+ * state, and emits another prompt.
  */
 void  serialThread()
 {
@@ -101,23 +104,19 @@ void  serialThread()
 
 
 /**
- * @brief   Reads a single line from the Serial UART, (similar to fgets())
+ * @brief   Accumulate one newline-terminated command from USB serial input.
  *
- *    serialGets() reads in at most one less than size characters from the
- *    serial UART stream and stores them into the buffer pointed to by inputBuf.
- *    Reading stops after a newline or cr or the str is filled.
- *    If a newline or cr is read, it is not stored into the buffer.
- *    A terminating null byte ('\0') is stored after the last character.
+ * This function is nonblocking and preserves its position through the index
+ * reference. NUL and carriage-return bytes are ignored; newline completes the
+ * command but is not stored. A full buffer also completes the truncated
+ * command. The buffer is kept null-terminated after every stored character.
  *
- *    This non-threaded version of serialGets() does not block, rather it
- *    returns immediately, that is returns each character as read.
- *    The bool result code indicates whether a full line was read
+ * @param inputBuf  destination buffer for the null-terminated command
+ * @param maxsize   buffer capacity, including the null terminator
+ * @param index     number of command bytes accumulated across calls
  *
- * @param inputBuf    the resulting null-terminated string
- * @param maxsize  max size we can store, including a NULL
- * @param index    reference to a count of the number of bytes read into inputBuf
- *
- * @returns bool, true: a full line was read; false: if not
+ * @returns         true when a newline or full buffer completes a command;
+ *                  false while the command remains incomplete
  */
 bool serialGets( char inputBuf[], const unsigned maxsize, unsigned &index )
 {
@@ -149,8 +148,7 @@ bool serialGets( char inputBuf[], const unsigned maxsize, unsigned &index )
 }
 
 /**
- * @brief   Displays a time-stamped line, typically a diagnostic line
- *        on the serial console.  A trailing newline is also written.
+ * @brief   Write one uptime-prefixed diagnostic line to the serial console.
  *
  * @param msg      the line to display, a C string
  */
@@ -165,11 +163,10 @@ void serialLog( const char *msg )
 }
 
 /**
- * @brief   Displays the uptime, in the format hh:mm:ss.mmm  (with millisecond precision)
+ * @brief   Format time since startup as hours, minutes, seconds, and
+ *          milliseconds: hh:mm:ss.mmm.
  *
- * @note:        returns a pointer to a static string (so it is not thread safe)
- *
- * @param uptime    number of milliseconds since the arduino microcontroller was booted
+ * @returns pointer to a shared static buffer, overwritten by the next call
  */
 const char *displayUptime()
 {

@@ -4,8 +4,8 @@
  * @brief       Command processor for console and socket interfaces.
  *
  *              Parses ASCII command lines, maps command verbs to internal
- *              command identifiers, validates arguments, and dispatches
- *              operations to LedWall and related subsystems.
+ *              command identifiers, checks required argument presence, and
+ *              dispatches operations to LedWall and related subsystems.
  *
  * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
  *              version 2.0 revised in July 2015
@@ -40,32 +40,11 @@ CmdProc::CmdProc(LedWall& wall)
 // ----------------------------------------------------------------------------
 
 /**
- * @COMMAND LANGUAGE
- *      We have implemented a simple command interpreter that recognizes
- *      several commands.
- *      Each command may be abbreviated to 2 characters.
+ * @par Command language
+ * Commands are case-insensitive and may normally be abbreviated to their
+ * first two characters. A single question mark is also accepted for help.
  */
 
-#if 0       // this is now declared in the .h file
-enum CommandIds : byte  {
-    NONE_OF_THE_ABOVE = 0,  // must be zero
-    CMD_ALL = 1,            // turn on/off all LEDs
-    CMD_BRIGHT,             // set the brightness
-    CMD_DATA,               // set a specific data bit pattern
-    CMD_DUMP,               // dump the pixel memory
-    CMD_HELP,               // display command help
-    CMD_LOAD,               // load the pixel memory from EEPROM
-    CMD_PIXEL,              // set one pixel on/off
-    CMD_REFRESH,            // refresh the LED display from pixel memory
-    CMD_SAVE,               // store the pixel memory into EEPROM
-    CMD_STATUS,             // dump the current status/settings
-    CMD_TEST,               // run one of several LED test patterns
-    CMD_TIMING,             // toggle or turn on/off the timing instrumentation
-    CMD_VERSION,            // print the version string
-    CMD_NOP,                // was required on the slower 8051 implementation
-    MISSING_ARG = 255
-};
-#endif
 namespace {     // private to this file
 
 /**
@@ -75,15 +54,15 @@ namespace {     // private to this file
  * and required argument count.
  */
 struct Command {
-    CommandIds  id;             // see enum cmd_ids above
+    CommandIds  id;
     byte  requiredArgs;         // 0, 1, 2 or 3 required arguments
-    const char *verb;          // the last entry is nullptr
+    const char *verb;
 };
 
 /**
  * @brief Table of supported commands.
  *
- * The table is terminated by a null verb pointer.
+ * The table is a fixed constexpr array and is traversed with a range loop.
  */
 static constexpr Command commands[] = {
     { CMD_ALL,    1, "all"    },
@@ -134,16 +113,19 @@ const char TestMenu[]  =
     "\tTEst 2 [<panel>]  --   all pixels ON\n"
     "\tTEst 3 [<panel>]  --   all pixels OFF\n"
     "\tTEst 4 [<panel>]  --   checkerboard test\n"
-    "\tTEst 5 [<panel>]  --   marching row pattern\n"
+    "\tTEst 5            --   marching row across all panels\n"
     "\tTEst 6 [<panel>]  --   marching column pattern\n";
 
 }       // end anonymous namespace
 
 
 /**
- * @brief       matches 2 characters of a string
+ * @brief       Compare the first two characters case-insensitively.
  *
- * @returns     true for match
+ * @param s1    first null-terminated string
+ * @param s2    second null-terminated string
+ *
+ * @returns     true when the first two characters match
  */
 inline bool strMatch2(const char *s1, const char *s2)
 {
@@ -151,11 +133,11 @@ inline bool strMatch2(const char *s1, const char *s2)
 }
 
 /**
- * @brief       matches command verb in the Commands table
+ * @brief       Match a command verb and verify required argument presence.
  *
  * @param argv  argument array, required arguments are checked
  *
- * @returns     a CommandIds value representing the command identifier
+ * @returns     command identifier, MISSING_ARG, or NONE_OF_THE_ABOVE
  */
 CommandIds CmdProc::matchCommandVerb(char * const argv[]) const
 {
@@ -181,10 +163,11 @@ CommandIds CmdProc::matchCommandVerb(char * const argv[]) const
  * @brief           Execute one parsed command line.
  *
  * @param streamID  output stream (SOCKET or CONSOLE)
- * @param inputBuf  command line buffer (modified during parsing)
+ * @param command   command line buffer; argument pointers refer into it, but
+ *                  the characters are not modified
  *
- * @return          pointer to result string (static), or nullptr
- *                  which is the command output
+ * @returns         pointer to static or shared result text. Some commands also
+ *                  write detailed output directly to streamID.
  */
 const char *CmdProc::execute( const byte streamID, char *command )
 {
@@ -328,10 +311,14 @@ const char *CmdProc::execute( const byte streamID, char *command )
 // ----------------------------------------------------------------------------
 
 /**
- * @brief       parse the arguments in the command line
+ * @brief       Locate whitespace-separated arguments without copying them.
  *
- * @param command   the unparsed command
- * @param argv      the resulting argument vector
+ * Tokens are not individually null-terminated. Consumers therefore use only
+ * two-character comparisons, numeric conversion, or the final text argument.
+ *
+ * @param command   command buffer to scan; its characters are not modified
+ * @param argv      output array of pointers into command, preinitialized to
+ *                  null by the caller
  */
 void  CmdProc::parseCommand( char *command, char **argv )
 {
@@ -355,12 +342,11 @@ void  CmdProc::parseCommand( char *command, char **argv )
 }
 
 /**
- * @brief       convert a string representing on/off, 
- *              or true/false, or 1/0 to a bool
+ * @brief       Convert on/off, true/false, or numeric text to bool.
  *
  * @param token  the unparsed string
  *
- * @returns     true or false
+ * @returns     true for true, on, or a nonzero number; false otherwise
  */
 bool CmdProc::parseOnOff(  const char *token ) const
 {
@@ -381,12 +367,15 @@ bool CmdProc::parseOnOff(  const char *token ) const
 }
 
 /**
- * @brief performs the action of the "DATA" command.
- *    The given data is decoded, stored into the led data-store
+ * @brief   Decode and store one DATA command in the framebuffer.
  *
- * @param row       starting row number
- * @param col       the col number
- * @param bindata   binary-encoded data. i.e., 0s and 1s in ascii chars
+ * Characters advance downward from the starting row within one column. ASCII
+ * '0' and '1' update pixels; other characters are ignored but still consume a
+ * row position.
+ *
+ * @param row       starting display row, 1-based
+ * @param col       display column, 1-based
+ * @param bindata   final command token containing ASCII zeroes and ones
  *
  * @returns        NO_ERROR or an error code
  */
@@ -447,9 +436,10 @@ void hexdump( byte streamID, void *addr, const unsigned int len )
 
 
 /**
- * @brief         debug function to dump the LED data 
+ * @brief         Write formatted framebuffer contents to one output stream.
  *
- * @param panel   panel number 0 or [1..displayConfig.nPanels]
+ * @param streamID  output stream, SOCKET or CONSOLE
+ * @param panel     PANEL0 for the full display, or one physical panel
  *
  * @returns       NO_ERROR or ERR_PANEL
  */
@@ -507,14 +497,33 @@ ResultIds CmdProc::dumpPixels( byte streamID, byte panel )
 }
 
 /**
- * @brief         debug function to dump the current status/settings
+ * @brief         Format current controller, display, and network status.
  *
- * @returns       pointer to formatted status string
+ * @returns       pointer to shared outputBuf, overwritten by later formatting
  */
 const char * CmdProc::statusText()
 {
     const EthernetHardwareStatus hardwareStatus = Ethernet.hardwareStatus();
     const EthernetLinkStatus linkStatus = Ethernet.linkStatus();
+    const char *hardwareName;
+
+    switch (hardwareStatus) {
+        case EthernetNoHardware:
+            hardwareName = "none";
+            break;
+        case EthernetW5100:
+            hardwareName = "W5100";
+            break;
+        case EthernetW5200:
+            hardwareName = "W5200";
+            break;
+        case EthernetW5500:
+            hardwareName = "W5500";
+            break;
+        default:
+            hardwareName = "other";
+            break;
+    }
 
     snprintf(outputBuf, sizeof outputBuf,
              "STATUS\n"
@@ -564,9 +573,7 @@ const char * CmdProc::statusText()
              networkConfig.mac[4],
              networkConfig.mac[5],
 
-             (hardwareStatus == EthernetW5500
-                    ? "W5500"
-                    : ( hardwareStatus == EthernetNoHardware ? "none": "other")),
+             hardwareName,
 
              (linkStatus == LinkON ? "up": "down"),
              (timingOutputEnabled ? "on": "off")

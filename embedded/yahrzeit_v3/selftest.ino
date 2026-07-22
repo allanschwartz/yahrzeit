@@ -1,4 +1,3 @@
-
 /**
  * @file        selftest.ino
  *
@@ -7,7 +6,8 @@
  *              These tests exercise the logical LedWall interface and,
  *              indirectly, the YYZ_PIXEL hardware driver underneath it.
  *              The tests are intended for bring-up, manufacturing checks,
- *              wiring verification, and field diagnostics.
+ *              wiring verification, and field diagnostics. Startup also uses
+ *              the marching-row pattern before restoring saved display data.
  *
  * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
  *              version 2.0 revised in July 2015
@@ -18,8 +18,9 @@
  * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
  *              All rights reserved.
  *
- * @notes       see project notes in file yahrzeit_v3.h
- *              Note that these selftests overwrite the current framebuffer contents
+ * @notes       See project notes in yahrzeit_v3.h. These tests modify the
+ *              framebuffer and may refresh the visible display. They do not
+ *              save test patterns to EEPROM.
  */
 
 #include "yahrzeit_v3.h"
@@ -34,8 +35,8 @@
  *
  * @param panel   PANEL0 for the whole display, or panel number 1..displayConfig.nPanels.
  *
- * @note This is the first bring-up test because it verifies both ends of
- *       the logical addressing range without lighting every pixel.
+ * @note This verifies both ends of the logical addressing range without
+ *       lighting every pixel. Existing framebuffer pixels are not cleared.
  */
 static void selftestCorners(byte panel)
 {
@@ -131,7 +132,7 @@ static void selftestCheckerboard(byte panel)
 }
 
 /**
- * @brief   SELF TEST 5: marching row pattern.
+ * @brief   Run a marching-row pattern within one physical panel.
  *
  * Turns on one row at a time, pauses, then turns that row off before moving
  * to the next row.
@@ -172,6 +173,10 @@ void selftestMarchingRowInPanel(byte panel)
     }
 }
 
+/**
+ * @brief   Run the marching-row pattern through every configured panel in
+ *          panel-number order.
+ */
 void    selftestMarchingRowAllPanels()
 {
     for (byte panel = 1; panel <= displayConfig.nPanels; panel++) {
@@ -184,7 +189,14 @@ void    selftestMarchingRowAllPanels()
     }
 }
 
+/**
+ * @brief   Run the marching-row pattern across every configured panel.
+ *
+ * @param panel   retained for the common self-test interface; currently
+ *                ignored
+ */
 void    selftestMarchingRow( byte panel ) {
+    (void)panel;
     selftestMarchingRowAllPanels();
 }
 
@@ -261,15 +273,16 @@ static void selftestDescription(byte streamID,
  *      TEst 2 [panel]   all pixels on
  *      TEst 3 [panel]   all pixels off
  *      TEst 4 [panel]   checkerboard pattern
- *      TEst 5 [panel]   marching row pattern
+ *      TEst 5           marching row pattern across every panel
  *      TEst 6 [panel]   marching column pattern
  *
  * If panel is omitted by the command layer, PANEL0 is used and the test
  * applies to the entire active display.
  *
  * @param streamID     output stream, such as SOCKET or CONSOLE.
- * @param testNumber   self-test number, 1..7.
- * @param panel        PANEL0 for whole display, or panel number 1..displayConfig.nPanels.
+ * @param testNumber   self-test number, 1..6.
+ * @param panel        PANEL0 for whole display, or panel number
+ *                     1..displayConfig.nPanels; test 5 currently ignores it
  *
  * @returns            NO_ERROR, ERR_PANEL, or ERR_TESTNUM.
  */

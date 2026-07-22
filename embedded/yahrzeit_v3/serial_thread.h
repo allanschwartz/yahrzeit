@@ -1,7 +1,3 @@
-#pragma once
-
-#include <Arduino.h>
-
 /**
  * @file        serial_thread.h
  *
@@ -18,36 +14,43 @@
  *              timestamped logging and uptime formatting, used by both the
  *              serial and socket input paths.
  *
+ * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
+ *              version 2.0 revised in July 2015
+ *              version 3.0 revised in April 2026
+ *
+ * @author      Allan M. Schwartz, allanschwartz@sbcglobal.net
+ *
  * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
  *              All rights reserved.
  */
 
+#pragma once
+
+#include <Arduino.h>
+
 
 /**
- * @brief   Initialize the UART or Serial class
+ * @brief   Initialize the USB serial console at 115200 baud.
  */
 void    serialInit();
 
 /**
- * @brief   Serial input main loop thread
+ * @brief   Service the nonblocking serial command loop once.
  */
 void    serialThread();
 
 /**
- * @brief   Read a single line from the serial UART, (similar to fgets())
+ * @brief   Accumulate one newline-terminated command from USB serial input.
  */
 bool    serialGets(char inputBuf[], const unsigned maxsize, unsigned &index);
 
 /**
- * @brief   Displays a time-stamped line, typically a diagnostic line
- *          on the serial console.  A trailing newline is also written.
- *          Used in both serial_thread.ino and socket_thread.ino
+ * @brief   Write one uptime-prefixed diagnostic line to the serial console.
  */
 void    serialLog( const char *msg );
 
 
 /**
- * @brief   Displays the uptime, in the format hh:mm:ss.mmm  (with millisecond precision)
- *          Used in both serial_thread.ino and socket_thread.ino
+ * @brief   Format time since startup as hh:mm:ss.mmm in a shared buffer.
  */
 const char *displayUptime();

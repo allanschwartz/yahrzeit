@@ -22,12 +22,13 @@
  */
 
 #include "yahrzeit_v3.h"
+#include <EEPROM.h>
 
 // ----------------------------------------------------------------------------
 //            F R A M E B U F F E R   L A Y O U T
 // ----------------------------------------------------------------------------
 
-//  We use these values, so the display buffer is dimensioned maximally
+// Fixed capacity keeps the EEPROM representation independent of active geometry.
 constexpr byte MAX_N_ROWS = 64;
 constexpr byte MAX_N_COLS = 64;
 
@@ -105,6 +106,8 @@ void YyzPixel::begin()
  *
  * @note This modifies only the packed framebuffer.  The physical display is
  *       not updated until refresh() is called.
+ *       Active geometries must have a row count divisible by eight because
+ *       each column occupies an integral number of framebuffer bytes.
  */
 void YyzPixel::setPixel(uint16_t x, uint16_t y, uint8_t pixel)
 {
@@ -179,6 +182,9 @@ void YyzPixel::clear()
  * OE is held disabled while the serial data is shifted, then ST is pulsed to
  * copy the shift-register contents into the 74HC595 storage registers.  Finally
  * OE is restored to its configured PWM brightness value.
+ *
+ * @note If display output has been disabled with off(), this function returns
+ *       without shifting or latching data.
  *
  * @note 74HC595 timing requirements are in the tens of ns.  The µs-scale
  *       delays here are intentionally generous for robustness and visibility
@@ -255,7 +261,9 @@ bool YyzPixel::isActiveLow() const
  *      0     fully enabled / brightest
  *      255   fully disabled / off
  *
- * The value is stored in displayConfig and applied immediately.
+ * The value is stored in displayConfig and applied immediately by writing OE.
+ * It therefore also re-enables PWM output after off(); callers that require a
+ * persistent blank should not change brightness until the display is enabled.
  */
 void YyzPixel::setBrightness(uint8_t brightness)
 {
@@ -264,10 +272,10 @@ void YyzPixel::setBrightness(uint8_t brightness)
 }
 
 /**
- * @brief Enable the display outputs.
+ * @brief Enable the display outputs immediately at full brightness.
  *
- * Sets the display state to on and drives OE LOW.  A later call to refresh()
- * will restore the configured PWM brightness.
+ * Sets the display state to on and drives OE LOW. This bypasses configured PWM
+ * brightness until refresh() or setBrightness() is called.
  */
 void YyzPixel::on()
 {

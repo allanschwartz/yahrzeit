@@ -1,13 +1,3 @@
-#pragma once
-
-#include <Arduino.h>
-#include "YyzPixel.h"
-
-enum ResultIds : byte {
-    NO_ERROR = 0, ERR_SYNTAX, ERR_MISSING, ERR_ROW,
-    ERR_COL, ERR_PANEL, ERR_BRIGHT, ERR_TESTNUM,
-};
-
 /**
  * @file        LedWall.h
  *
@@ -22,23 +12,40 @@ enum ResultIds : byte {
  *              controller command language expressed in wall terms: all,
  *              panel, row, column, pixel, refresh, save, and load.
  *
- *              LedWall owns the logical framebuffer behavior, EEPROM
- *              save/load operations, brightness control, and refresh path.
+ *              LedWall owns geometry validation and panel mapping. It
+ *              delegates framebuffer storage, EEPROM persistence, brightness,
+ *              and physical refresh operations to YyzPixel.
+ *
+ * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
+ *              version 2.0 revised in July 2015
+ *              version 3.0 revised in April 2026
+ *
+ * @author      Allan M. Schwartz, allanschwartz@sbcglobal.net
  *
  * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
  *              All rights reserved.
  */
 
+#pragma once
+
+#include <Arduino.h>
+#include "YyzPixel.h"
+
+enum ResultIds : byte {
+    NO_ERROR = 0, ERR_SYNTAX, ERR_MISSING, ERR_ROW,
+    ERR_COL, ERR_PANEL, ERR_BRIGHT, ERR_TESTNUM,
+};
+
 class LedWall
 {
 public:
     /**
-     * @brief   Construct the logical LED wall abstraction
+     * @brief   Construct the logical wall around one YYZ_PIXEL driver.
      */
     explicit LedWall(YyzPixel& pixels);
 
     /**
-     * @brief   Initialize the logical LED wall.
+     * @brief   Initialize the logical wall with an empty framebuffer.
      */
     void begin();
 
@@ -63,12 +70,12 @@ public:
     bool pixelValueInPanel(byte row, byte col, byte panel) const;
 
     /**
-     * @brief   Save the display framebuffer to EEPROM.
+     * @brief   Save the complete framebuffer to EEPROM.
      */
     void savePixels();
 
     /**
-     * @brief   Load the display framebuffer from EEPROM.
+     * @brief   Load the complete framebuffer from EEPROM.
      */
     void loadPixels();
 
@@ -78,7 +85,7 @@ public:
     void setBrightness(byte brightness);
 
     /**
-     * @brief   Turn all pixels on or off.
+     * @brief   Set every framebuffer pixel in the selected panel or wall.
      */
     ResultIds allOn(bool pixelBit, byte panel);
 

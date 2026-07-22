@@ -1,7 +1,8 @@
 /**
  * @file        yahrzeit_v3.h
  *
- * @brief       Overall project header for the Yahrzeit Embedded Controller
+ * @brief       Project-wide configuration and declarations for the Yahrzeit
+ *              Embedded Controller.
  *
  * @details
  *              BLUF:
@@ -41,13 +42,12 @@
  *        
  *      Yahrzeit Pixel board / YyzPixel
  *          The small LED driver boards behind the wall. In this code, the
- *          low-level pixel driver is named YyzPixel. 
- *          A string of 7 YPX boards comprise each column, a total 280 YPX
- *          boards comprise the entire LED array
+ *          low-level pixel driver is named YyzPixel. LedWall.cpp defines the
+ *          logical geometry and panel mapping presented to this driver.
  *        
  *      Arduino Ethernet Shield
- *          The Ethernet board which provides a TCP/IP connection between 
- *          the Embedded Controller and the Yahrzeit Appliance..
+ *          The Ethernet board which provides a TCP/IP connection between
+ *          the Embedded Controller and the Yahrzeit Appliance.
  *          
  * IMPLEMENTATION HISTORY
  *
@@ -104,7 +104,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdarg.h>
-#include <EEPROM.h>
 #include <Ethernet.h>
 
 // include all of our project headers, including our classes 
@@ -179,11 +178,16 @@ extern bool debugPixel;
 //            F U N C T I O N   P R O T O T Y P E S
 // ----------------------------------------------------------------------------
 
-// declare as extern the public functions in yahrzeit_v3.ino
+/** Optionally refresh the display, then block for the requested interval. */
 void    sleepMs( bool, const unsigned int ms );
+
+/** Write the supplied string to the selected console or socket stream. */
 void    writeOutput( byte streamID, const char *msg );
 
+/** Report a failed assertion, signal panic for five minutes, then restart. */
 [[noreturn]] void panic(const char *expr, const char *file, int line);
+
+/** Report a failed assertion with formatted context, then restart. */
 [[noreturn]] void panicContext(const char *expr, const char *file, int line,
                                const char *fmt, ...);
 

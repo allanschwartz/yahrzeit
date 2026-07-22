@@ -1,7 +1,8 @@
 /**
  * @file        yahrzeit_v3.ino
  *
- * @brief       top-level C code the Yahrzeit Embedded Controller
+ * @brief       Top-level configuration, startup, and cooperative main loop
+ *              for the Yahrzeit Embedded Controller.
  *
  * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
  *              version 2.0 revised in July 2015
@@ -32,14 +33,10 @@
  *              Arduino Uno pin:     4   5   6   7
  *
  *
- *      Using the YYZ Pixel board(s)
- * 	        The CBS Yahrzeit Wall is 56 rows x 40 columns of pixels.
- * 	        Each YYZ Pixel board has 8 or 10 individual LEDs.  The
- * 	        Wall and is built from 2 or 3 YYZ Pixel boards per panel
- * 	        column, and 8 pixel boards per column, times 40 columns,
- * 	        for a total of 320 boards.
- *          
- *          A Panel is at most 28 rows x 20 columns of pixels.
+ *      Using the YYZ Pixel boards
+ *          The CBS Yahrzeit Wall is represented as a 56-row x 40-column
+ *          logical display. LedWall.cpp defines how its 21 physical memorial
+ *          panels map into that coordinate space.
  *
  *          V3 system (Arduino Uno R4 Minima)
  *
@@ -47,9 +44,9 @@
  *              Arduino Uno pin:     4   5   6   7
  *
  *      The Ethernet Shield 2 uses the Arduino Uno SPI interface:
- *              D10 CS, D11 CIPO, D12 COPI, D13 SCK
+ *              D10 CS, D11 COPI, D12 CIPO, D13 SCK
  * 
- *      The YAHRZEIT CONTROLLER PIXEL INTERFACE board has a STATUS LED
+ *      The Yahrzeit Controller Pixel Interface board has an ALIVE status LED
  *      connected to pin 3.
  */
 
@@ -71,8 +68,8 @@ DisplayConfig displayConfig = {
     .nPanels = 0
 };
 
-// The STATUS LED is the LED on the Yahrzeit Controller Pixel Interface board,
-// connected to Arduino Uno R4 Minima, pin D3
+// The ALIVE status LED is on the Yahrzeit Controller Pixel Interface board and
+// is connected to Arduino Uno R4 Minima pin D3.
 static constexpr byte STATUS_LED_PIN = 3;
 static constexpr byte STATUS_LED_BRIGHTNESS = 128; // 50% PWM duty cycle
 static constexpr unsigned long ALIVE_PERIOD_MS = 2560;
@@ -99,9 +96,8 @@ CmdProc cmdProc(ledWall);
 //            E T H E R N E T
 // ----------------------------------------------------------------------------
 
-// Make up a MAC address and IP address for your controller below.
-// The IP address will be dependent on your local network.
-// gateway and subnet are optional:
+// Locally administered MAC address and static IPv4 settings. Confirm the
+// selected production or lab values before uploading firmware.
 
 NetworkConfig networkConfig = {
     .mac = { 0x02, 0x19, 0x55, 0x11, 0x00, 0x09 },          // 1955-11-09
@@ -118,6 +114,8 @@ NetworkConfig networkConfig = {
         .gateway = IPAddress(192, 168, 86, 1),
         .subnet = IPAddress(255, 255, 255, 0),
     #endif
+    .wifiSsid = {},
+    .wifiPassword = {}
 };
 
 // TCP command port used by the PHP appliance's bin/yahrzeit wrapper through nc.
@@ -148,7 +146,11 @@ static void breathingLed();
 // ----------------------------------------------------------------------------
 
 /**
- * @brief   application startup, called at the end of setup()
+ * @brief   Initialize the wall, run the visible startup tests, then restore
+ *          and display the framebuffer saved in EEPROM.
+ *
+ * This is called after the serial, Ethernet, and command socket interfaces
+ * have been initialized by setup().
  */
 static void controllerBegin()
 {
@@ -168,7 +170,7 @@ static void controllerBegin()
     selftestMarchingRow( PANEL0 );
     sleepMs(true, 1500);
 
-    // restore the last pattern stored yesterday
+    // Restore the last explicitly saved display pattern.
     ledWall.loadPixels();
     
     // and refresh
@@ -178,7 +180,8 @@ static void controllerBegin()
 }
 
 /**
- * @brief   setup ... initialization code, to run once:
+ * @brief   Initialize the ALIVE LED, serial console, Ethernet interface,
+ *          command socket, and LED wall once at startup.
  */
 void setup()
 {
@@ -199,7 +202,8 @@ void setup()
 }
 
 /**
- * @brief   loop ... main code, to run repeatedly:
+ * @brief   Cooperatively service serial input, socket input, and the ALIVE
+ *          LED animation.
  */
 void loop()
 {
@@ -211,7 +215,10 @@ void loop()
 }
 
 /**
- * @brief   Update the alive-status LED.
+ * @brief   Drive the ALIVE status LED through one smooth breathing cycle.
+ *
+ * The animation confirms that the cooperative main loop is running. It does
+ * not indicate Ethernet or command-socket health.
  */
 static void breathingLed()
 {
@@ -220,16 +227,16 @@ static void breathingLed()
     float phase = TWO_pi * (float)elapsedMs / ALIVE_PERIOD_MS;  /* radians: [0.0 .. 2π) */
     float sinePhase = sinf(phase);                              /* plotted as a sine wave */
     float intensity = (sinePhase + 1.0f) / 2.0f;                /* scaled to [0.0 .. 1.0] */
-    int pwmValue = intensity * STATUS_LED_BRIGHTNESS;           /* int:     [0 .. 255] */
+    int pwmValue = intensity * STATUS_LED_BRIGHTNESS;           /* int: [0..STATUS_LED_BRIGHTNESS] */
 
     analogWrite(STATUS_LED_PIN, pwmValue);
 }
 
 /**
- * @brief   writeOutput ... prints a single string to the stream
+ * @brief   Write one string, unchanged, to the selected output stream.
  *
  * @param streamID    display output on the SOCKET or CONSOLE
- * @param msg         the line to display, a C string
+ * @param msg         null-terminated string; no newline is added
  */
 void writeOutput( byte streamID, const char *msg )
 {
@@ -249,7 +256,7 @@ void writeOutput( byte streamID, const char *msg )
 }
 
 /** 
- * @brief   sleepMs ... delays the specified number of milliseconds
+ * @brief   Optionally refresh the display, then block for a fixed interval.
  *
  * @param doRefresh   should we do a refresh, before we start the sleep?
  * @param ms          number of milliseconds to delay
@@ -264,11 +271,14 @@ void sleepMs( bool doRefresh, const unsigned int ms )
 }   
 
 /** 
- * panic ... if a serious firmware error occurs, notice it
+ * @brief   Report a failed assertion, signal panic, and restart.
  *
  * @param expr   a text description of the expression which failed
  * @param file   where the panic originated from
  * @param line   and on which line number
+ *
+ * @note This function does not return. It uses the ALIVE LED as a panic
+ *       indicator for five minutes before resetting the controller.
  */
 [[noreturn]] void panic(const char *expr, const char *file, int line)
 {
@@ -285,6 +295,17 @@ void sleepMs( bool doRefresh, const unsigned int ms )
     blinkPanicLedThenRestart();
 }
 
+/**
+ * @brief   Report a failed assertion with formatted diagnostic context,
+ *          signal panic, and restart.
+ *
+ * @param expr   text of the expression that failed
+ * @param file   source file containing the assertion
+ * @param line   source line containing the assertion
+ * @param fmt    printf-style format for additional context
+ *
+ * @note This function does not return.
+ */
 [[noreturn]] void panicContext(const char *expr, const char *file, int line,
                                const char *fmt, ...)
 {
@@ -314,7 +335,7 @@ void sleepMs( bool doRefresh, const unsigned int ms )
 constexpr byte PANIC_MINUTES = 5;
 
 /**
- * @brief   Blink the built-in LED during a panic, then reset the controller.
+ * @brief   Blink the ALIVE LED for five minutes, then reset the controller.
  */
 [[noreturn]] static void blinkPanicLedThenRestart()
 {

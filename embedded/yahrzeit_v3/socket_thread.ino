@@ -20,6 +20,12 @@
  *              and incremental line input. It should not parse Yahrzeit
  *              command semantics or manipulate wall geometry directly.
  *
+ * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
+ *              version 2.0 revised in July 2015
+ *              version 3.0 revised in April 2026
+ *
+ * @author      Allan M. Schwartz, allanschwartz@sbcglobal.net
+ *
  * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
  *              All rights reserved.
  */
@@ -33,7 +39,11 @@
 static constexpr byte ETHERNET_CS_PIN = 10;   // W5500 CS pin on Ethernet Shield 2
 
 /**
- * @brief   Is the Ethernet ready for a socket connection?
+ * @brief   Determine whether Ethernet hardware and link state permit socket
+ *          service.
+ *
+ * @returns false when hardware is absent or the link is explicitly down;
+ *          true for LinkON and unknown link states
  */
 bool ethernetIsReady()
 {
@@ -47,7 +57,8 @@ bool ethernetIsReady()
 }
 
 /**
- * @brief   Initialize the Ethernet instance, setting the IP address.
+ * @brief   Initialize Ethernet with the configured static network settings
+ *          and report detected hardware, link state, and local address.
  */
 void ethernetInit()
 {
@@ -89,7 +100,8 @@ void ethernetInit()
 }
 
 /**
- * @brief   Begin listening on the command socket.
+ * @brief   Begin listening on the configured command port when Ethernet is
+ *          ready.
  */
 void socketInit()
 {
@@ -106,9 +118,11 @@ void socketInit()
 }
 
 /**
- * @brief   Implement the socket stream I/O gets(), puts() loop.
+ * @brief   Service the nonblocking TCP command loop once.
  *
- * In each call to socketThread, read at most one line and execute one command.
+ * Accumulates at most one command across calls. When a newline or full buffer
+ * completes it, dispatches through CmdProc and returns command, result, and
+ * optional execution-timing feedback to the connected client.
  */
 void socketThread()
 {
@@ -123,9 +137,8 @@ void socketThread()
     GetsReturns rc = socketGets(inputBuf, sizeof inputBuf, inputBufPos);
 
     switch (rc) {
-        case GETS_NOCONNECTION: // no available byte or no connection
-        case GETS_NOCHAR:       // no data is available
-        case GETS_PARTIAL:      // recorded a partial command line
+        case GETS_NOCONNECTION: // no connected client
+        case GETS_NOCHAR:       // no complete command yet
             break;
         case GETS_FULLCMD:      // complete command line, to interpret
         {
@@ -160,16 +173,20 @@ void socketThread()
 }
 
 /**
- * @brief   Read a single line from the network socket.
+ * @brief   Accumulate one newline-terminated command from the TCP client.
  *
- * This non-threaded version of console_gets() does not block. It returns
- * after the current packet is read, or immediately if no data is available.
+ * This function is nonblocking and preserves its position through the index
+ * reference. NUL and carriage-return bytes are ignored; newline completes the
+ * command but is not stored. A full buffer also completes the truncated
+ * command. Partial input remains in the buffer for the next call.
  *
  * @param inputBuf   The resulting null-terminated string.
  * @param maxsize    Max size to store, including the NULL terminator.
  * @param index      Reference to the number of bytes read into inputBuf.
  *
- * @returns          An enumeration representing the gets state.
+ * @returns          GETS_NOCONNECTION when no client is connected,
+ *                   GETS_NOCHAR while no complete command is available, or
+ *                   GETS_FULLCMD when a command is ready
  */
 GetsReturns socketGets(char inputBuf[], const unsigned maxsize, unsigned &index)
 {
