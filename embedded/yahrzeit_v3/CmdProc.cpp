@@ -113,7 +113,7 @@ const char TestMenu[]  =
     "\tTEst 2 [<panel>]  --   all pixels ON\n"
     "\tTEst 3 [<panel>]  --   all pixels OFF\n"
     "\tTEst 4 [<panel>]  --   checkerboard test\n"
-    "\tTEst 5            --   marching row across all panels\n"
+    "\tTEst 5 [<panel>]  --   marching row pattern\n"
     "\tTEst 6 [<panel>]  --   marching column pattern\n";
 
 }       // end anonymous namespace

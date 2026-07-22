@@ -132,72 +132,48 @@ static void selftestCheckerboard(byte panel)
 }
 
 /**
- * @brief   Run a marching-row pattern within one physical panel.
+ * @brief   SELF TEST 5: marching-row pattern.
  *
- * Turns on one row at a time, pauses, then turns that row off before moving
- * to the next row.
+ * For PANEL0, each logical wall row is displayed once across the full wall.
+ * A specific panel number limits the pattern to that panel's local rows and
+ * columns.
  *
- * @param panel   PANEL0 for the whole display, or panel number 1..displayConfig.nPanels.
+ * @param panel   PANEL0 for the whole display, or panel number
+ *                1..displayConfig.nPanels
  */
-
-void selftestMarchingRowInPanel(byte panel)
+void selftestMarchingRow(byte panel)
 {
-    ASSERT(panel >= 1);
     ASSERT(panel <= displayConfig.nPanels);
 
-    const byte nRows = ledWall.rowsInPanel(panel);
-    const byte nCols = ledWall.colsInPanel(panel);
+    const byte nRows = (panel == PANEL0)
+                     ? displayConfig.nRows
+                     : ledWall.rowsInPanel(panel);
 
-    ASSERT(nRows > 0);
-    ASSERT(nCols > 0);
-
-    snprintf(outputBuf, sizeof outputBuf,
-             "selftest: marching row panel=%u rows=%u cols=%u",
-             panel, nRows, nCols);
-    serialLog(outputBuf);
+    const byte nCols = (panel == PANEL0)
+                     ? displayConfig.nCols
+                     : ledWall.colsInPanel(panel);
 
     for (byte row = 1; row <= nRows; ++row) {
         for (byte col = 1; col <= nCols; ++col) {
-            const ResultIds rc = ledWall.setPixelInPanel(1, row, col, panel);
+            const ResultIds rc = (panel == PANEL0)
+                               ? ledWall.setPixel(1, row, col)
+                               : ledWall.setPixelInPanel(1, row, col, panel);
             ASSERT(rc == NO_ERROR);
         }
 
         sleepMs(true, 300);
 
         for (byte col = 1; col <= nCols; ++col) {
-            const ResultIds rc = ledWall.setPixelInPanel(0, row, col, panel);
+            const ResultIds rc = (panel == PANEL0)
+                               ? ledWall.setPixel(0, row, col)
+                               : ledWall.setPixelInPanel(0, row, col, panel);
             ASSERT(rc == NO_ERROR);
         }
 
         sleepMs(true, 1);
     }
-}
 
-/**
- * @brief   Run the marching-row pattern through every configured panel in
- *          panel-number order.
- */
-void    selftestMarchingRowAllPanels()
-{
-    for (byte panel = 1; panel <= displayConfig.nPanels; panel++) {
-        snprintf(outputBuf, sizeof outputBuf,
-                 "selftest: panel %u/%u",
-                 panel, displayConfig.nPanels);
-        serialLog(outputBuf);
-        selftestMarchingRowInPanel(panel);
-        sleepMs(true, 500);
-    }
-}
-
-/**
- * @brief   Run the marching-row pattern across every configured panel.
- *
- * @param panel   retained for the common self-test interface; currently
- *                ignored
- */
-void    selftestMarchingRow( byte panel ) {
-    (void)panel;
-    selftestMarchingRowAllPanels();
+    sleepMs(true, 500);
 }
 
 /**

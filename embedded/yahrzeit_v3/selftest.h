@@ -36,9 +36,8 @@
 ResultIds selftest(byte streamID, byte testNumber, byte panel);
 
 /**
- * @brief   Run the marching-row pattern across every configured panel.
+ * @brief   Run a marching-row pattern across the wall or one panel.
  *
- * @note The panel argument is retained for the common self-test interface but
- *       is currently ignored.
+ * @param panel   PANEL0 for the whole display, or a physical panel number
  */
 void    selftestMarchingRow( byte panel );
