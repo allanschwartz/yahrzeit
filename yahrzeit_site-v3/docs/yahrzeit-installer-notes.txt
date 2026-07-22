@@ -25,10 +25,11 @@
 #   It does not transmit commands to the physical LED controller.
 #   It does not modify memorial CSV data.
 #   During an update it remembers the previously recorded controller address
-#   and preserves data/minhag.ini and data/yahrzeits-rev4.csv. It resets
-#   deployed code to the selected remote branch, restores the live data, and
-#   asks whether to keep or replace the remembered controller address. Do not
-#   make source code edits in the appliance checkout.
+#   and brightness values, and preserves data/minhag.ini and
+#   data/yahrzeits-rev4.csv. It resets deployed code to the selected remote
+#   branch, restores the live data, and asks whether to keep or replace the
+#   remembered controller address. Do not make source code edits in the
+#   appliance checkout.
 #
 # One-time use from a fresh appliance:
 #
@@ -67,6 +68,7 @@
 #   - policy-derived cron entries owned by the appliance administrator account
 #   - three months of compressed weekly automation logs under data/
 #   - controller address requested interactively and stored in the application
+#   - calibrated normal and full-wall controller brightness preserved on update
 #   - data/minhag.ini and data/yahrzeits-rev4.csv preserved during updates
 #   - a narrow Apache systemd exception allowing writes to the application
 #     data directory and access to the cron helper's sudoers authorization

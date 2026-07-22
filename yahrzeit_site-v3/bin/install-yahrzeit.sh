@@ -84,15 +84,19 @@ else
 
     cd "$REPO_DIR"
 
-    # Remember only the previously selected controller address. The tracked
-    # configuration and program defaults should otherwise update with Git.
+    # Remember the site-specific controller settings before replacing the
+    # deployed checkout with the selected release.
     PREVIOUS_CONTROLLER_HOST=""
+    PREVIOUS_CONTROLLER_BRIGHTNESS=""
+    PREVIOUS_CONTROLLER_BRIGHTNESS_ALL_ON=""
     for relative_path in \
         "$SITE_SUBDIR/bin/yahrzeit-controller.conf" \
         "$SITE_SUBDIR/bin/yahrzeit-controller"; do
         controller_config="$REPO_DIR/$relative_path"
         if [ -r "$controller_config" ]; then
             PREVIOUS_CONTROLLER_HOST="$(awk -F= '$1 == "CONTROLLER_HOST" { print substr($0, index($0, "=") + 1); exit }' "$controller_config")"
+            PREVIOUS_CONTROLLER_BRIGHTNESS="$(awk -F= '$1 == "CONTROLLER_BRIGHTNESS" { print substr($0, index($0, "=") + 1); exit }' "$controller_config")"
+            PREVIOUS_CONTROLLER_BRIGHTNESS_ALL_ON="$(awk -F= '$1 == "CONTROLLER_BRIGHTNESS_ALL_ON" { print substr($0, index($0, "=") + 1); exit }' "$controller_config")"
             if [ -n "$PREVIOUS_CONTROLLER_HOST" ]; then
                 break
             fi
@@ -151,6 +155,8 @@ CONTROLLER_CONFIG_FILE="bin/yahrzeit-controller.conf"
 # shellcheck source=bin/yahrzeit-controller.conf
 source "$CONTROLLER_CONFIG_FILE"
 RECORDED_CONTROLLER_HOST="${PREVIOUS_CONTROLLER_HOST:-${CONTROLLER_HOST:-}}"
+RECORDED_CONTROLLER_BRIGHTNESS="${PREVIOUS_CONTROLLER_BRIGHTNESS:-${CONTROLLER_BRIGHTNESS:-128}}"
+RECORDED_CONTROLLER_BRIGHTNESS_ALL_ON="${PREVIOUS_CONTROLLER_BRIGHTNESS_ALL_ON:-${CONTROLLER_BRIGHTNESS_ALL_ON:-128}}"
 CONTROLLER_HOST_INPUT="${YAHRZEIT_CONTROLLER_HOST:-}"
 
 if [ -z "$CONTROLLER_HOST_INPUT" ] && [ -t 0 ]; then
@@ -170,9 +176,25 @@ if ! grep -q '^CONTROLLER_HOST=' "$CONTROLLER_CONFIG_FILE"; then
     exit 1
 fi
 
+if [[ ! "$RECORDED_CONTROLLER_BRIGHTNESS" =~ ^[0-9]+$ ]] ||
+   (( RECORDED_CONTROLLER_BRIGHTNESS < 1 || RECORDED_CONTROLLER_BRIGHTNESS > 254 )); then
+    echo "ERROR: invalid CONTROLLER_BRIGHTNESS: $RECORDED_CONTROLLER_BRIGHTNESS" >&2
+    exit 1
+fi
+
+if [[ ! "$RECORDED_CONTROLLER_BRIGHTNESS_ALL_ON" =~ ^[0-9]+$ ]] ||
+   (( RECORDED_CONTROLLER_BRIGHTNESS_ALL_ON < 1 || RECORDED_CONTROLLER_BRIGHTNESS_ALL_ON > 254 )); then
+    echo "ERROR: invalid CONTROLLER_BRIGHTNESS_ALL_ON: $RECORDED_CONTROLLER_BRIGHTNESS_ALL_ON" >&2
+    exit 1
+fi
+
 sed -i "s/^CONTROLLER_HOST=.*/CONTROLLER_HOST=$CONTROLLER_HOST_INPUT/" "$CONTROLLER_CONFIG_FILE"
+sed -i "s/^CONTROLLER_BRIGHTNESS=.*/CONTROLLER_BRIGHTNESS=$RECORDED_CONTROLLER_BRIGHTNESS/" "$CONTROLLER_CONFIG_FILE"
+sed -i "s/^CONTROLLER_BRIGHTNESS_ALL_ON=.*/CONTROLLER_BRIGHTNESS_ALL_ON=$RECORDED_CONTROLLER_BRIGHTNESS_ALL_ON/" "$CONTROLLER_CONFIG_FILE"
 chmod 644 "$CONTROLLER_CONFIG_FILE"
-printf 'Controller: %s\n\n' "$CONTROLLER_HOST_INPUT"
+printf 'Controller: %s\n' "$CONTROLLER_HOST_INPUT"
+printf 'Normal brightness: %s\n' "$RECORDED_CONTROLLER_BRIGHTNESS"
+printf 'Full-wall brightness: %s\n\n' "$RECORDED_CONTROLLER_BRIGHTNESS_ALL_ON"
 
 mkdir -p data/backups
 if [ -f data/scheduler.log ] && [ ! -e data/automation.log ]; then
@@ -393,6 +415,8 @@ Install/update complete.
 ✓ Scheduled lighting installed for: $CRON_USER
 ✓ Automation log rotation installed: 13 compressed weekly logs
 ✓ Controller address: $CONTROLLER_HOST_INPUT
+✓ Normal brightness: $RECORDED_CONTROLLER_BRIGHTNESS
+✓ Full-wall brightness: $RECORDED_CONTROLLER_BRIGHTNESS_ALL_ON
 
 Access the site at:
   http://$FIRST_IP/$WEB_ALIAS/

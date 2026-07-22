@@ -6,7 +6,17 @@ Yahrzeit Wall embedded controller.
 This README is intended for future maintainers of the embedded controller.
 
 The top-level repository README explains the full Yahrzeit project. The
-`yahrzeit_site-v3` README explains the PHP/Linux appliance. This README is only about the Arduino controller firmware in this directory.
+`yahrzeit_site-v3` README explains the PHP/Linux appliance. This README is only
+about the Arduino controller firmware in this directory. See `INSTALL.md` for
+the production firmware build, upload, and verification procedure.
+
+<p align="center">
+  <img src="images/yahrzeit-controller-assembly.jpg"
+       alt="Yahrzeit Embedded Controller V3 assembly" width="560">
+</p>
+
+*Yahrzeit Embedded Controller V3 assembly. The illuminated green LED on the
+Pixel Interface board is the ALIVE indicator.*
 
 ## What This Controller Does
 
@@ -44,6 +54,17 @@ Arduino Uno R4 Minima
     -> Yahrzeit Controller Pixel Interface board
       -> ribbon cable to YYZ Pixel board chain
 ```
+
+### Enclosure and mounting
+
+The three-board stack is installed in a close-fitting commercial enclosure.
+When the clear cover is secured, it touches the tops of the connectors and
+helps prevent the stacked boards from working apart through vibration—or, this
+being San Francisco, an earthquake.
+
+The green ALIVE LED on the Pixel Interface board slowly brightens and dims
+while the main firmware loop is running. It confirms that the controller is
+alive; it does not by itself confirm Ethernet communication with the appliance.
 
 The Ethernet shield uses the Arduino SPI interface; D10 is the chip select:
 
@@ -111,21 +132,21 @@ For production installation, enable `CBS_56x40_WALL` and disable
 
 ## Network Defaults
 
-The controller listens on TCP port:
-
-```cpp
-SOCKET_LISTEN_PORT = 2001
-```
-
 Network defaults are in `yahrzeit_v3.ino`.
 
 Production/CBS wall defaults:
 
-```text
-IP       192.168.13.9
-Gateway  192.168.13.8
-Subnet   255.255.255.0
-Port     2001
+```cpp
+NetworkConfig networkConfig = {
+    .mac = { 0x02, 0x19, 0x55, 0x11, 0x00, 0x09 },          // 1955-11-09
+        // Values used at Congregation Beth Sholom
+        .ipAddr = IPAddress(192, 168, 13, 9),
+        .dnsAddr = IPAddress(8, 8, 8, 8),
+        .gateway = IPAddress(192, 168, 13, 8),
+        .subnet = IPAddress(255, 255, 255, 0),
+};
+
+static constexpr uint16_t SOCKET_LISTEN_PORT = 2001;
 ```
 
 There are also defaults for Allan's home-lab:
@@ -137,8 +158,10 @@ Subnet   255.255.255.0
 Port     2001
 ```
 
-The PHP appliance `bin/yahrzeit` controller host/port must match the
-production controller address and port.
+The PHP appliance reads the controller hostname/address and TCP port from
+`bin/yahrzeit-controller.conf`. During installation, it offers the previously
+recorded controller host as the default. The resulting appliance host and port
+must match the values installed in the controller firmware.
 
 ## Ethernet Notes
 
@@ -150,7 +173,10 @@ The code treats only an explicit `LinkOFF` as unavailable. This matters because
 some W5100-class hardware may not report link status as `LinkON` even when
 socket communication works.
 
-The `status` command will also report the current Ethernet state, including an active socket connection or not.
+The `status` command reports the configured network addresses, detected
+Ethernet hardware, link state, and whether a TCP client is currently connected.
+It can be issued through USB Serial Monitor even when TCP communication is not
+working, making it the primary tool for diagnosing network problems.
 
 ## Serial Console
 
@@ -167,28 +193,32 @@ The serial path and socket path both feed the same command processor.
 Commands are ASCII, line-oriented, and may usually be abbreviated to the first
 two letters.
 
-Common commands:
+### Commands Used by the PHP Appliance
 
 ```text
 All  on|off [<panel>]
 BRightness <n> (1:bright, 254:dim)
-CLear <panel>
-DAta <row> <col> <binary data>
-HElp
-LOad
 PIxel on|off <row> <col> [<panel>]
 REfresh
 SAve
-VErsion
 ```
 
-Diagnostic/developer commands:
+### Additional Controller Commands
+
+```text
+DAta <row> <col> <binary data>
+LOad
+```
+
+### Maintenance and Diagnostic Commands
 
 ```text
 DUmp [<panel>]
+HElp
 STatus
 TEst <testnumber> [<panel>]
 TIming on|off
+VErsion
 ```
 
 `PANEL0` / panel `0` means the whole active display. Panels `1` through
@@ -245,20 +275,31 @@ nc <controller-ip> 2001
 
 Then type the same line-oriented commands.
 
-From the PHP appliance directory, non-transmitting checks are:
+This is the direct test of TCP communication between the appliance and the
+embedded controller. In particular, enter:
 
-```sh
-bin/yahrzeit --notransmit --status
-bin/yahrzeit --notransmit
+```text
+version
+status
 ```
 
-Live checks, only when the controller IP is correct:
+From the PHP appliance directory, generate and inspect the normal command
+stream without contacting the controller:
 
 ```sh
-bin/yahrzeit --status
-bin/yahrzeit --version
-bin/yahrzeit --help-controller
+bin/yahrzeit --dry-run
 ```
+
+When the controller address is correct and it is safe to change the wall, run
+the complete production path:
+
+```sh
+bin/yahrzeit
+```
+
+With no arguments, `bin/yahrzeit` computes the current normal Yahrzeit
+lighting, transmits the complete command stream, refreshes the wall, and saves
+the resulting controller state.
 
 ## Production Build Checklist
 
@@ -271,7 +312,12 @@ Before installing at CBS:
 5. Upload firmware to the Arduino Uno R4 Minima.
 6. Check serial startup output for Ethernet hardware and IP address.
 7. Perform the bench tests listed in the previous section.
-8. From the appliance, run `bin/yahrzeit --status`.
+8. With the controller connected to the installed wall, calibrate the normal
+   Yahrzeit and full-wall brightness levels. Record them as
+   `CONTROLLER_BRIGHTNESS` and `CONTROLLER_BRIGHTNESS_ALL_ON` in the PHP
+   appliance's `bin/yahrzeit-controller.conf`.
+9. From the appliance, run `bin/yahrzeit --dry-run`, followed by
+   `bin/yahrzeit`.
 
 ## Maintenance Warnings
 
@@ -283,6 +329,7 @@ Before installing at CBS:
 
 ## Related Documentation
 
+- `INSTALL.md` - firmware build, installation, and replacement procedure.
 - `../../README.md` - top-level map of the full Yahrzeit project.
 - `../../yahrzeit_site-v3/README.md` - PHP/Linux appliance runbook.
 - `../AGENTS.md` - embedded coding guidance for AI/code-assistant work.

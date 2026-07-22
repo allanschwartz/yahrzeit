@@ -51,7 +51,6 @@ enum CommandIds : byte  {
     NONE_OF_THE_ABOVE = 0,  // must be zero
     CMD_ALL = 1,            // turn on/off all LEDs
     CMD_BRIGHT,             // set the brightness
-    CMD_CLEAR,              // clear one panel
     CMD_DATA,               // set a specific data bit pattern
     CMD_DUMP,               // dump the pixel memory
     CMD_HELP,               // display command help
@@ -89,7 +88,6 @@ struct Command {
 static constexpr Command commands[] = {
     { CMD_ALL,    1, "all"    },
     { CMD_BRIGHT, 1, "bright" },
-    { CMD_CLEAR,  1, "clear"  },
     { CMD_DATA,   3, "data"   },
     { CMD_DUMP,   0, "dump"   },
     { CMD_HELP,   0, "help"   },
@@ -117,7 +115,6 @@ const char HelpText[]  =
     "\n"
     "\tAll  on|off [<panel>]\n"
     "\tBRightness <n> (1:bright, 254:dim)\n"
-    "\tCLear <panel>\n"
     "\tDAta <row> <col> <binary data>\n"
     "\tDUmp [<panel>]\n"
     "\tHElp\n"
@@ -226,13 +223,6 @@ const char *CmdProc::execute( const byte streamID, char *command )
             // bright <brightness>
             ledWall_.setBrightness( argValue[1] );
             rc = NO_ERROR;
-            break;
-
-        case CMD_CLEAR:
-            // clear <panel>
-            rc = ledWall_.allOn(
-                     0,                            /* off */
-                     argValue[1] );               /* <panel> */
             break;
 
         case CMD_DATA:

@@ -87,6 +87,8 @@ fi
 # Preserve one-command environment overrides while loading appliance defaults.
 ENV_CONTROLLER_HOST="${CONTROLLER_HOST:-}"
 ENV_CONTROLLER_PORT="${CONTROLLER_PORT:-}"
+ENV_CONTROLLER_BRIGHTNESS="${CONTROLLER_BRIGHTNESS:-}"
+ENV_CONTROLLER_BRIGHTNESS_ALL_ON="${CONTROLLER_BRIGHTNESS_ALL_ON:-}"
 ENV_NC_DELAY="${NC_DELAY:-}"
 ENV_POST_SEND_DELAY="${POST_SEND_DELAY:-}"
 ENV_TIMEOUT_CMD="${TIMEOUT_CMD:-}"
@@ -98,6 +100,8 @@ source "$CONTROLLER_CONFIG_FILE"
 
 CONTROLLER_HOST="${ENV_CONTROLLER_HOST:-${CONTROLLER_HOST:-}}"
 CONTROLLER_PORT="${ENV_CONTROLLER_PORT:-${CONTROLLER_PORT:-2001}}"
+CONTROLLER_BRIGHTNESS="${ENV_CONTROLLER_BRIGHTNESS:-${CONTROLLER_BRIGHTNESS:-128}}"
+CONTROLLER_BRIGHTNESS_ALL_ON="${ENV_CONTROLLER_BRIGHTNESS_ALL_ON:-${CONTROLLER_BRIGHTNESS_ALL_ON:-128}}"
 NC_DELAY="${ENV_NC_DELAY:-${NC_DELAY:-0.05}}"
 POST_SEND_DELAY="${ENV_POST_SEND_DELAY:-${POST_SEND_DELAY:-0.5}}"
 TIMEOUT_CMD="${ENV_TIMEOUT_CMD:-${TIMEOUT_CMD:-timeout}}"
@@ -108,6 +112,22 @@ if [[ -z "$CONTROLLER_HOST" || "$CONTROLLER_HOST" =~ [[:space:]] ]]; then
     echo "ERROR: invalid CONTROLLER_HOST in $CONTROLLER_CONFIG_FILE" >&2
     exit 1
 fi
+
+if [[ ! "$CONTROLLER_BRIGHTNESS" =~ ^[0-9]+$ ]] ||
+   (( CONTROLLER_BRIGHTNESS < 1 || CONTROLLER_BRIGHTNESS > 254 )); then
+    echo "ERROR: CONTROLLER_BRIGHTNESS must be from 1 through 254" >&2
+    exit 1
+fi
+
+if [[ ! "$CONTROLLER_BRIGHTNESS_ALL_ON" =~ ^[0-9]+$ ]] ||
+   (( CONTROLLER_BRIGHTNESS_ALL_ON < 1 || CONTROLLER_BRIGHTNESS_ALL_ON > 254 )); then
+    echo "ERROR: CONTROLLER_BRIGHTNESS_ALL_ON must be from 1 through 254" >&2
+    exit 1
+fi
+
+# The PHP command generator reads the normal lighting value from its
+# environment. Wall-wide command streams are generated directly below.
+export CONTROLLER_BRIGHTNESS
 
 MODE="yahrzeit"
 TRANSMIT=1
@@ -388,7 +408,7 @@ emit_yizkor() {
     # Shortcut Yizkor pattern, based on the later nc-era bin/yizkor wrapper.
     # These are the lights panels containing memorial names rather than trying
     # to compute every individual occupied LED from the database.
-    cat <<'EOF'
+    cat <<EOF
 # yizkor pattern .. most lights are on
 
 all off
@@ -414,6 +434,7 @@ all on 19
 all off 20
 all off 21
 
+brightness $CONTROLLER_BRIGHTNESS_ALL_ON
 refresh
 save
 
@@ -421,8 +442,9 @@ EOF
 }
 
 emit_all_on() {
-    cat <<'EOF'
+    cat <<EOF
 all on
+brightness $CONTROLLER_BRIGHTNESS_ALL_ON
 refresh
 save
 
@@ -430,8 +452,9 @@ EOF
 }
 
 emit_all_off() {
-    cat <<'EOF'
+    cat <<EOF
 all off
+brightness $CONTROLLER_BRIGHTNESS
 refresh
 save
 

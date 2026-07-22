@@ -86,5 +86,14 @@ function led_all( $onoff )
 // Tell the controller to display the newly emitted LED state.
 function led_data_refresh()
 {
+    $brightness = getenv('CONTROLLER_BRIGHTNESS');
+    if ($brightness === false ||
+        !ctype_digit($brightness) ||
+        (int)$brightness < 1 ||
+        (int)$brightness > 254) {
+        $brightness = '128';
+    }
+
+    echo "brightness $brightness\n";
     echo "refresh\n";
 }

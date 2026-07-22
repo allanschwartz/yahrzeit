@@ -130,17 +130,22 @@ The controller connection is stored as shell assignments in:
 bin/yahrzeit-controller.conf
 ```
 
-`bin/yahrzeit` sources this file before parsing its command-line options. The
-installer remembers the previously recorded `CONTROLLER_HOST` before updating
-the checkout, installs the current tracked configuration, and asks whether to
-keep that address or enter a replacement. The configuration file itself is not
-preserved. The fixed port and transport defaults update with the software. The
-Arduino controller firmware must use the matching address and port.
+`bin/yahrzeit` sources this file before parsing its command-line options. It
+contains the controller host and port, the brightness used for normal Yahrzeit
+lighting, and the brightness used for full-wall operations. Brightness values
+run from 1 (brightest) through 254 (dimmest).
+
+The installer remembers the previously recorded host and brightness values
+before updating the checkout, installs the current tracked configuration, and
+asks whether to keep the host or enter a replacement. The configuration file
+itself is not preserved. The fixed port and transport defaults update with the
+software. The Arduino controller firmware must use the matching address and
+port.
 
 For a one-command diagnostic override, use environment variables:
 
 ```sh
-CONTROLLER_HOST=192.168.86.240 CONTROLLER_PORT=2001 bin/yahrzeit --dry-run
+CONTROLLER_BRIGHTNESS=160 bin/yahrzeit --yizkor
 ```
 
 ## Safe Validation

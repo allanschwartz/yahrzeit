@@ -120,8 +120,7 @@ NetworkConfig networkConfig = {
     #endif
 };
 
-// telnet defaults to port 23, however we listen on a less-common control port.
-//   as port 23 would be too easily "hacked".
+// TCP command port used by the PHP appliance's bin/yahrzeit wrapper through nc.
 static constexpr uint16_t SOCKET_LISTEN_PORT = 2001;
 EthernetServer socket(SOCKET_LISTEN_PORT);
 EthernetClient socketClient;

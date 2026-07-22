@@ -84,7 +84,6 @@
  *
 	        All  on|off [<panel>]
 	        BRightness <n> (1:bright, 254:dim)
-	        CLear <panel>
 	        DAta <row> <col> <binary data>
 	        DUmp [<panel>]
 	        HElp

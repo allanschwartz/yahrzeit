@@ -435,7 +435,9 @@
           <dt>Observed callers</dt>
           <dd><code>bin/yahrzeit_engine.php</code> only.</dd>
           <dt>Data I/O</dt>
-          <dd>No file I/O. Commands and diagnostic comments go to stdout.</dd>
+          <dd>No file I/O. Commands and diagnostic comments go to stdout.
+          <code>led_data_refresh</code> reads the exported normal controller
+          brightness, with a default of 128.</dd>
           <dt>Controller boundary</dt>
           <dd>Generates text but does not open a socket or transmit it.</dd>
         </dl>
@@ -649,7 +651,12 @@
           <code>transmit_commands</code>, and
           <code>run_logged_operation</code>.</dd>
           <dt>Constants / global state</dt>
-          <dd>Shell variables including <code>CONTROLLER_HOST</code> and <code>CONTROLLER_PORT</code> sourced from <code>bin/yahrzeit-controller.conf</code>; transport timing defaults; <code>MODE</code>, <code>TRANSMIT</code>, <code>REPORT_KIND</code>, and <code>REPORT_DATE</code>.</dd>
+          <dd>Shell variables including <code>CONTROLLER_HOST</code>,
+          <code>CONTROLLER_PORT</code>, <code>CONTROLLER_BRIGHTNESS</code>, and
+          <code>CONTROLLER_BRIGHTNESS_ALL_ON</code> sourced from
+          <code>bin/yahrzeit-controller.conf</code>; transport timing defaults;
+          <code>MODE</code>, <code>TRANSMIT</code>, <code>REPORT_KIND</code>, and
+          <code>REPORT_DATE</code>.</dd>
           <dt>Direct dependencies</dt>
           <dd><code>bin/yahrzeit_engine.php</code> for normal/audit/report paths; PHP with Calendar extension; <code>nc</code> and a timeout command for transmission.</dd>
           <dt>Observed callers</dt>
@@ -782,17 +789,20 @@
         <dl>
           <dt>Kind / purpose</dt>
           <dd>Shell-compatible appliance configuration containing
-          <code>CONTROLLER_HOST</code> and <code>CONTROLLER_PORT</code>.</dd>
+          <code>CONTROLLER_HOST</code>, <code>CONTROLLER_PORT</code>,
+          <code>CONTROLLER_BRIGHTNESS</code>, and
+          <code>CONTROLLER_BRIGHTNESS_ALL_ON</code>.</dd>
           <dt>Readers</dt>
-          <dd><code>bin/yahrzeit</code> sources both values;
+          <dd><code>bin/yahrzeit</code> sources all four values;
           <code>misc.inc.php</code> parses the host for display; the installer
-          sources the file while selecting the appliance-specific host.</dd>
+          sources the file while selecting and preserving appliance-specific
+          settings.</dd>
           <dt>Writers</dt>
-          <dd><code>install-yahrzeit.sh</code> replaces the
-          <code>CONTROLLER_HOST</code> line. No web screen writes it.</dd>
+          <dd><code>install-yahrzeit.sh</code> replaces the host and brightness
+          lines. No web screen writes them.</dd>
           <dt>Controller boundary</dt>
-          <dd>Contains connection values only. The network connection is
-          opened by <code>bin/yahrzeit</code>.</dd>
+          <dd>Contains connection and display-brightness values. The network
+          connection is opened by <code>bin/yahrzeit</code>.</dd>
         </dl>
       </article>
       <article id="minhag-data">

@@ -24,7 +24,6 @@ enum CommandIds : byte {
     NONE_OF_THE_ABOVE = 0,
     CMD_ALL = 1,        // turn on/off all LEDs
     CMD_BRIGHT,         // set the brightness
-    CMD_CLEAR,          // clear one panel
     CMD_DATA,           // set a specific data bit pattern
     CMD_DUMP,           // dump the pixel memory
     CMD_HELP,           // display command help
