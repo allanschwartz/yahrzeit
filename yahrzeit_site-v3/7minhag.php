@@ -358,7 +358,8 @@ function minhag_render_form($minhag)
 
         <tr>
             <td colspan="3" align="center">
-                <input type="submit" name="submit" value="SAVE" class="button">
+                <input type="submit" name="submit" value="SAVE" class="button"
+                       onclick="acknowledgeButton(this)">
             </td>
         </tr>
 

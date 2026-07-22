@@ -383,7 +383,8 @@ function reports_render_main_page()
 
     <tr>
         <td colspan="3" align="center">
-            <button type="submit" name="action" value="report" class="button">RUN REPORT</button>
+            <button type="submit" name="action" value="report" class="button"
+                    onclick="acknowledgeButton(this)">RUN REPORT</button>
         </td>
     </tr>
 
@@ -406,7 +407,8 @@ function reports_render_main_page()
             </span>
         </td>
         <td>
-            <button type="submit" name="action" value="audit" class="button">AUDIT DATABASE</button>
+            <button type="submit" name="action" value="audit" class="button"
+                    onclick="acknowledgeButton(this)">AUDIT DATABASE</button>
         </td>
         <td id="notused">&nbsp;</td>
     </tr>
@@ -420,7 +422,8 @@ function reports_render_main_page()
             </span>
         </td>
         <td>
-            <button type="submit" name="action" value="preview" class="button">PREVIEW COMMANDS</button>
+            <button type="submit" name="action" value="preview" class="button"
+                    onclick="acknowledgeButton(this)">PREVIEW COMMANDS</button>
         </td>
         <td id="notused">&nbsp;</td>
     </tr>
@@ -444,7 +447,8 @@ function reports_render_main_page()
             </span>
         </td>
         <td>
-            <button type="submit" name="action" value="download" class="button">DOWNLOAD CSV</button>
+            <button type="submit" name="action" value="download" class="button"
+                    onclick="acknowledgeButton(this, 1500)">DOWNLOAD CSV</button>
         </td>
         <td id="notused">&nbsp;</td>
     </tr>
@@ -459,9 +463,13 @@ function reports_render_main_page()
             </span>
         </td>
         <td>
-            <input type="file" name="csvfile" maxlength="1284" size="25" accept=".csv,text/csv">
+            <input type="file" name="csvfile" maxlength="1284" size="25"
+                   accept=".csv,text/csv" class="fileInput"
+                   onclick="acknowledgeButton(this, 1500)"
+                   onchange="acknowledgeButton(this, 1500)">
             <br><br>
-            <button type="submit" name="action" value="upload" class="button">UPLOAD CSV</button>
+            <button type="submit" name="action" value="upload" class="button"
+                    onclick="acknowledgeButton(this)">UPLOAD CSV</button>
         </td>
         <td id="notused">&nbsp;</td>
     </tr>

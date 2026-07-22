@@ -23,12 +23,34 @@
  *
  *   line    Function Desclarations
  *  -----    -----------------------------------------------------------
+ *           function acknowledgeButton(button)
  *    277    function changeButtonClass(button, isButtonDisabled )
  *    261    function disallowMultipleClicks() 
  *    238    function enableObj (checkObj, objChange)
  *    213    function setOperation(operationValue)
 
  */
+
+/**
+ * Keep a clicked submit button visibly selected while its request runs.
+ *
+ * A download does not replace the current page, so its caller may request a
+ * timed reset after the browser has had time to begin saving the file.
+ */
+function acknowledgeButton(button, resetAfterMs)
+{
+    button.classList.add("buttonPressed");
+
+    if (resetAfterMs) {
+        if (button.acknowledgementTimer) {
+            window.clearTimeout(button.acknowledgementTimer);
+        }
+        button.acknowledgementTimer = window.setTimeout(function () {
+            button.classList.remove("buttonPressed");
+            button.acknowledgementTimer = null;
+        }, resetAfterMs);
+    }
+}
 
 
 /**
@@ -106,5 +128,3 @@ function setOperation(operationValue)
 {
     document.forms[0].operation.value=operationValue;
 }
-
-

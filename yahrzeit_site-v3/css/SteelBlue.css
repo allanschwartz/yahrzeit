@@ -241,18 +241,47 @@ table.homeSummary a {
 
 .lightingButtonGrid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(150px, 220px));
-    gap: 8px;
+    grid-template-columns: repeat(2, minmax(140px, 190px));
+    gap: 6px;
     justify-content: center;
-    margin: 14px auto;
+    margin: 10px auto;
 }
 
 .lightingButton {
     width: 100%;
     height: auto;
-    min-height: 44px;
-    padding: 8px 12px;
-    font-size: 13px;
+    min-height: 32px;
+    padding: 4px 10px;
+    font-size: 12px;
+}
+
+.buttonPressed {
+    background: #4B2673;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+.fileInput::file-selector-button {
+    border-right: #5388DE 1px solid;
+    border-top: #B2BFD8 1px solid;
+    border-left: #B2BFD8 1px solid;
+    border-bottom: #5388DE 1px solid;
+    background: #C2D5F7;
+    color: #000000;
+    min-height: 20px;
+    font-size: 11px;
+}
+
+.fileInput.buttonPressed {
+    background: transparent;
+    color: #000000;
+    font-weight: normal;
+}
+
+.fileInput.buttonPressed::file-selector-button {
+    background: #4B2673;
+    color: #FFFFFF;
+    font-weight: bold;
 }
 
 TABLE.NobotBorder TD {border-bottom:thin none}
@@ -645,6 +674,10 @@ TABLE.rowBorder TD {
     white-space: nowrap;
 }
 
+.siteLogoCompact {
+    display: none;
+}
+
 @media screen and (max-width: 1100px) {
     .siteBrandCell,
     .siteHeaderSpacer {
@@ -662,6 +695,29 @@ TABLE.rowBorder TD {
     .tabUnselectedBeg,
     .tabUnselectedEnd {
         width: 8px;
+    }
+}
+
+/*
+ * Retain the useful desktop-style viewport on phones, but reclaim header
+ * space by using the compact synagogue logo on narrow windows and devices.
+ */
+@media screen and (max-width: 600px),
+       screen and (max-device-width: 600px) {
+    .siteBrandCell,
+    .siteHeaderSpacer {
+        width: 105px;
+    }
+
+    .siteLogoFull {
+        display: none !important;
+    }
+
+    .siteLogoCompact {
+        display: block;
+        width: 90px;
+        height: auto;
+        margin-left: 12px;
     }
 }
 

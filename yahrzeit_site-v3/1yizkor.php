@@ -106,20 +106,24 @@ function yizkor_render_main_page()
                 </p>
 
                 <div class="lightingButtonGrid">
-                    <button type="submit" name="lighting_operation" value="all-off" class="button lightingButton">
-                        Turn all lights off
+                    <button type="submit" name="lighting_operation" value="all-off"
+                            class="button lightingButton" onclick="acknowledgeButton(this)">
+                        ALL LIGHTS OFF
                     </button>
 
-                    <button type="submit" name="lighting_operation" value="all-on" class="button lightingButton">
-                        Turn all lights on
+                    <button type="submit" name="lighting_operation" value="all-on"
+                            class="button lightingButton" onclick="acknowledgeButton(this)">
+                        ALL LIGHTS ON
                     </button>
 
-                    <button type="submit" name="lighting_operation" value="scheduled" class="button lightingButton">
-                        Yahrzeit lights
+                    <button type="submit" name="lighting_operation" value="scheduled"
+                            class="button lightingButton" onclick="acknowledgeButton(this)">
+                        YAHRZEIT LIGHTS
                     </button>
 
-                    <button type="submit" name="lighting_operation" value="yizkor" class="button lightingButton">
-                        Yizkor lights
+                    <button type="submit" name="lighting_operation" value="yizkor"
+                            class="button lightingButton" onclick="acknowledgeButton(this)">
+                        YIZKOR LIGHTS
                     </button>
                 </div>
 

@@ -237,7 +237,7 @@ shows and when to use it.
     <p>
     Normal Yahrzeit and Yizkor lighting is automatic, so these controls are
     not ordinarily needed. They may also be used for an intentional operator
-    action during a service. Each button changes the wall immediately.
+    action during a service.
     </p>
 
     <p>

@@ -127,9 +127,10 @@ function viewnames_render_search_form($query)
                 <form name="searchnames" action="<?php echo h(VIEWNAMES_PAGE); ?>" method="GET">
                     <span class="text">Search names, dates, options, or location:</span>
                     <input type="text" name="q" size="40" value="<?php echo h($query); ?>">
-                    <input type="submit" value="Search" class="button">
+                    <input type="submit" value="Search" class="button"
+                           onclick="acknowledgeButton(this)">
                     <input type="button" value="Clear" class="button"
-                           onclick='window.location="<?php echo h(VIEWNAMES_PAGE); ?>";return false;'>
+                           onclick='acknowledgeButton(this); window.location="<?php echo h(VIEWNAMES_PAGE); ?>"; return false;'>
                 </form>
 <?php
 }

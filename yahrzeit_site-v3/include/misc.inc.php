@@ -413,13 +413,22 @@ function emitHeader( $title, $tab )
 {
 
 $steelBlue = h(site_url("css/SteelBlue.css"));
+$pageTitle = trim(strip_tags((string)$title));
+$browserTitle = "CBS Yahrzeit Wall";
+
+if ($pageTitle == "Yahrzeit Wall User Guide") {
+    $pageTitle = "User Guide";
+}
+if ($pageTitle != "" && $pageTitle != "Yahrzeit Wall") {
+    $browserTitle .= " — " . $pageTitle;
+}
 
 ?>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<TITLE>Yahrzeit Controller -- <?php echo $title; ?> </TITLE>
+<title><?php echo h($browserTitle); ?></title>
 
 <LINK REL="SHORTCUT ICON" HREF="/favicon.ico">
 <link href="<?php echo $steelBlue ?>" rel="stylesheet" type="text/css">
@@ -435,8 +444,12 @@ $steelBlue = h(site_url("css/SteelBlue.css"));
   <tr height="48">
     <td valign="middle" width="300" class="siteBrandCell">
         <img src="<?php echo h(site_url('images/CBS+Primary+Logo+2023-Gold.webp')); ?>"
-             width="300" class="siteLogo" alt="Congregation Beth Sholom Logo"
+             width="300" class="siteLogo siteLogoFull"
+             alt="Congregation Beth Sholom Logo"
              style="display:block; margin-left:24px;">
+        <img src="<?php echo h(site_url('images/CBS+Compact+Logo+2023-Gold.png')); ?>"
+             width="90" class="siteLogoCompact"
+             alt="Congregation Beth Sholom Logo">
     </td>
 
     <td valign="middle" align="center">
