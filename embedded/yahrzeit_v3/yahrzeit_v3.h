@@ -136,6 +136,35 @@
 // ----------------------------------------------------------------------------
 
 constexpr byte PANEL0 = 0;
+constexpr uint16_t SOCKET_LISTEN_PORT = 2001;
+
+constexpr const char *FIRMWARE_RELEASE = "v3.0.1";
+
+#if defined(ARDUINO_NANO_R4)
+constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino Nano R4";
+#elif defined(ARDUINO_UNOR4_WIFI) || defined(ARDUINO_UNOWIFIR4)
+constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino Uno R4 WiFi";
+#elif defined(ARDUINO_UNOR4_MINIMA) || defined(ARDUINO_MINIMA)
+constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino Uno R4 Minima";
+#elif defined(ARDUINO_PORTENTA_C33)
+constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino Portenta C33";
+#elif defined(ARDUINO_ARCH_RENESAS)
+constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino Renesas board";
+#elif defined(ARDUINO_AVR_MEGA2560)
+constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino Mega 2560";
+#elif defined(ARDUINO_AVR_UNO)
+constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino Uno";
+#elif defined(ARDUINO_ARCH_AVR)
+constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino AVR board";
+#else
+constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino-compatible board";
+#endif
+
+#if CBS_56x40_WALL
+constexpr const char *DISPLAY_CONFIGURATION = "CBS_56x40_WALL";
+#else
+constexpr const char *DISPLAY_CONFIGURATION = "TEST_FIXTURE";
+#endif
 
 enum streamIds : byte { CONSOLE = 1, SOCKET = 2 };
 
@@ -144,7 +173,6 @@ enum streamIds : byte { CONSOLE = 1, SOCKET = 2 };
 // ----------------------------------------------------------------------------
 
 extern EthernetClient socketClient;
-extern const char versionString[];
 
 extern CmdProc cmdProc;
 
@@ -167,7 +195,7 @@ struct NetworkConfig {
 };
 extern NetworkConfig networkConfig;
 
-extern char outputBuf[256];
+extern char outputBuf[512];
 
 extern bool timingOutputEnabled;
 
@@ -183,6 +211,9 @@ void    sleepMs( bool, const unsigned int ms );
 
 /** Write the supplied string to the selected console or socket stream. */
 void    writeOutput( byte streamID, const char *msg );
+
+/** Format the firmware release identifier and compilation date/time. */
+const char *versionText();
 
 /** Report a failed assertion, signal panic for five minutes, then restart. */
 [[noreturn]] void panic(const char *expr, const char *file, int line);

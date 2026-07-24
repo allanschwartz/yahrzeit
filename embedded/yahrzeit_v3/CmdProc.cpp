@@ -289,8 +289,8 @@ const char *CmdProc::execute( const byte streamID, char *command )
             return outputBuf;
 
         case CMD_VERSION:        
-            // print the version string
-            return versionString;
+            // print the firmware release and compilation date/time
+            return versionText();
 
         case CMD_NOP:
             return "\n";
@@ -527,9 +527,12 @@ const char * CmdProc::statusText()
 
     snprintf(outputBuf, sizeof outputBuf,
              "STATUS\n"
-             "\tbrightness=%u rows=%u cols=%u panels=%u\n"
+             "\tboard=%s\n"
+             "\tconfiguration=%s\n"
+             "\trows=%u cols=%u panels=%u\n"
+             "\tbrightness=%u\n"
              "\tserialReady=%s ethernetReady=%s socketReady=%s\n"
-             "\tIP=%u.%u.%u.%u\n"
+             "\tIP=%u.%u.%u.%u port=%u\n"
              "\tgateway=%u.%u.%u.%u\n"
              "\tsubnet=%u.%u.%u.%u\n"
              "\tdns=%u.%u.%u.%u\n"
@@ -537,10 +540,13 @@ const char * CmdProc::statusText()
              "\tethernetHardware=%s link=%s\n"
              "\ttiming=%s\n",
 
-             displayConfig.brightness,
+             CONTROLLER_BOARD_MODEL,
+             DISPLAY_CONFIGURATION,
+
              displayConfig.nRows,
              displayConfig.nCols,
              displayConfig.nPanels,
+             displayConfig.brightness,
 
              Serial ? "true" : "false",
              ethernetIsReady() ? "true" : "false",
@@ -550,6 +556,7 @@ const char * CmdProc::statusText()
              networkConfig.ipAddr[1],
              networkConfig.ipAddr[2],
              networkConfig.ipAddr[3],
+             SOCKET_LISTEN_PORT,
 
              networkConfig.gateway[0],
              networkConfig.gateway[1],

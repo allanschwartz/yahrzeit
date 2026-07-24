@@ -1,4 +1,4 @@
-# Yahrzeit Embedded Controller V3 Installation Notes
+# Yahrzeit Embedded Controller — Installation Notes
 
 These notes describe how to build, install, and verify the firmware for the
 Arduino-based Yahrzeit Wall controller. They are intended for installation or
@@ -8,8 +8,10 @@ The firmware is not installed by a script. It is configured in the source,
 compiled with the Arduino toolchain, and uploaded over USB.
 
 <p align="center">
-  <img src="images/yahrzeit-controller-assembly.jpg"
-       alt="Yahrzeit Embedded Controller V3 assembly" width="560">
+  <a href="images/yahrzeit-controller-assembly.jpg">
+    <img src="images/yahrzeit-controller-assembly.jpg"
+         alt="Yahrzeit Embedded Controller V3 assembly" height="500">
+  </a>
 </p>
 
 *The assembled controller in its close-fitting enclosure. The illuminated
@@ -25,6 +27,32 @@ Arduino Uno R4 Minima
     -> Yahrzeit Controller Pixel Interface board
       -> ribbon cable to the YYZ Pixel board chain
 ```
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="images/arduino-uno-r4-minima.jpg">
+        <img src="images/arduino-uno-r4-minima.jpg"
+             alt="Arduino Uno R4 Minima" width="190">
+      </a><br>
+      <em>Arduino Uno R4 Minima</em>
+    </td>
+    <td align="center">
+      <a href="images/arduino-ethernet-shield.jpg">
+        <img src="images/arduino-ethernet-shield.jpg"
+             alt="Arduino Ethernet shield" width="190">
+      </a><br>
+      <em>Ethernet shield</em>
+    </td>
+    <td align="center">
+      <a href="images/yahrzeit-pixel-interface-board.jpg">
+        <img src="images/yahrzeit-pixel-interface-board.jpg"
+             alt="Yahrzeit Controller Pixel Interface board" width="190">
+      </a><br>
+      <em>Yahrzeit Controller Pixel Interface</em>
+    </td>
+  </tr>
+</table>
 
 The commercial enclosure has a DIN-rail attachment, but the wall installation
 uses a custom 3D-printed flange for flat mounting. Remove the flange from the
@@ -107,6 +135,16 @@ Exactly one geometry must be enabled. The checked-in development source may
 instead select `TEST_FIXTURE`; do not install that build on the full wall.
 
 ### Network configuration
+
+<p align="center">
+  <a href="images/arduino-ethernet-shield.jpg">
+    <img src="images/arduino-ethernet-shield.jpg"
+         alt="Arduino Ethernet shield used by the Yahrzeit controller"
+         width="500">
+  </a>
+</p>
+
+*The Ethernet shield provides the controller's wired network connection.*
 
 In `yahrzeit_v3.ino`, confirm the production values in `networkConfig`:
 
@@ -223,3 +261,16 @@ Record the following with the installation or maintenance record:
 To replace the Arduino, assemble the same controller stack, build the tagged
 production source with the recorded configuration, and repeat the upload and
 verification procedure above.
+
+## See Also
+
+- **Project**
+  - [`./README.md`](../../README.md)
+- **Server**
+  - [`./yahrzeit_site-v3/README.md`](../../yahrzeit_site-v3/README.md)
+  - [`./yahrzeit_site-v3/INSTALL.md`](../../yahrzeit_site-v3/INSTALL.md)
+- **Controller**
+  - [`./embedded/yahrzeit_v3/README.md`](README.md)
+  - [`./embedded/yahrzeit_v3/INSTALL.md`](INSTALL.md)
+- **Hardware**
+  - [`./Hardware/README.md`](../../Hardware/README.md)

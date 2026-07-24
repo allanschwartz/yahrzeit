@@ -119,7 +119,6 @@ NetworkConfig networkConfig = {
 };
 
 // TCP command port used by the PHP appliance's bin/yahrzeit wrapper through nc.
-static constexpr uint16_t SOCKET_LISTEN_PORT = 2001;
 EthernetServer socket(SOCKET_LISTEN_PORT);
 EthernetClient socketClient;
 
@@ -127,11 +126,7 @@ EthernetClient socketClient;
 //            G L O B A L   S T O R A G E
 // ----------------------------------------------------------------------------
 
-const char versionString[]  =
-    "\tLED Controller, V3.0, built " __DATE__ " " __TIME__ "\n"
-    "\tcopyright (c) 2008,2015,2026 AMS Consulting\n";
-
-char outputBuf[256] {};
+char outputBuf[512] {};
 
 bool timingOutputEnabled = false;
 
@@ -139,6 +134,24 @@ bool debugPixel = false;
 
 static void breathingLed();
 [[noreturn]] static void blinkPanicLedThenRestart();
+
+/**
+ * @brief   Format the firmware release identifier and compilation date/time.
+ *
+ * @returns pointer to shared outputBuf, overwritten by later formatting
+ */
+const char *versionText()
+{
+    snprintf(outputBuf, sizeof outputBuf,
+             "\tYahrzeit Embedded Controller, release %s\n"
+             "\tbuilt %s %s\n"
+             "\tcopyright (c) 2008,2015,2026 AMS Consulting\n",
+             FIRMWARE_RELEASE,
+             __DATE__,
+             __TIME__);
+
+    return outputBuf;
+}
 
 
 // ----------------------------------------------------------------------------
@@ -159,7 +172,7 @@ static void controllerBegin()
     serialLog( "LED wall up\n" );
 
     // splash
-    writeOutput( CONSOLE, versionString );
+    writeOutput( CONSOLE, versionText() );
 
     // some initial pattern, on power-up (as a self-test)
     serialLog( "light test" );

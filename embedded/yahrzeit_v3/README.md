@@ -1,4 +1,4 @@
-# Yahrzeit Embedded Controller V3
+# Yahrzeit Embedded Controller
 
 This directory contains the Arduino firmware for the third-generation
 Yahrzeit Wall embedded controller.
@@ -11,12 +11,14 @@ about the Arduino controller firmware in this directory. See `INSTALL.md` for
 the production firmware build, upload, and verification procedure.
 
 <p align="center">
-  <img src="images/yahrzeit-controller-assembly.jpg"
-       alt="Yahrzeit Embedded Controller V3 assembly" width="560">
+  <a href="images/arduino-uno-r4-minima.jpg">
+    <img src="images/arduino-uno-r4-minima.jpg"
+         alt="Arduino Uno R4 Minima used by the Yahrzeit controller"
+         width="500">
+  </a>
 </p>
 
-*Yahrzeit Embedded Controller V3 assembly. The illuminated green LED on the
-Pixel Interface board is the ALIVE indicator.*
+*Arduino Uno R4 Minima used by the Yahrzeit embedded controller.*
 
 ## What This Controller Does
 
@@ -173,10 +175,15 @@ The code treats only an explicit `LinkOFF` as unavailable. This matters because
 some W5100-class hardware may not report link status as `LinkON` even when
 socket communication works.
 
-The `status` command reports the configured network addresses, detected
-Ethernet hardware, link state, and whether a TCP client is currently connected.
-It can be issued through USB Serial Monitor even when TCP communication is not
-working, making it the primary tool for diagnosing network problems.
+The `status` command reports the Arduino board model, selected display
+configuration, dimensions, current brightness, configured network addresses
+and TCP port, detected Ethernet hardware, link state, and whether a TCP client
+is currently connected. It can be issued through USB Serial Monitor even when
+TCP communication is not working, making it the primary tool for diagnosing
+network problems.
+
+The `version` command reports the source-controlled firmware release identifier
+and the date and time at which the firmware was compiled.
 
 ## Serial Console
 
@@ -327,11 +334,15 @@ Before installing at CBS:
 - Be careful with display refresh timing and framebuffer layout.
 - Do not run live wall commands unless the physical wall can safely change state.
 
-## Related Documentation
+## See Also
 
-- `INSTALL.md` - firmware build, installation, and replacement procedure.
-- `../../README.md` - top-level map of the full Yahrzeit project.
-- `../../yahrzeit_site-v3/README.md` - PHP/Linux appliance runbook.
-- `../AGENTS.md` - embedded coding guidance for AI/code-assistant work.
-- `../../Hardware/` - PCB and enclosure design files.
-- `../../Hardware/pixel_interface_v3/` - V3 pixel interface board.
+- **Project**
+  - [`./README.md`](../../README.md)
+- **Server**
+  - [`./yahrzeit_site-v3/README.md`](../../yahrzeit_site-v3/README.md)
+  - [`./yahrzeit_site-v3/INSTALL.md`](../../yahrzeit_site-v3/INSTALL.md)
+- **Controller**
+  - [`./embedded/yahrzeit_v3/README.md`](README.md)
+  - [`./embedded/yahrzeit_v3/INSTALL.md`](INSTALL.md)
+- **Hardware**
+  - [`./Hardware/README.md`](../../Hardware/README.md)
