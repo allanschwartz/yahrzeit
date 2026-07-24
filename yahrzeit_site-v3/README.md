@@ -1,11 +1,21 @@
-# CBS Yahrzeit Wall Appliance
-
+# Yahrzeit Server Appliance — Operation and Maintenance
 This directory contains the PHP web application, scheduler, command-line
 engine, and installer for the Congregation Beth Sholom Yahrzeit Wall
 appliance.
 
 This README is intended for future maintainers of the appliance, including
 people who did not build the original system.
+
+<p align="center">
+  <a href="images/yahrzeit-server-appliance.jpg">
+    <img src="images/yahrzeit-server-appliance.jpg"
+         alt="Yahrzeit Server Appliance Intel NUC" width="500">
+  </a>
+</p>
+
+*The Intel NUC Yahrzeit Server Appliance. Its external label records the
+hostname, operating system, hardware capacity, and network information needed
+for installation and recovery.*
 
 The top-level repository README explains the whole Yahrzeit project: embedded
 firmware, hardware, panel assets, and historical versions. This README is only
@@ -267,15 +277,16 @@ The preferred one-person engineering workflow is:
   updated at the same time.
 - Do not edit panel geometry without running audits and checking reports.
 - Do not depend on lab IP addresses in production.
-- Do not add live controller commands to install-time tests.
 
-## Related Documentation
+## See Also
 
-- `../README.md` - top-level map of the full Yahrzeit project.
-- `docs/yahrzeit-installer-notes.txt` - installer notes.
-- `docs/php-internal-map.html` - internal map of the PHP code.
-- `docs/todo.md` - working punch list.
-- `AGENTS.md` - coding guidance for AI/code-assistant work in this directory.
-
-For embedded controller firmware and hardware design files, see the top-level
-repository README and the sibling `embedded/` and `Hardware/` directories.
+- **Project**
+  - [`./README.md`](../README.md)
+- **Server**
+  - [`./yahrzeit_site-v3/README.md`](README.md)
+  - [`./yahrzeit_site-v3/INSTALL.md`](INSTALL.md)
+- **Controller**
+  - [`./embedded/yahrzeit_v3/README.md`](../embedded/yahrzeit_v3/README.md)
+  - [`./embedded/yahrzeit_v3/INSTALL.md`](../embedded/yahrzeit_v3/INSTALL.md)
+- **Hardware**
+  - [`./Hardware/README.md`](../Hardware/README.md)

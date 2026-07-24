@@ -60,7 +60,6 @@ php tests/yahrzeit_engine_policy_test.php
 
 Run `tests/yahrzeit_engine_policy_test.php` after changes to date handling,
 memorial-record mapping, policy, reports, or the lighting engine. The test must
-exit successfully; explicitly reported known issues remain tracked in
-`docs/todo.md` until corrected.
+exit successfully.
 
 Do not run commands that transmit to the physical controller unless explicitly asked.

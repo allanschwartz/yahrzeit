@@ -32,7 +32,7 @@
  *          with "#", so they remain harmless if mixed into a controller command
  *          stream.
  *
- *      --help
+ *      -h, --help
  *          Display usage.
  *
  * DESCRIPTION
@@ -112,7 +112,7 @@ Options:
     -d N
         Set debug verbosity.
 
-    --help
+    -h, --help
         Show this help.
 
 Examples:
@@ -135,7 +135,7 @@ USAGE;
 /** Parse command-line options, normalizing long-form audit to the short key. */
 function parse_options()
 {
-    $options = getopt("ad:h:", array("audit", "date:", "help", "report:"));
+    $options = getopt("ad:h", array("audit", "date:", "help", "report:"));
 
     if (isset($options['h']) || isset($options['help'])) {
         usage(0);

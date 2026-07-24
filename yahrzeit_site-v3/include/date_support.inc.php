@@ -394,9 +394,6 @@ function next_yizkor_observances($minhag, $timestamp = null)
  *
  * The scheduled engine runs late in the civil day, when tomorrow's date may
  * already be the active Hebrew observance after sunset.
- *
- * The candidate is constructed in today's civil year. Consequently, January
- * 1 does not match "tomorrow" when the established context is December 31.
  */
 function english_day_matches_today_or_tomorrow($month, $day)
 {
@@ -419,23 +416,35 @@ function english_day_matches_today_or_tomorrow($month, $day)
 
     $month = (int) $month;
     $day   = (int) $day;
-    $year  = (int) $today_year;
 
     if ($month < 1 || $month > 12 || $day < 1 || $day > 31) {
         return false;
     }
 
-    // Special case for Feb 29 in non-leap years.
-    if ($month == 2 && $day == 29 && !is_english_leap_year($year)) {
-        $day = 28;
-    }
-
-    $yz_date  = mktime(0, 0, 0, $month,       $day,       $year);
     $today    = mktime(0, 0, 0, $today_month, $today_day, $today_year);
     $tomorrow = strtotime("tomorrow", $today);
 
-    if ($yz_date == $tomorrow || $yz_date == $today) {
-        $result_code = true;
+    // Usually both comparison dates have the same year. At the December 31 /
+    // January 1 boundary, construct the memorial date in both civil years.
+    $candidate_years = array_unique([
+        (int)date('Y', $today),
+        (int)date('Y', $tomorrow),
+    ]);
+
+    foreach ($candidate_years as $year) {
+        $candidate_day = $day;
+
+        // Observe Feb 29 on Feb 28 in a non-leap year.
+        if ($month == 2 && $candidate_day == 29 &&
+            !is_english_leap_year($year)) {
+            $candidate_day = 28;
+        }
+
+        $yz_date = mktime(0, 0, 0, $month, $candidate_day, $year);
+        if ($yz_date == $today || $yz_date == $tomorrow) {
+            $result_code = true;
+            break;
+        }
     }
 
     return $result_code;

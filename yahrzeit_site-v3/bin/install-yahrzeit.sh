@@ -12,6 +12,34 @@ set -euo pipefail
 # runs syntax/audit checks, and installs the managed lighting schedule.
 # It does not transmit to the controller.
 
+usage() {
+    cat <<'USAGE'
+Usage: install-yahrzeit.sh [options]
+
+Install or update the CBS Yahrzeit Wall appliance on Ubuntu/Debian.
+
+Options:
+  -h, --help    Show this help.
+
+Installation defaults may be overridden with the environment variables
+defined near the beginning of this script.
+USAGE
+}
+
+while (( $# > 0 )); do
+    case "$1" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "ERROR: unknown option: $1" >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+done
+
 REPO_URL="${REPO_URL:-https://github.com/allanschwartz/yahrzeit.git}"
 BRANCH="${BRANCH:-master}"
 SITE_SUBDIR="${SITE_SUBDIR:-yahrzeit_site-v3}"

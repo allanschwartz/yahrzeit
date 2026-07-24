@@ -32,6 +32,7 @@ function cron_usage()
     echo "  --now TIME        Calculate moving sunset times as of TIME.\n";
     echo "  --crontab-file    Read/write FILE instead of the system crontab (test use).\n";
     echo "  --minhag-file     Read policy overrides from FILE (dry-run/test use).\n";
+    echo "  -h, --help        Show this help.\n";
 }
 
 function cron_options($argv)
