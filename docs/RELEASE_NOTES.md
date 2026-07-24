@@ -1,8 +1,20 @@
-# Congregation Beth Sholom Yahrzeit Wall V3 Release Notes
+# Yahrzeit Wall V3 Release Notes
 
 **Release:** V3  
 **Date:** July 2026  
 **Status:** Released
+
+<p align="center">
+  <a href="images/yahrzeit-wall-in-use.jpg">
+    <img src="images/yahrzeit-wall-in-use.jpg"
+         alt="Congregation Beth Sholom Yahrzeit Wall in the sanctuary"
+         width="500">
+  </a>
+</p>
+
+*The Congregation Beth Sholom Yahrzeit Wall in the sanctuary. V3 retains the
+physical memorial wall while replacing and modernizing the server appliance,
+operator interface, automation, and embedded controller.*
 
 ## Overview
 
@@ -91,8 +103,7 @@ recorded in an operational log.
   troubleshooting.
 - The User Guide is also supplied as a PDF for inclusion in the Congregation
   Beth Sholom House Manual.
-- Installer notes and an internal software map support future technical
-  maintenance and recovery.
+- Installer notes support future technical maintenance and recovery.
 
 ## Compatibility and Upgrade Notes
 
@@ -111,14 +122,22 @@ recorded in an operational log.
 V3 includes automated policy tests which compare the names selected for weekly
 reports with the names selected for weekly lighting. The current regression
 run performs 50,796 such comparisons across the memorial database and a range
-of calendar dates.
+of calendar dates. Explicit regression cases also cover leap years, the civil
+December 31/January 1 boundary, and the Hebrew 29 Elul/1 Tishri boundary.
 
 Installation, Minhag updates, managed cron replacement, logging, controller
 communication, CSV preservation, and repeated installation have also been
 tested on Intel NUC appliance hardware.
 
-## Known Limitation
+## See Also
 
-English-date, day-only observance has a year-boundary case requiring further
-work when a December 31 death anniversary is evaluated for January 1. This
-does not affect Congregation Beth Sholom's configured Hebrew-date observance.
+- **Project**
+  - [`./README.md`](../README.md)
+- **Server**
+  - [`./yahrzeit_site-v3/README.md`](../yahrzeit_site-v3/README.md)
+  - [`./yahrzeit_site-v3/INSTALL.md`](../yahrzeit_site-v3/INSTALL.md)
+- **Controller**
+  - [`./embedded/yahrzeit_v3/README.md`](../embedded/yahrzeit_v3/README.md)
+  - [`./embedded/yahrzeit_v3/INSTALL.md`](../embedded/yahrzeit_v3/INSTALL.md)
+- **Hardware**
+  - [`./Hardware/README.md`](../Hardware/README.md)

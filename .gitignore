@@ -3,6 +3,7 @@
 
 # Editor / local history junk
 .history/
+*-backups/
 *.swp
 .*.swp
 *~

@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1600" height="540" viewBox="0 0 1600 540">
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="5" stdDeviation="6"
+                    flood-color="#315a8a" flood-opacity="0.20"/>
+    </filter>
+    <clipPath id="controllerClip">
+      <rect x="761" y="137" width="258" height="245" rx="8"/>
+    </clipPath>
+    <clipPath id="wallClip">
+      <rect x="1125" y="137" width="424" height="245" rx="8"/>
+    </clipPath>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2f7de1"/>
+    </marker>
+    <style>
+      .title {
+        font: 700 31px Arial, sans-serif;
+        fill: #123f78;
+      }
+      .stage {
+        font: 700 22px Arial, sans-serif;
+        fill: #123f78;
+      }
+      .detail {
+        font: 16px Arial, sans-serif;
+        fill: #34495e;
+      }
+      .flow {
+        font: 700 17px Arial, sans-serif;
+        fill: #123f78;
+        letter-spacing: 0.3px;
+      }
+      .card {
+        fill: #ffffff;
+        stroke: #b9cce5;
+        stroke-width: 2;
+      }
+    </style>
+  </defs>
+
+  <rect width="1600" height="540" fill="#edf3fc"/>
+  <rect x="0" y="0" width="1600" height="11" fill="#2f7de1"/>
+  <text x="800" y="58" text-anchor="middle" class="title">
+    Congregation Beth Sholom Yahrzeit Wall System
+  </text>
+
+  <!-- Operator browser -->
+  <g filter="url(#shadow)">
+    <rect x="36" y="92" width="280" height="354" rx="14" class="card"/>
+  </g>
+  <rect x="65" y="132" width="222" height="172" rx="8"
+        fill="#f8fbff" stroke="#5d82af" stroke-width="4"/>
+  <rect x="65" y="132" width="222" height="28" rx="7" fill="#dbe8f8"/>
+  <circle cx="84" cy="146" r="5" fill="#e6b94c"/>
+  <circle cx="101" cy="146" r="5" fill="#7da6d8"/>
+  <circle cx="118" cy="146" r="5" fill="#7da6d8"/>
+  <rect x="84" y="179" width="184" height="20" fill="#2f7de1"/>
+  <rect x="84" y="213" width="76" height="69" fill="#dbe8f8"/>
+  <rect x="173" y="213" width="95" height="12" fill="#9fb9d8"/>
+  <rect x="173" y="235" width="95" height="12" fill="#9fb9d8"/>
+  <rect x="173" y="257" width="70" height="12" fill="#9fb9d8"/>
+  <text x="176" y="345" text-anchor="middle" class="stage">Operator Browser</text>
+  <text x="176" y="373" text-anchor="middle" class="detail">Memorial records, policy,</text>
+  <text x="176" y="396" text-anchor="middle" class="detail">reports, and manual controls</text>
+
+  <!-- Linux appliance -->
+  <g filter="url(#shadow)">
+    <rect x="386" y="92" width="280" height="354" rx="14" class="card"/>
+  </g>
+  <g transform="translate(433 135)">
+    <path d="M 18 22 Q 18 5 35 5 H 154 Q 172 5 172 22
+             V 140 Q 172 157 154 157 H 35 Q 18 157 18 140 Z"
+          fill="#20262c" stroke="#4e5963" stroke-width="5"/>
+    <rect x="35" y="23" width="120" height="102" rx="5" fill="#303941"/>
+    <path d="M 45 41 H 145 M 45 56 H 145 M 45 71 H 145 M 45 86 H 145
+             M 45 101 H 145"
+          stroke="#697782" stroke-width="4"/>
+    <circle cx="137" cy="140" r="7" fill="#e6b94c"/>
+    <rect x="50" y="157" width="90" height="11" rx="4" fill="#697782"/>
+  </g>
+  <text x="526" y="345" text-anchor="middle" class="stage">Linux Appliance</text>
+  <text x="526" y="373" text-anchor="middle" class="detail">PHP application, scheduling,</text>
+  <text x="526" y="396" text-anchor="middle" class="detail">database, and automation</text>
+
+  <!-- Embedded controller -->
+  <g filter="url(#shadow)">
+    <rect x="736" y="92" width="308" height="354" rx="14" class="card"/>
+  </g>
+  <image x="761" y="137" width="258" height="245"
+         preserveAspectRatio="xMidYMid slice"
+         clip-path="url(#controllerClip)"
+         xlink:href="../../embedded/yahrzeit_v3/images/yahrzeit-controller-assembly.jpg"/>
+  <text x="890" y="410" text-anchor="middle" class="stage">Embedded Controller</text>
+  <text x="890" y="435" text-anchor="middle" class="detail">Ethernet commands to LED hardware</text>
+
+  <!-- Physical wall -->
+  <g filter="url(#shadow)">
+    <rect x="1100" y="92" width="474" height="354" rx="14" class="card"/>
+  </g>
+  <image x="1125" y="137" width="424" height="245"
+         preserveAspectRatio="xMidYMid slice"
+         clip-path="url(#wallClip)"
+         xlink:href="../../yahrzeit_site-v3/images/image-21panels.jpg"/>
+  <text x="1337" y="410" text-anchor="middle" class="stage">Yahrzeit Wall</text>
+  <text x="1337" y="435" text-anchor="middle" class="detail">21 panels / 2,240 memorial lights</text>
+
+  <!-- Direction of operation -->
+  <path d="M 322 269 H 376" stroke="#2f7de1" stroke-width="6"
+        marker-end="url(#arrow)"/>
+  <path d="M 672 269 H 726" stroke="#2f7de1" stroke-width="6"
+        marker-end="url(#arrow)"/>
+  <path d="M 1050 269 H 1090" stroke="#2f7de1" stroke-width="6"
+        marker-end="url(#arrow)"/>
+
+  <text x="800" y="502" text-anchor="middle" class="flow">
+    Observe and maintain  -  calculate and schedule  -  transmit  -  illuminate
+  </text>
+</svg>

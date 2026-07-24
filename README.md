@@ -1,4 +1,13 @@
-# Yahrzeit Project
+# Yahrzeit Project Introduction
+
+<a href="docs/images/yahrzeit-project-overview.png">
+  <img src="docs/images/yahrzeit-project-overview.png"
+       alt="Congregation Beth Sholom Yahrzeit Wall system overview"
+       width="500">
+</a>
+
+*The operator interface and Linux appliance calculate and schedule memorial
+lighting, while the embedded controller drives the physical Yahrzeit Wall.*
 
 This repository contains the full Yahrzeit Wall system for Congregation Beth Sholom: the web appliance, scheduling logic, embedded controller firmware, LED hardware designs, and supporting documentation.
 
@@ -39,3 +48,15 @@ The system tracks memorial (Yahrzeit) records, determines when lights should be 
 - The embedded controller work is separate from the PHP appliance and should be treated as its own hardware/software subsystem.
 - If you are updating documentation, prefer clear, project-level explanations that describe how the pieces fit together.
 
+## See Also
+
+- **Project**
+  - [`./README.md`](README.md)
+- **Server**
+  - [`./yahrzeit_site-v3/README.md`](yahrzeit_site-v3/README.md)
+  - [`./yahrzeit_site-v3/INSTALL.md`](yahrzeit_site-v3/INSTALL.md)
+- **Controller**
+  - [`./embedded/yahrzeit_v3/README.md`](embedded/yahrzeit_v3/README.md)
+  - [`./embedded/yahrzeit_v3/INSTALL.md`](embedded/yahrzeit_v3/INSTALL.md)
+- **Hardware**
+  - [`./Hardware/README.md`](Hardware/README.md)
