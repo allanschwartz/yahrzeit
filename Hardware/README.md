@@ -8,18 +8,25 @@ The current controller uses an Arduino Uno R4, an Arduino-compatible Ethernet
 shield, and the Yahrzeit Controller Pixel Interface V3 board. The interface
 board connects the controller stack to the installed chain of YYZ Pixel boards.
 
-<a href="pixel_interface_v3/pixel_interface_v3-3D%20viewer.png">
-  <img src="pixel_interface_v3/pixel_interface_v3-3D%20viewer.png"
-       alt="Yahrzeit Controller Pixel Interface V3 board" width="500">
+<a href="3D%20Printing/fixture_plate.jpg">
+  <img src="3D%20Printing/fixture_plate.jpg"
+       alt="Yahrzeit controller and YYZ Pixel bench-test fixture" width="500">
 </a>
 
-*KiCad rendering of the Yahrzeit Controller Pixel Interface V3 board.*
+*The bench-test fixture brings together the controller stack, Pixel Interface
+board, and two nine-section YYZ Pixel boards.*
 
 ## 3D-Printed Parts
 
 The files under [`3D Printing`](3D%20Printing/) may be browsed
 online, with GitHub displaying the JPEG photographs and interactive previews of
 the STL models.
+
+### Commercial Controller Enclosure
+
+- [arduino\_uno\_r4\_commercial\_enclosure\_vendor.jpg](3D%20Printing/arduino_uno_r4_commercial_enclosure_vendor.jpg)
+  -- Vendor product photograph, saved from the Amazon listing, showing the
+  commercial enclosure with an Arduino Uno R4 and an Ethernet-shield stack.
 
 ### Production Mounting Flange
 
@@ -62,6 +69,13 @@ controller development and bench testing.
 
 ## Yahrzeit Controller Pixel Interface V3
 
+<a href="pixel_interface_v3/pixel_interface_v3-3D%20viewer.png">
+  <img src="pixel_interface_v3/pixel_interface_v3-3D%20viewer.png"
+       alt="Yahrzeit Controller Pixel Interface V3 board" width="500">
+</a>
+
+*KiCad rendering of the Yahrzeit Controller Pixel Interface V3 board.*
+
 The current interface board adapts the Arduino controller stack to the
 five-signal YYZ Pixel ribbon cable and provides the green ALIVE status LED.
 
@@ -88,13 +102,24 @@ five-signal YYZ Pixel ribbon cable and provides the green ALIVE status LED.
 *KiCad rendering of the nine-section YYZ Pixel board.*
 
 The `yahrzeit_pixel9` board combines nine complete YYZ Pixel circuits on one
-PCB. It uses the same octal bus transceiver and 8-bit shift register as the
-individual boards installed in the wall.
+PCB, as a test fixture. It uses the same octal bus transceiver and 8-bit shift
+register as the individual boards installed in the wall.
+
+<a href="schematics/yyz_pixel_8_pixel_hierarchical_sheet.png">
+  <img src="schematics/yyz_pixel_8_pixel_hierarchical_sheet.png"
+       alt="Reusable eight-pixel YYZ Pixel hierarchical sheet" width="500">
+</a>
+
+*The reusable KiCad hierarchical sheet implements one eight-pixel YYZ Pixel
+circuit. The `yahrzeit_pixel9` top-level schematic instantiates this sheet nine
+times.*
 
 - [yahrzeit\_pixel9.kicad\_pro](yahrzeit_pixel9/yahrzeit_pixel9.kicad_pro) --
   Open this project file in KiCad.
 - [yahrzeit\_pixel9.kicad\_sch](yahrzeit_pixel9/yahrzeit_pixel9.kicad_sch) --
   KiCad top-level schematic.
+- [pblock.kicad\_sch](yahrzeit_pixel9/pblock.kicad_sch) -- Reusable
+  eight-pixel hierarchical sheet.
 - [yahrzeit\_pixel9.kicad\_pcb](yahrzeit_pixel9/yahrzeit_pixel9.kicad_pcb) --
   KiCad PCB layout.
 - [yahrzeit\_pixel9-schematic.pdf](yahrzeit_pixel9/yahrzeit_pixel9-schematic.pdf)
@@ -123,12 +148,13 @@ and Ethernet reference schematics.
 
 ## See Also
 
-- [../README.md](../README.md) -- Yahrzeit Project Introduction.
-- [../embedded/yahrzeit_v3/README.md](../embedded/yahrzeit_v3/README.md) --
-  Yahrzeit Embedded Controller.
-- [../embedded/yahrzeit_v3/INSTALL.md](../embedded/yahrzeit_v3/INSTALL.md) --
-  Yahrzeit Embedded Controller — Installation Notes.
-- [../docs/yahrzeit-v3-release-notes.md](../docs/yahrzeit-v3-release-notes.md)
-  -- Yahrzeit Wall V3 Release Notes.
-- [../docs/INSTALLATION_FORM.md](../docs/INSTALLATION_FORM.md) -- Yahrzeit Wall
-  V3 Installation Record.
+- **Project**
+  - [`./README.md`](../README.md)
+- **Server**
+  - [`./yahrzeit_site-v3/README.md`](../yahrzeit_site-v3/README.md)
+  - [`./yahrzeit_site-v3/INSTALL.md`](../yahrzeit_site-v3/INSTALL.md)
+- **Controller**
+  - [`./embedded/yahrzeit_v3/README.md`](../embedded/yahrzeit_v3/README.md)
+  - [`./embedded/yahrzeit_v3/INSTALL.md`](../embedded/yahrzeit_v3/INSTALL.md)
+- **Hardware**
+  - [`./Hardware/README.md`](README.md)
