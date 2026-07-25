@@ -13,3 +13,9 @@
 
 # Office temp files
 ~$*
+
+# Generated working files and render previews
+/tmp/
+
+# Generated immediately before compiling the embedded controller.
+/embedded/yahrzeit_v3/firmware_release.h
