@@ -28,29 +28,21 @@ scheduling, and application layers inside.*
 
 ## Installation Model
 
-The installer is copied or downloaded onto the appliance and run locally. It:
+The installer is downloaded onto the appliance and run locally. It does not
+transmit commands to the physical LED controller.
 
-- installs the required operating-system packages,
-- clones or updates only `yahrzeit_site-v3` using Git sparse checkout,
-- configures Apache to serve the site,
-- runs syntax, audit, and policy tests,
-- and installs the managed cron schedule.
-
-The installer does not transmit commands to the physical LED controller, and
-it does not modify the memorial CSV data.
-
-During an update, the installer remembers the recorded controller address and
-brightness values and preserves:
+During an update, it remembers the controller address and brightness values
+and preserves the two live data files:
 
 ```text
 data/minhag.ini
 data/yahrzeits-rev4.csv
 ```
 
-It then resets deployed code to the selected remote branch, restores the live
-data, and asks whether to retain or replace the remembered controller address.
-Do not make source-code changes in the appliance checkout; they are discarded
-during an update.
+It replaces the deployed code with the selected remote branch, restores the
+live data, and asks whether to retain or replace the remembered controller
+address. Source-code changes made directly in the appliance checkout are
+discarded.
 
 ## Before Installation
 

@@ -76,47 +76,22 @@ and command previews are intended to be safe; live wall operations call
 - `include/panels.inc.php` - static wall/panel geometry.
 - `include/leds.inc.php` - maps panel/person locations to controller commands.
 
-## Installation
+## Installation and Updates
 
-For a fresh Ubuntu/Debian appliance, run:
+The complete fresh-installation and replacement procedure is in
+[`INSTALL.md`](INSTALL.md). The installer can also be rerun to update an
+existing appliance:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/allanschwartz/yahrzeit/master/yahrzeit_site-v3/bin/install-yahrzeit.sh -o /tmp/install-yahrzeit.sh
-chmod +x /tmp/install-yahrzeit.sh
-/tmp/install-yahrzeit.sh
+bash /tmp/install-yahrzeit.sh
 ```
 
-The installer:
-
-- installs required packages,
-- enables SSH,
-- disables AppArmor,
-- clones or updates only `yahrzeit_site-v3` using Git sparse checkout,
-- configures Apache to serve the site,
-- runs PHP and shell syntax checks,
-- runs non-transmitting sanity checks,
-- and installs or repairs the managed cron schedule.
-
-The installer does not transmit commands to the physical controller during
-its tests.
-
-On an existing appliance, the checkout is treated as deployed code rather
-than a development worktree. The installer preserves `data/minhag.ini` and
-`data/yahrzeits-rev4.csv`, updates the remaining site files to exactly match
-the selected remote branch, and then restores those two live data files.
-Server-side edits to application source files are intentionally discarded.
-
-By default, the installer places the sparse checkout under:
-
-```text
-~/src/yahrzeit/yahrzeit_site-v3
-```
-
-and links it into Apache as:
-
-```text
-/var/www/html/yahrzeit
-```
+The appliance checkout is deployed code, not a development worktree. During
+an update, the installer preserves `data/minhag.ini` and
+`data/yahrzeits-rev4.csv`, replaces the remaining site files with the selected
+remote version, and restores the live data. Source-code edits made directly on
+the appliance are intentionally discarded.
 
 ## Network Configuration
 
@@ -163,9 +138,7 @@ CONTROLLER_BRIGHTNESS=160 bin/yahrzeit --yizkor
 From this directory, syntax-check the PHP and shell files with:
 
 ```sh
-for f in index.php [0-9]*.php include/*.inc.php help/*.php \
-         bin/yahrzeit_engine.php bin/yahrzeit_scheduler bin/fix-up-crontab \
-         tests/*.php; do
+for f in $(find . -name '*.php') bin/yahrzeit_scheduler bin/fix-up-crontab; do
     php -l "$f"
 done
 
@@ -259,16 +232,6 @@ bin/yahrzeit-controller.conf
 The controller configuration is replaceable software configuration rather
 than memorial data, but retaining it records the controller address selected
 for that appliance.
-
-## Updating The Appliance
-
-The preferred one-person engineering workflow is:
-
-1. Make production changes in the master repository on the development Mac.
-2. Commit the changes.
-3. Tag the installation version.
-4. Push `master` and the tag.
-5. On the installed appliance, rerun `bin/install-yahrzeit.sh`.
 
 ## What Not To Change Casually
 
