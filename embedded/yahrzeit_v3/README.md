@@ -11,14 +11,14 @@ about the Arduino controller firmware in this directory. See `INSTALL.md` for
 the production firmware build, upload, and verification procedure.
 
 <p align="center">
-  <a href="images/arduino-uno-r4-minima.jpg">
-    <img src="images/arduino-uno-r4-minima.jpg"
-         alt="Arduino Uno R4 Minima used by the Yahrzeit controller"
-         width="500">
+  <a href="images/yahrzeit-controller-assembly.jpg">
+    <img src="images/yahrzeit-controller-assembly.jpg"
+         alt="Yahrzeit Embedded Controller V3 assembly" height="500">
   </a>
 </p>
 
-*Arduino Uno R4 Minima used by the Yahrzeit embedded controller.*
+*The assembled controller in its close-fitting enclosure. The illuminated
+green LED on the Pixel Interface board is the ALIVE indicator.*
 
 ## What This Controller Does
 
@@ -44,7 +44,9 @@ PHP appliance bin/yahrzeit
             -> YyzPixel
 ```
 
-USB serial uses the same command processor through `serial_thread.ino`.
+The command line interface is normally accessed through a TCP connection,
+and received in `socket_thread.ino`.  
+However, USB serial uses the same command processor through `serial_thread.ino`.
 
 ## Hardware Stack
 
@@ -57,16 +59,7 @@ Arduino Uno R4 Minima
       -> ribbon cable to YYZ Pixel board chain
 ```
 
-### Enclosure and mounting
-
-The three-board stack is installed in a close-fitting commercial enclosure.
-When the clear cover is secured, it touches the tops of the connectors and
-helps prevent the stacked boards from working apart through vibration—or, this
-being San Francisco, an earthquake.
-
-The green ALIVE LED on the Pixel Interface board slowly brightens and dims
-while the main firmware loop is running. It confirms that the controller is
-alive; it does not by itself confirm Ethernet communication with the appliance.
+### Ethernet Shield
 
 The Ethernet shield uses the Arduino SPI interface; D10 is the chip select:
 
@@ -140,7 +133,7 @@ Production/CBS wall defaults:
 
 ```cpp
 NetworkConfig networkConfig = {
-    .mac = { 0x02, 0x19, 0x55, 0x11, 0x00, 0x09 },          // 1955-11-09
+    .mac = { 0x02, 0x19, 0x55, 0x11, 0x00, 0x09 },
         // Values used at Congregation Beth Sholom
         .ipAddr = IPAddress(192, 168, 13, 9),
         .dnsAddr = IPAddress(8, 8, 8, 8),
@@ -182,8 +175,9 @@ is currently connected. It can be issued through USB Serial Monitor even when
 TCP communication is not working, making it the primary tool for diagnosing
 network problems.
 
-The `version` command reports the source-controlled firmware release identifier
-and the date and time at which the firmware was compiled.
+The `version` command reports the Git-derived firmware release identifier and
+the date and time at which the firmware was compiled. The release identifier
+is generated as part of the build procedure documented in `INSTALL.md`.
 
 ## Serial Console
 
@@ -290,41 +284,14 @@ version
 status
 ```
 
-From the PHP appliance directory, generate and inspect the normal command
-stream without contacting the controller:
+For complete appliance-to-controller verification, follow the build, upload,
+and commissioning procedure in [INSTALL.md](INSTALL.md).
 
-```sh
-bin/yahrzeit --dry-run
-```
+## Building and Installing
 
-When the controller address is correct and it is safe to change the wall, run
-the complete production path:
-
-```sh
-bin/yahrzeit
-```
-
-With no arguments, `bin/yahrzeit` computes the current normal Yahrzeit
-lighting, transmits the complete command stream, refreshes the wall, and saves
-the resulting controller state.
-
-## Production Build Checklist
-
-Before installing at CBS:
-
-1. Enable correct geometry with `CBS_56x40_WALL` in `yahrzeit_v3.h`.
-2. Disable `TEST_FIXTURE`.
-3. Confirm production controller IP/gateway/subnet in `yahrzeit_v3.ino`.
-4. Confirm `SOCKET_LISTEN_PORT` matches the PHP appliance port.
-5. Upload firmware to the Arduino Uno R4 Minima.
-6. Check serial startup output for Ethernet hardware and IP address.
-7. Perform the bench tests listed in the previous section.
-8. With the controller connected to the installed wall, calibrate the normal
-   Yahrzeit and full-wall brightness levels. Record them as
-   `CONTROLLER_BRIGHTNESS` and `CONTROLLER_BRIGHTNESS_ALL_ON` in the PHP
-   appliance's `bin/yahrzeit-controller.conf`.
-9. From the appliance, run `bin/yahrzeit --dry-run`, followed by
-   `bin/yahrzeit`.
+See [INSTALL.md](INSTALL.md) for the known-working Arduino toolchain,
+production geometry and network configuration, Git-derived release identifier,
+firmware compilation and upload, verification tests, and installation record.
 
 ## Maintenance Warnings
 

@@ -8,14 +8,14 @@ The firmware is not installed by a script. It is configured in the source,
 compiled with the Arduino toolchain, and uploaded over USB.
 
 <p align="center">
-  <a href="images/yahrzeit-controller-assembly.jpg">
-    <img src="images/yahrzeit-controller-assembly.jpg"
-         alt="Yahrzeit Embedded Controller V3 assembly" height="500">
+  <a href="images/arduino-uno-r4-minima.jpg">
+    <img src="images/arduino-uno-r4-minima.jpg"
+         alt="Arduino Uno R4 Minima used by the Yahrzeit controller"
+         width="500">
   </a>
 </p>
 
-*The assembled controller in its close-fitting enclosure. The illuminated
-green LED on the Pixel Interface board is the ALIVE indicator.*
+*Arduino Uno R4 Minima used by the Yahrzeit embedded controller.*
 
 ## Hardware
 
@@ -64,7 +64,7 @@ When its screws are tightened, the cover helps keep the three stacked boards
 from separating through vibration—or, this being San Francisco, an earthquake.
 Do not add spacers that defeat this retaining function.
 
-The enclosure assembly uses M2.5 x 5 mm machine screws. They can be difficult
+The enclosure assembly uses M2.5 x 5mm machine screws. They can be difficult
 to obtain in the United States. Keep all removed screws together, and obtain
 replacements before beginning installation if any are missing.
 
@@ -85,8 +85,7 @@ should slowly brighten and dim. This indicates that the firmware main loop is
 running; it does not by itself prove that Ethernet communication is working.
 
 Uploading or restarting the controller runs a short visible light test before
-the saved display is restored. Perform installation when this will not disrupt
-a service.
+the saved display is restored. 
 
 ## Known-Working Development Toolchain
 
@@ -116,6 +115,22 @@ the Arduino Ethernet library.
 
 Open `yahrzeit_v3.ino`. The Arduino IDE will load the other `.ino`, `.cpp`,
 and `.h` files from the same sketch directory.
+
+## Generate the Firmware Release Identifier
+
+Immediately before compiling, run the release-header generator from a
+terminal:
+
+```sh
+cd embedded/yahrzeit_v3
+./generate-firmware-release.sh
+```
+
+The generated `firmware_release.h` is intentionally not committed. If the
+current commit has a release tag, the firmware reports that tag, such as
+`v3.0.1`. Otherwise, it reports the nearest tag followed by the commit distance
+and abbreviated Git commit ID. A modified working tree also receives a
+`-dirty` suffix.
 
 ## Configure the Production Build
 
@@ -150,7 +165,7 @@ In `yahrzeit_v3.ino`, confirm the production values in `networkConfig`:
 
 ```cpp
 NetworkConfig networkConfig = {
-    .mac = { 0x02, 0x19, 0x55, 0x11, 0x00, 0x09 },          // 1955-11-09
+    .mac = { 0x02, 0x19, 0x55, 0x11, 0x00, 0x09 },
         // Values used at Congregation Beth Sholom
         .ipAddr = IPAddress(192, 168, 13, 9),
         .dnsAddr = IPAddress(8, 8, 8, 8),
@@ -236,9 +251,9 @@ it is safe to change the wall, verify the complete production path:
 bin/yahrzeit
 ```
 
-With no arguments, `bin/yahrzeit` computes the current normal Yahrzeit
-lighting, transmits the complete command stream, refreshes the wall, and saves
-the resulting controller state.
+The command computes and transmits the current normal Yahrzeit lighting,
+refreshes the wall, and saves the resulting controller state. See `README.md`
+for the controller command protocol and diagnostic commands.
 
 ## Installation Record
 

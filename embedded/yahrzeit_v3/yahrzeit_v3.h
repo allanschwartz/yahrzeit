@@ -138,7 +138,7 @@
 constexpr byte PANEL0 = 0;
 constexpr uint16_t SOCKET_LISTEN_PORT = 2001;
 
-constexpr const char *FIRMWARE_RELEASE = "v3.0.1";
+#include "firmware_release.h"
 
 #if defined(ARDUINO_NANO_R4)
 constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino Nano R4";
