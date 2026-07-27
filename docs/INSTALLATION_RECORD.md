@@ -1,37 +1,46 @@
-# Yahrzeit Wall V3 Installation Record
-
-<p align="center">
-  <a href="../yahrzeit_site-v3/images/CBS+Compact+Logo+2023-Gold.png">
-    <img src="../yahrzeit_site-v3/images/CBS+Compact+Logo+2023-Gold.png"
-         alt="Congregation Beth Sholom" width="110">
-  </a>
+<p>
+  <img src="../yahrzeit_site-v3/images/CBS+Compact+Logo+2023-Gold.png"
+       alt="Congregation Beth Sholom"
+       width="110"
+       align="left">
 </p>
+
+# Yahrzeit Wall V3 Installation Record
 
 Complete this record on site and place a printed copy in the Yahrzeit project
 binder.
 
-| Installation item | Installed value |
+| Installation item            | Installed value |
 |---|---|
-| Installation date | ______________________________ |
-| Ubuntu version | ______________________________ |
-| PHP version | ______________________________ |
-| Git release tag | ______________________________ |
-| Git commit | ______________________________ |
-| Administrator account | ______________________________ |
-| Server hostname | ______________________________ |
-| Server address | ______________________________ |
-| Controller hostname/address | ______________________________ |
-| Controller TCP port | ______________________________ |
-| Apache URL | ______________________________ |
-| Primary NUC location | ______________________________ |
-| Spare NUC location | ______________________________ |
+| Installation date            | __________________________________________________ |
+| Installed by                 | __________________________________________________ |
+| Reviewed by                  | __________________________________________________ |
+| Ubuntu LTS version           | __________________________________________________ |
+| Git tag installed            | __________________________________________________ |
+| Server administrator account | __________________________________________________ |
+| Server hostname/IP address   | __________________________________________________ |
+| Primary Server URL           | __________________________________________________ |
+| Alternate Server URL         | __________________________________________________ |
+| Controller hostname          | __________________________________________________ |
+| Controller IP address        | __________________________________________________ |
+| Primary NUC location         | __________________________________________________ |
+| Spare NUC stored at          | __________________________________________________ |
+| Primary Controller location  | _Behind Yahrzeit Wall Panel 1C_ |
+| Spare Controller stored at   | __________________________________________________ |
 
-**Installed by:** _________________________________________________
+## Installation and Maintenance History
 
-**Reviewed with:** ________________________________________________
+Record all significant maintenance performed on this installation.
 
-**Notes:**  
-__________________________________________________________________
+| Date | Performed By | Version | Description |
+|------|--------------|----------|-------------|
+| 2026-07-29 | Allan Schwartz | V3.0.0 | Initial V3 installation and commissioning. |
+| _____________ | | | |
+| _____________ | | | |
+| _____________ | | | |
+| _____________ | | | |
+| _____________ | | | |
+| _____________ | | | |
 
 ## See Also
 
