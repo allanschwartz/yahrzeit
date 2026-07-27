@@ -123,8 +123,8 @@
 // CBS_56x40_WALL is the installed Congregation Beth Sholom wall.
 // TEST_FIXTURE is the bench/test fixture.
 
-// #define CBS_56x40_WALL    1
-#define TEST_FIXTURE    1
+#define CBS_56x40_WALL    1
+// #define TEST_FIXTURE    1
 
 #if defined(CBS_56x40_WALL) == defined(TEST_FIXTURE)
 #error "Select exactly one display geometry"
