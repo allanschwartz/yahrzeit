@@ -428,10 +428,34 @@ all on 13
 all on 14
 all off 15
 all on 16
-all off 17
+all on 17
 all off 18
 all on 19
-all off 20
+pixel on 1 1 20
+pixel on 2 1 20
+pixel on 3 1 20
+pixel on 4 1 20
+pixel on 5 1 20
+pixel on 6 1 20
+pixel on 7 1 20
+pixel on 8 1 20
+pixel on 9 1 20
+pixel on 10 1 20
+pixel on 11 1 20
+pixel on 12 1 20
+pixel on 13 1 20
+pixel on 14 1 20
+pixel on 15 1 20
+pixel on 16 1 20
+pixel on 17 1 20
+pixel on 18 1 20
+pixel on 19 1 20
+pixel on 20 1 20
+pixel on 21 1 20
+pixel on 22 1 20
+pixel on 1 2 20
+pixel on 2 2 20 
+
 all off 21
 
 brightness $CONTROLLER_BRIGHTNESS_ALL_ON
