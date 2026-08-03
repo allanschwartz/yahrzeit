@@ -123,6 +123,9 @@ bool serialGets( char inputBuf[], const unsigned maxsize, unsigned &index )
     while ( Serial.available() > 0 ) {
         const int c = Serial.read();
 
+        if (c < 0) {
+            break;
+        }
         if (c == 0 || c == '\r') {
             // remove NUL and CR from the input stream
             continue;
@@ -140,7 +143,7 @@ bool serialGets( char inputBuf[], const unsigned maxsize, unsigned &index )
         }
 
         // normal character
-        inputBuf[index] = static_cast<char>(c);
+        inputBuf[index] = c;
         ++index;
         inputBuf[index] = '\0';
     }

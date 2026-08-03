@@ -136,6 +136,8 @@
 // ----------------------------------------------------------------------------
 
 constexpr byte PANEL0 = 0;
+constexpr byte MAX_DISPLAY_ROWS = 64;
+constexpr byte MAX_DISPLAY_COLS = 64;
 constexpr uint16_t SOCKET_LISTEN_PORT = 2001;
 
 #include "firmware_release.h"

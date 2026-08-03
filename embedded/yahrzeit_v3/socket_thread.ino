@@ -222,7 +222,7 @@ GetsReturns socketGets(char inputBuf[], const unsigned maxsize, unsigned &index)
             return GETS_FULLCMD;
         }
 
-        inputBuf[index] = static_cast<char>(c);
+        inputBuf[index] = c;
         ++index;
         inputBuf[index] = '\0';
     }

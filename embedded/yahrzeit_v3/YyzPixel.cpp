@@ -29,19 +29,24 @@
 // ----------------------------------------------------------------------------
 
 // Fixed capacity keeps the EEPROM representation independent of active geometry.
-constexpr byte MAX_N_ROWS = 64;
-constexpr byte MAX_N_COLS = 64;
-
 // Display buffer capacity: up to 64 rows x 64 columns.
 // Actual active geometry is displayConfig.nRows x displayConfig.nCols.
-static constexpr size_t FRAME_BUFFER_BYTES = 
-    (static_cast<size_t>(MAX_N_ROWS * MAX_N_COLS) / 8);
+static constexpr int FRAME_BUFFER_BYTES =
+    MAX_DISPLAY_ROWS * MAX_DISPLAY_COLS / 8;
 
 struct FrameBuffer {
     byte pixelBits_[FRAME_BUFFER_BYTES] {};
 };
 
 static FrameBuffer frameBuffer_;
+
+/**
+ * @brief Number of packed framebuffer bytes occupied by one active column.
+ */
+static int activeBytesPerColumn()
+{
+    return (displayConfig.nRows + 7) / 8;
+}
 
 
 // ----------------------------------------------------------------------------
@@ -106,8 +111,6 @@ void YyzPixel::begin()
  *
  * @note This modifies only the packed framebuffer.  The physical display is
  *       not updated until refresh() is called.
- *       Active geometries must have a row count divisible by eight because
- *       each column occupies an integral number of framebuffer bytes.
  */
 void YyzPixel::setPixel(uint16_t x, uint16_t y, uint8_t pixel)
 {
@@ -119,7 +122,8 @@ void YyzPixel::setPixel(uint16_t x, uint16_t y, uint8_t pixel)
         return;
     }
 
-    byte *const bytePtr = frameBuffer_.pixelBits_ + x * displayConfig.nRows / 8 + y / 8;
+    byte *const bytePtr = frameBuffer_.pixelBits_
+                        + x * activeBytesPerColumn() + y / 8;
     const uint8_t bit = y % 8;
     const uint8_t mask = 0x80 >> bit;
 
@@ -151,7 +155,8 @@ bool YyzPixel::getPixel(uint16_t x, uint16_t y)  const
         return false;
     }
 
-    const uint8_t *const bytePtr = frameBuffer_.pixelBits_ + x * displayConfig.nRows / 8 + y / 8;
+    const uint8_t *const bytePtr = frameBuffer_.pixelBits_
+                                 + x * activeBytesPerColumn() + y / 8;
     const uint8_t bit = y % 8;
     const uint8_t mask = 0x80 >> bit;
 
@@ -198,7 +203,7 @@ void YyzPixel::refresh()
 
     digitalWrite(stPin_, LOW);
     digitalWrite(cpPin_, LOW);
-    digitalWrite(oePin_, HIGH);     // Disable LEDs while shifting
+    analogWrite(oePin_, 255);  // OE HIGH: blank display while shifting
 
     for (int col = displayConfig.nCols; col > 0; --col) {
         for (int row = displayConfig.nRows; row > 0; --row) {
@@ -272,27 +277,27 @@ void YyzPixel::setBrightness(uint8_t brightness)
 }
 
 /**
- * @brief Enable the display outputs immediately at full brightness.
+ * @brief Enable the display outputs at the configured brightness.
  *
- * Sets the display state to on and drives OE LOW. This bypasses configured PWM
- * brightness until refresh() or setBrightness() is called.
+ * Sets the display state to on and restores configured PWM brightness.
  */
 void YyzPixel::on()
 {
     displayOn_ = true;
-    digitalWrite(oePin_, LOW);     // OE active low: LOW enables LEDs
+    analogWrite(oePin_, displayConfig.brightness);     // OE active low: LOW enables LEDs
 }
 
 /**
  * @brief Disable the display outputs.
  *
- * Sets the display state to off and drives OE HIGH so the LED outputs are
- * blanked regardless of framebuffer contents.
+ * Sets the display state to off and drives OE continuously HIGH through the
+ * PWM peripheral so the LED outputs are blanked regardless of framebuffer
+ * contents.
  */
 void YyzPixel::off()
 {
     displayOn_ = false;
-    digitalWrite(oePin_, HIGH);     // OE active low: HIGH disables LEDs
+    analogWrite(oePin_, 255);      // OE active low: HIGH disables LEDs
 }
 
 /**

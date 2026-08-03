@@ -35,12 +35,15 @@
  *
  * @param panel   PANEL0 for the whole display, or panel number 1..displayConfig.nPanels.
  *
- * @note This verifies both ends of the logical addressing range without
- *       lighting every pixel. Existing framebuffer pixels are not cleared.
+ * @note This clears the selected display, then verifies both ends of the
+ *       logical addressing range without lighting every pixel.
  */
 static void selftestCorners(byte panel)
 {
     ASSERT(panel <= displayConfig.nPanels);
+
+    ResultIds rc = ledWall.allOn(0, panel);
+    ASSERT(rc == NO_ERROR);
 
     if (panel == PANEL0) {
         // Exercise the full-wall coordinate path.
@@ -70,6 +73,9 @@ static void selftestCorners(byte panel)
 static void selftestAllOn(bool pixelBit, byte panel)
 {
     ASSERT(panel <= displayConfig.nPanels);
+
+    ResultIds rc = ledWall.allOn(0, panel);
+    ASSERT(rc == NO_ERROR);
 
     if (panel == PANEL0) {
         for (byte col = 1; col <= displayConfig.nCols; ++col) {
@@ -107,6 +113,11 @@ static void selftestCheckerboard(byte panel)
 {
     ASSERT(panel <= displayConfig.nPanels);
 
+    ResultIds rc = ledWall.allOn(0, panel);
+    ASSERT(rc == NO_ERROR);
+
+    static bool invertPattern = false;
+
     const byte nRows = (panel == PANEL0)
                      ? displayConfig.nRows
                      : ledWall.rowsInPanel(panel);
@@ -117,7 +128,7 @@ static void selftestCheckerboard(byte panel)
 
     for (byte row = 1; row <= nRows; ++row) {
         for (byte col = 1; col <= nCols; ++col) {
-            const bool pixel = ((row + col) & 1) ? 1 : 0;
+            const bool pixel = ((row + col) & 1) ^ invertPattern;
 
             if (panel == PANEL0) {
                 ledWall.setPixel(pixel, row, col);
@@ -126,6 +137,8 @@ static void selftestCheckerboard(byte panel)
             }
         }
     }
+
+    invertPattern = !invertPattern;
 
     // intentional visible pacing for operator observation
     sleepMs(true, 500);
@@ -144,6 +157,9 @@ static void selftestCheckerboard(byte panel)
 void selftestMarchingRow(byte panel)
 {
     ASSERT(panel <= displayConfig.nPanels);
+
+    ResultIds rc = ledWall.allOn(0, panel);
+    ASSERT(rc == NO_ERROR);
 
     const byte nRows = (panel == PANEL0)
                      ? displayConfig.nRows
@@ -187,6 +203,9 @@ void selftestMarchingRow(byte panel)
 static void selftestMarchingCol(byte panel)
 {
     ASSERT(panel <= displayConfig.nPanels);
+
+    ResultIds rc = ledWall.allOn(0, panel);
+    ASSERT(rc == NO_ERROR);
 
     for (byte col = 1; col <= ledWall.colsInPanel(panel); ++col) {
         for (byte row = 1; row <= ledWall.rowsInPanel(panel); ++row) {

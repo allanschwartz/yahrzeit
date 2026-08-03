@@ -69,6 +69,7 @@ static constexpr Command commands[] = {
     { CMD_BRIGHT, 1, "bright" },
     { CMD_DATA,   3, "data"   },
     { CMD_DUMP,   0, "dump"   },
+    { CMD_GEOMETRY, 1, "geometry" },
     { CMD_HELP,   0, "help"   },
     { CMD_HELP,   0, "?"      },
     { CMD_LOAD,   0, "load"   },
@@ -84,9 +85,10 @@ static constexpr Command commands[] = {
 
 // Each command returns a ResultId,
 // defined in LedWall.h.  Here are the corresponding strings:
-const char* const resultStrings[8] = {
+const char* const resultStrings[9] = {
     "OK", "Eh?", "ERR Missing Arg", "ERR Row", 
-    "ERR Col", "ERR Panel", "ERR Brightness", "ERR Test Number"
+    "ERR Col", "ERR Panel", "ERR Brightness", "ERR Test Number",
+    "ERR Geometry"
 };
 
 // displayed with the "help" command, or any syntax error
@@ -96,6 +98,7 @@ const char HelpText[]  =
     "\tBRightness <n> (1:bright, 254:dim)\n"
     "\tDAta <row> <col> <binary data>\n"
     "\tDUmp [<panel>]\n"
+    "\tGEometry <rows> [<cols>] (one panel; reset restores compiled geometry)\n"
     "\tHElp\n"
     "\tLOad\n"
     "\tPIxel on|off <row> <col> [<panel>]\n"
@@ -220,6 +223,13 @@ const char *CmdProc::execute( const byte streamID, char *command )
             // dump [<panel>]
             rc = dumpPixels( streamID,
                      argValue[1] );               /* optional <panel> */ 
+            break;
+
+        case CMD_GEOMETRY:
+            // geometry <rows> [<cols>]
+            rc = ledWall_.configureGeometry(
+                     argValue[1],
+                     argString[2] == nullptr ? 1 : argValue[2]);
             break;
 
         case CMD_HELP:

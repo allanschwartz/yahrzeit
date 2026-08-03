@@ -33,6 +33,7 @@ enum CommandIds : byte {
     CMD_BRIGHT,         // set the brightness
     CMD_DATA,           // set a specific data bit pattern
     CMD_DUMP,           // dump the pixel memory
+    CMD_GEOMETRY,       // configure a temporary single-panel geometry
     CMD_HELP,           // display command help
     CMD_LOAD,           // load the pixel memory from EEPROM
     CMD_PIXEL,          // set a pixel memory on/off

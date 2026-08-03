@@ -271,6 +271,10 @@ ResultIds LedWall::setPixelInPanel(bool pixelBit, byte row, byte col, byte panel
         return setPixel(pixelBit, row, col);
     }
 
+    if (hasRuntimeGeometry()) {
+        return setPixel(pixelBit, row, col);
+    }
+
     if (row < 1 || row > N_ROWS_PER_PANEL[panel]) {
         snprintf(outputBuffer, sizeof outputBuffer,
                  "setPixelInPanel: bad row=%d panel=%d maxRows=%d",
@@ -315,6 +319,10 @@ bool LedWall::pixelValueInPanel(byte row, byte col, byte panel) const
     }
 
     if (panel == PANEL0) {
+        return pixelValue(row, col);
+    }
+
+    if (hasRuntimeGeometry()) {
         return pixelValue(row, col);
     }
 
@@ -378,6 +386,34 @@ void LedWall::setBrightness(byte brightness)
 }
 
 /**
+ * @brief   Temporarily configure a continuous, single-panel display.
+ *
+ * @param rows   active row count, 1..MAX_DISPLAY_ROWS
+ * @param cols   active column count, 1..MAX_DISPLAY_COLS
+ *
+ * @returns      NO_ERROR or ERR_GEOMETRY
+ *
+ * The resulting geometry has one logical panel. It remains active until reset
+ * and is intended for bench testing with the standard self-tests. Reset
+ * restores the geometry selected at compile time.
+ */
+ResultIds LedWall::configureGeometry(int rows, int cols)
+{
+    if (rows < 1 || rows > MAX_DISPLAY_ROWS
+            || cols < 1 || cols > MAX_DISPLAY_COLS) {
+        return ERR_GEOMETRY;
+    }
+
+    displayConfig.nRows = rows;
+    displayConfig.nCols = cols;
+    displayConfig.nPanels = 1;
+    runtimeGeometry_ = true;
+    clear();
+
+    return NO_ERROR;
+}
+
+/**
  * @brief   Turn all pixels on or off.
  *
  * @param pixelBit   false = off, true = on
@@ -402,8 +438,8 @@ ResultIds LedWall::allOn(bool pixelBit, byte panel)
             }
         }
     } else {
-        for ( byte col = 1; col <= N_COLS_PER_PANEL[panel]; ++col) {
-            for ( byte row = 1; row <= N_ROWS_PER_PANEL[panel]; ++row) {
+        for ( byte col = 1; col <= colsInPanel(panel); ++col) {
+            for ( byte row = 1; row <= rowsInPanel(panel); ++row) {
                 const ResultIds rc = setPixelInPanel(pixelBit, row, col, panel);
                 ASSERT(rc == NO_ERROR);
             }
@@ -426,6 +462,9 @@ byte LedWall::rowsInPanel(byte panel) const
     if (panel > displayConfig.nPanels) {
         return 0;
     }
+    if (panel == PANEL0 || hasRuntimeGeometry()) {
+        return displayConfig.nRows;
+    }
     return N_ROWS_PER_PANEL[panel];
 }
 
@@ -442,7 +481,18 @@ byte LedWall::colsInPanel(byte panel) const
     if (panel > displayConfig.nPanels) {
         return 0;
     }
+    if (panel == PANEL0 || hasRuntimeGeometry()) {
+        return displayConfig.nCols;
+    }
     return N_COLS_PER_PANEL[panel];
+}
+
+/**
+ * @brief   Return whether a runtime single-panel geometry is active.
+ */
+bool LedWall::hasRuntimeGeometry() const
+{
+    return runtimeGeometry_;
 }
 
 /**

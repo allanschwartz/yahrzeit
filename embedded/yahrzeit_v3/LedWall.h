@@ -33,7 +33,7 @@
 
 enum ResultIds : byte {
     NO_ERROR = 0, ERR_SYNTAX, ERR_MISSING, ERR_ROW,
-    ERR_COL, ERR_PANEL, ERR_BRIGHT, ERR_TESTNUM,
+    ERR_COL, ERR_PANEL, ERR_BRIGHT, ERR_TESTNUM, ERR_GEOMETRY,
 };
 
 class LedWall
@@ -85,6 +85,11 @@ public:
     void setBrightness(byte brightness);
 
     /**
+     * @brief   Temporarily configure a continuous, single-panel display.
+     */
+    ResultIds configureGeometry(int rows, int cols);
+
+    /**
      * @brief   Set every framebuffer pixel in the selected panel or wall.
      */
     ResultIds allOn(bool pixelBit, byte panel);
@@ -112,4 +117,10 @@ public:
 private:
 
     YyzPixel& pixels_;
+    bool runtimeGeometry_ = false;
+
+    /**
+     * @brief   Return whether a runtime single-panel geometry is active.
+     */
+    bool hasRuntimeGeometry() const;
 }; 
