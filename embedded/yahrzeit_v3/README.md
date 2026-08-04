@@ -215,6 +215,7 @@ LOad
 
 ```text
 DUmp [<panel>]
+GEometry <rows> [<cols>]
 HElp
 STatus
 TEst <testnumber> [<panel>]
@@ -224,6 +225,33 @@ VErsion
 
 `PANEL0` / panel `0` means the whole active display. Panels `1` through
 `displayConfig.nPanels` address individual logical panels.
+
+### Runtime test geometry
+
+Use the `GEOMETRY` command to temporarily redefine the active display as one
+continuous logical panel. The column count defaults to one:
+
+```text
+geometry 6
+geometry 8
+geometry 10
+geometry 24 6
+```
+
+The configuration is cleared and remains active until the controller is
+reset. Reset restores the geometry selected at compile time. Confirm the
+runtime setting with `status`, then use the standard tests:
+
+```text
+test 2
+test 3
+test 4
+test 5
+```
+
+For a single YYZ_PIXEL board, select its physical pixel count as the row count
+and retain the default single column. The abbreviated command form, such as
+`ge 8` and `te 5`, is also accepted.
 
 ## Self Tests
 

@@ -101,9 +101,7 @@ five-signal YYZ Pixel ribbon cable and provides the green ALIVE status LED.
 
 *KiCad rendering of the nine-section YYZ Pixel board.*
 
-The `yahrzeit_pixel9` board combines nine complete YYZ Pixel circuits on one
-PCB, as a test fixture. It uses the same octal bus transceiver and 8-bit shift
-register as the individual boards installed in the wall.
+The `yahrzeit_pixel9` board combines nine complete YYZ Pixel circuits on one PCB, using the same octal bus transceiver and 8-bit shift register as the individual boards installed in the wall. A single `yahrzeit_pixel9` behaves as one complete Yahrzeit Wall panel, allowing a desktop test fixture to be constructed. Two or more yahrzeit_pixel9 boards may be chained together to emulate multiple panels.
 
 <a href="schematics/yyz_pixel_8_pixel_hierarchical_sheet.png">
   <img src="schematics/yyz_pixel_8_pixel_hierarchical_sheet.png"
@@ -135,7 +133,13 @@ eight, or ten memorial lights. Their common circuit is documented in:
 
 - [Schematic\_yyz\_pixel.pdf](schematics/Schematic_yyz_pixel.pdf) -- Original
   installed YYZ Pixel board schematic.
-
+- [YYZ\_PIXEL\_BOARD\_REPAIR.md](YYZ_PIXEL_BOARD_REPAIR.md) -- Customer procedure
+  for replacing and verifying an installed pixel board using a tested spare.
+- [YYZ\_PIXEL\_BOARD\_TESTING.md](YYZ_PIXEL_BOARD_TESTING.md) -- Optional
+  engineering or electronics-technician procedure for bench-testing a removed
+  board, including the special controller cable and Saleae logic-analyzer
+  checks.
+  
 The nine-section board is electrically nine of these circuits condensed onto
 one PCB. Both designs use the same 74HC245 octal bus transceiver and
 74HC595 8-bit shift register:
