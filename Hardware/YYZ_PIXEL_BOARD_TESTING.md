@@ -39,12 +39,7 @@ for example 0.5 A.
 > conductor must be cut. Do not substitute an ordinary unmodified
 > board-to-board ribbon cable.**
 
-The original YYZ Pixel design used one conductor of the nominal GND pair as
-`D*`, the serial-data return path used by the original column-to-column wiring.
-That return scheme was abandoned in favor of long ribbon cables. At the Pixel
-Interface V3 end, the same conductor is grounded. If it remains connected when
-the interface is cabled directly to CN1, it shorts the board's `D*` path to
-ground and the board may not operate correctly.
+The original YYZ Pixel design used one conductor of the nominal `DI` pair as `D*`, the serial-data return path for the original column-to-column wiring. That return scheme was later abandoned in favor of long ribbon cables. The Pixel Interface V3 drives both conductors of this pair as `DI`; consequently, an unmodified cable ties `DI` to the board’s `D*` output. Cutting the `D*` conductor removes that conflict while leaving the other `DI` conductor connected.
 
 The original 2008 schematic records the field modification as:
 
@@ -55,7 +50,7 @@ were reversed because of connector-key orientation. Therefore, do not identify
 the conductor by the red stripe, connector key, or physical left/right position
 alone.
 
-With all power disconnected, identify the two conductors forming the GND pair. Cut the outside-edge conductor adjacent to this pair. Bend the cut conductor back so that it cannot make contact, and label the cable:
+With all power disconnected, identify the two ribbon cable conductors forming the DI pair at the Pixel Interface V3 end. Cut the outside-edge member of that pair—the conductor that reaches D* at CN1. Bend the cut conductor back so that it cannot make contact, and label the cable:
 
 ```text
 PIXEL I/F -> FIRST YYZ PIXEL
@@ -73,14 +68,21 @@ PIXEL I/F -> FIRST YYZ PIXEL
 Pixel Interface V3 90° signal connector.*
 
 1. Turn off the bench supply and disconnect its output.
-2. Set the supply to 5.0 V with current limiting enabled.
-3. With the bench supply turned off, connect the board’s keyed power connector. If a keyed power cable is unavailable, carefully attach alligator clips to +5V and GND. This connection is mechanically tenuous and can easily be shorted; this is why a current-limited bench power supply is mandatory. Verify polarity before enabling the supply.
-4. Connect Pixel Interface V3 to the board's CN1 using the specially modified
+2. Set the supply to 5.0 V with current limiting enabled; for example, use a
+   0.5 A current limit.
+3. Prepare a keyed Molex power harness that mates with the power connector at
+   the top of the board, adjacent to capacitor C3. Power this harness from the
+   current-limited bench supply.
+4. As you seat the connector, visually trace the harness wires and double-check that +5V aligns with +5V and GND aligns with GND on the board connector.
+6. Connect Pixel Interface V3 to the board's CN1 using the specially modified
    controller cable described above.
-5. Verify the orientation of the unkeyed data connector: GND must connect to GND, and DATA must connect to DI. Use the ribbon cable’s red stripe only to trace the same edge of the cable from the PIXEL I/F shield to the board-under-test; the stripe does not inherently indicate either signal.
-6. Inspect for adjacent pins bridged by probes or exposed conductors.
-7. Connect the bench supply and watch its current indication when enabling the
-   output. Switch it off immediately if it enters current limit unexpectedly.
+7. Verify the orientation of the unkeyed data connector: `GND` must connect
+   to `GND`, and `DATA` must connect to `DI`. Use the ribbon cable's red stripe
+   only to trace the same edge from the Pixel I/F shield to the
+   board-under-test; the stripe does not inherently identify either signal.
+8. Inspect for adjacent pins bridged by probes or exposed conductors.
+9. Enable the bench supply while watching its current indication. Switch it
+   off immediately if it enters current limit unexpectedly.
 
 ## Configure the controller
 
