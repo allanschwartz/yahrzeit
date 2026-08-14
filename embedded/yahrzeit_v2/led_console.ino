@@ -31,13 +31,13 @@ void console_init( void )
     led_init();
 
     // splash
-    my_puts( CONSOLE, (char *)VersionString );
+    my_puts( CONSOLE, versionText() );
 
     // some initial pattern, on power-up (as a self-test)
     console_log( "light test" );
     led_all_on( 1, PANEL0 );
     led_all_on( 0, PANEL0 );
-    led_set_intensity( 10 );
+    led_set_intensity( 0 );
     selftest_marching_row( PANEL0 );
     console_log( "ready >" );
 }
@@ -88,7 +88,9 @@ static const struct commands {
     { CMD_PIXEL,  3, "pixel"  },
     { CMD_REFRESH, 0, "refresh" },
     { CMD_SAVE,   0, "save"   },
+    { CMD_STATUS, 0, "status" },
     { CMD_TEST,   0, "test"   },
+    { CMD_VERSION, 0, "version" },
     { CMD_NOP,    0, "nop"    },
     { CMD_NOP,    0, "# "     },
     { CMD_NOP,    0, "\r"     },
@@ -134,6 +136,77 @@ static void prompt( byte streamID )
 
 
 /**
+ * status_text ... format the controller's compiled configuration and current
+ *                 Ethernet address.
+ *
+ * @returns a pointer to private static storage, overwritten by the next call
+ */
+static const char *status_text( void )
+{
+    static char statusOutput[512];
+    IPAddress localAddress = Ethernet.localIP();
+    const EthernetHardwareStatus hardwareStatus = Ethernet.hardwareStatus();
+    const EthernetLinkStatus linkStatus = Ethernet.linkStatus();
+    const char *hardwareName;
+
+    switch (hardwareStatus) {
+        case EthernetNoHardware:
+            hardwareName = "none";
+            break;
+        case EthernetW5100:
+            hardwareName = "W5100";
+            break;
+        case EthernetW5200:
+            hardwareName = "W5200";
+            break;
+        case EthernetW5500:
+            hardwareName = "W5500";
+            break;
+        default:
+            hardwareName = "other";
+            break;
+    }
+
+    const char *linkName = (linkStatus == LinkON)
+                         ? "up"
+                         : (linkStatus == LinkOFF ? "down" : "unknown");
+    const boolean clientConnected = socketClient && socketClient.connected();
+    const unsigned long clientIdleSeconds = clientConnected
+                                          ? (millis() - socketLastByteReceivedMs) / 1000UL
+                                          : 0;
+
+    snprintf(statusOutput, sizeof statusOutput,
+             "STATUS\n"
+             "\tfirmware=V2.1\n"
+             "\tconfiguration=CBS 56x40 wall\n"
+             "\trows=%u cols=%u panels=%u\n"
+             "\tpins DI=%u OE=%u CP=%u ST=%u\n"
+             "\tconfiguredIP=%u.%u.%u.%u activeIP=%u.%u.%u.%u port=2001\n"
+             "\tgateway=%u.%u.%u.%u subnet=%u.%u.%u.%u\n"
+             "\tdns=%u.%u.%u.%u\n"
+             "\tMAC=%02X:%02X:%02X:%02X:%02X:%02X\n"
+             "\tethernetHardware=%s link=%s\n"
+             "\tlistener=%s port=2001\n"
+             "\tclient=%s idle=%lu seconds\n",
+             NROWS, NCOLS, NPANELS,
+             DI_pin, OE_pin, CP_pin, ST_pin,
+             ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3],
+             localAddress[0], localAddress[1],
+             localAddress[2], localAddress[3],
+             gateway[0], gateway[1], gateway[2], gateway[3],
+             subnet[0], subnet[1], subnet[2], subnet[3],
+             dnsaddr[0], dnsaddr[1], dnsaddr[2], dnsaddr[3],
+             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],
+             hardwareName, linkName,
+             socketListenerRunning ? "running" : "stopped",
+             clientConnected ? "connected" : "disconnected",
+             clientIdleSeconds);
+
+    return statusOutput;
+}
+
+
+/**
  * console_thread ... implements the console I/O gets(), puts() loop.
  *    in each call to console_thread, we either read one line, and execute one command.
  *    or, if the line is not present, we return immediately, but keep state so we can
@@ -154,15 +227,15 @@ void  console_thread( void )
 
         if ( strlen( inputBuf ) > 0 ) {
             const char *result = shell_execute( CONSOLE, inputBuf );
-            if ( strlen(result) ) {
-                snprintf( CmdOutput, sizeof CmdOutput, "%s | %s  ---- %s ---- \n",
-                          uptimeRendered, inputBuf, result );
-            }
-            else {
-                snprintf( CmdOutput, sizeof CmdOutput, "%s | %s\n",
-                          uptimeRendered, inputBuf );
-            }
+            snprintf( CmdOutput, sizeof CmdOutput, "%s | %s\n",
+                      uptimeRendered, inputBuf );
             my_puts( CONSOLE, CmdOutput );
+            if ( strlen(result) ) {
+                my_puts( CONSOLE, result );
+                if (result[strlen(result) - 1] != '\n') {
+                    my_puts( CONSOLE, "\n" );
+                }
+            }
         }
         else {
             snprintf( CmdOutput, sizeof CmdOutput, "%s |\n", uptimeRendered );
@@ -333,17 +406,36 @@ const char * shell_execute( byte streamID, char *command )
             rc = NO_ERROR;
             break;
 
+        case CMD_STATUS:
+            return status_text();
+
         case CMD_TEST:
-            // test <testnumber> [<panel>]
+            // test <testnumber> [<panel>|*]
             if ( !OPTIONAL_ARG(1) ) {
                 return TestMenu;
             }
-            rc = selftest(
-                     streamID,
-                     arg_value[1],                 /* test number */
-                     arg_value[2],                 /* optional <panel> */
-                     OPTIONAL_ARG(3) ? arg_value[3] : 3 );    /* optional repeat count */
+
+            if ( OPTIONAL_ARG(2) && strcmp(arg_string[2], "*") == 0 ) {
+                rc = NO_ERROR;
+                for (byte panel = 1; panel <= NPANELS; panel++) {
+                    rc = selftest(streamID,
+                                  arg_value[1],     /* test number */
+                                  panel);
+                    if (rc != NO_ERROR) {
+                        break;
+                    }
+                }
+            }
+            else {
+                rc = selftest(
+                         streamID,
+                         arg_value[1],             /* test number */
+                         arg_value[2]);            /* optional <panel> */
+            }
             break;
+
+        case CMD_VERSION:
+            return versionText();
 
         case CMD_NOP:
             return "";
@@ -535,4 +627,3 @@ int  console_dump( byte streamID, byte panel )
     }
     return NO_ERROR;
 }
-

@@ -16,12 +16,7 @@
 
 #include "yyz_pixel.h"
 #include "Arduino.h"
-
-#if 0
-#define ASSERT(e)   if (!(e)) { Serial.println(#e); while (1); }
-#else
-#define ASSERT(e)
-#endif
+#include "yahrzeit_v2.h"
 
 /**
  * initialize the class, define the digital ports used

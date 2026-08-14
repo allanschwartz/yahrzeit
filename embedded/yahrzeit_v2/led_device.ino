@@ -212,22 +212,21 @@ void led_loaddata( void )
 
 
 /**
- * led_set_intensity ... set the intensity of the LED brightness
+ * led_set_intensity ... set the raw active-low OE PWM value
  *
- * @param intensity  brightness level, 1 through 10.
- *                        1 .. least bright
- *                        10 .. most bright
+ * @param intensity  raw OE PWM value, 0 through 255.
+ *                        0   .. continuously enabled / full brightness
+ *                        255 .. continuously disabled / off
  *
  * @returns        NO_ERROR or ERR_BRIGHT
  */
-int  led_set_intensity( byte intensity )
+int  led_set_intensity( int intensity )
 {
-    if (intensity < 1 || intensity > 10) {
+    if (intensity < 0 || intensity > 255) {
         return ERR_BRIGHT;
     }
-    int pwmScaled = (10-intensity)*(255/9);
 #if CBS_56x40_WALL || TEST_2x24_HARNESS
-    LedMatrix.set_pwm( pwmScaled );
+    LedMatrix.set_pwm( (byte)intensity );
 #endif
     return NO_ERROR;
 }
@@ -263,4 +262,3 @@ int  led_all_on( boolean pixelbit, byte panel )
     }
     return NO_ERROR;
 }
-

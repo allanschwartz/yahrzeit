@@ -36,6 +36,7 @@
 #include <EEPROM.h>
 #include <Ethernet.h>
 #include <SPI.h>
+#include <avr/wdt.h>
 #include "yahrzeit_v2.h"
 
 
@@ -87,6 +88,20 @@ IPAddress subnet(255, 255, 255, 0);
 
 // telnet defaults to port 23, however we will list on port 2001
 EthernetServer socket(2001);
+EthernetClient socketClient;
+boolean socketListenerRunning = false;
+unsigned long socketLastByteReceivedMs = 0;
+
+static constexpr unsigned long SOCKET_IDLE_TIMEOUT_MS =
+    30UL * 60UL * 1000UL;
+static constexpr unsigned long LINK_CHECK_INTERVAL_MS = 50UL;
+static constexpr byte PANIC_MINUTES = 5;
+
+enum SocketGetsResult {
+    GETS_NOCHAR = -1,
+    GETS_PARTIAL = 0,
+    GETS_FULLCMD = 1,
+};
 
 
 // ----------------------------------------------------------------------------
@@ -97,10 +112,32 @@ EthernetServer socket(2001);
 byte Displaybuf[MAXDATA] = { 0 };
 char CmdOutput[ 512 ];            // the output of the command, in one packet
 
-const char VersionString[]  =
-    "\tLED Controller, V2.0, 2015-07-13\n"
-    "\tCopywrite (c) 2008-15, AMS Consulting\n"
-    "\t----------\n";
+/**
+ * Format the firmware version, compiler-selected Arduino target, and build.
+ */
+const char *versionText( void )
+{
+    static char versionOutput[256];
+
+#if defined(ARDUINO_AVR_MEGA2560)
+    const char *boardTarget = "Arduino Mega 2560";
+#elif defined(ARDUINO_AVR_UNO)
+    const char *boardTarget = "Arduino Uno";
+#elif defined(ARDUINO_ARCH_AVR)
+    const char *boardTarget = "Arduino AVR board";
+#else
+    const char *boardTarget = "Arduino-compatible board";
+#endif
+
+    snprintf(versionOutput, sizeof versionOutput,
+             "\tYahrzeit Embedded Controller, V2.1\n"
+             "\ttarget=%s\n"
+             "\tbuilt %s %s\n"
+             "\tcopyright (c) 2008,2015,2026 AMS Consulting\n",
+             boardTarget, __DATE__, __TIME__);
+
+    return versionOutput;
+}
 /*
 enum ResultIds {
     NO_ERROR = 0, ERR_SYNTAX, ERR_MISSING, ERR_ROW, 
@@ -115,7 +152,7 @@ const char* ResultStrings[8] = {
 const char HelpText[]  = 
     "\n"
     "\tAll  on|off [<panel>]\n"
-    "\tBRightness <n> (1:low, 10:high)\n"
+    "\tBRightness <n> (0:full, 255:off)\n"
     "\tDAta <row> <col> <binary data>\n"
     "\tDUmp [<panel>]\n"
     "\tHElp\n"
@@ -123,17 +160,20 @@ const char HelpText[]  =
     "\tPIxel on|off <row> <col> [<panel>]\n"
     "\tREfresh\n"
     "\tSAve\n"
-    "\tTEst <testnumber> [<panel>]\n";
+    "\tSTatus\n"
+    "\tTEst <testnumber> [<panel>|*]\n"
+    "\tVErsion\n";
     
 const char TestMenu[]  = 
     "\n"
-    "\tTEst 1 [<panel>]     --   4 corners ON\n"
-    "\tTEst 2 [<panel>]     --   all pixels ON\n"
-    "\tTEst 3 [<panel>]     --   all pixels OFF\n"
-    "\tTEst 4 [<panel>] [k] --   all ON / all OFF\n"
-    "\tTEst 5 [<panel>] [k] --   marching row pattern\n"
-    "\tTEst 6 [<panel>] [k] --   marching column pattern\n"
-    "\tTEst 7 [<panel>] [k] --   Cylon pattern\n";
+    "\tTEst 1 [<panel>|*] --   4 corners ON\n"
+    "\tTEst 2 [<panel>|*] --   all pixels ON\n"
+    "\tTEst 3 [<panel>|*] --   all pixels OFF\n"
+    "\tTEst 4 [<panel>|*] --   checkerboard test\n"
+    "\tTEst 5 [<panel>|*] --   marching row pattern\n"
+    "\tTEst 6 [<panel>|*] --   marching column pattern\n"
+    "\tTEst 7 [<panel>|*] --   Cylon pattern\n"
+    "\t* repeats the test for panels 1 through n\n";
     
 
 // ----------------------------------------------------------------------------
@@ -145,6 +185,9 @@ const char TestMenu[]  =
  */
 void setup()
 {
+    // Ensure a watchdog-initiated restart does not become a reset loop.
+    wdt_disable();
+
     // initialize the LED matrix package
     LedMatrix.begin( Displaybuf, WIDTH, HEIGHT );
 
@@ -154,8 +197,8 @@ void setup()
     // initialize the Ethernet
     Ethernet.begin( mac, ipaddr, dnsaddr, gateway, subnet );
 
-    // start listening for socket clients to connect
-    socket.begin();
+    // socket_thread() starts the listener when Ethernet link is ready and
+    // restarts it after later link disruptions.
 
     // initialize the console logic
     console_init();
@@ -190,126 +233,157 @@ void  socket_thread( void )
 {
     // the command from the client (the Yahrzeit Server)
 #define MAXINPUTLINE 64
-    // these four variables need to be static, so we carry the state
+    // These variables remain static so partial commands survive loop calls.
     static char          inputBuf[ MAXINPUTLINE ] = { 0 };
     static int           inputBufPos = 0;                 // 0..MAXCMDLINE-1
-    static unsigned int  inputCounter = 0;
-    static boolean       ignore_next_blank_line = false;
+    static unsigned long lastLinkCheckMs = 0;
+    static EthernetLinkStatus cachedLinkStatus = Unknown;
+
+    const unsigned long nowMs = millis();
+    if (lastLinkCheckMs == 0 ||
+        nowMs - lastLinkCheckMs >= LINK_CHECK_INTERVAL_MS) {
+        lastLinkCheckMs = nowMs;
+        cachedLinkStatus = Ethernet.linkStatus();
+    }
+
+    if (cachedLinkStatus == LinkOFF) {
+        if (socketClient) {
+            socketClient.stop();
+        }
+        inputBufPos = 0;
+        inputBuf[0] = '\0';
+        socketListenerRunning = false;
+        return;
+    }
+
+    if (!socketListenerRunning) {
+        socket.begin();
+        socketListenerRunning = true;
+        console_log( "ethernet: listener started" );
+    }
+
+    // Own the TCP client lifecycle here. socket_gets() only reads an already
+    // connected client.
+    if (!socketClient || !socketClient.connected()) {
+        if (socketClient) {
+            socketClient.stop();
+        }
+
+        socketClient = socket.available();
+        inputBufPos = 0;
+        inputBuf[0] = '\0';
+
+        if (!socketClient) {
+            return;
+        }
+
+        socketLastByteReceivedMs = millis();
+        console_log( "socket: client connected" );
+    }
+
+    if (socketClient.available() == 0 &&
+        millis() - socketLastByteReceivedMs >= SOCKET_IDLE_TIMEOUT_MS) {
+        socketClient.stop();
+        inputBufPos = 0;
+        inputBuf[0] = '\0';
+        console_log( "socket: idle client closed after 30 minutes" );
+        return;
+    }
 
     int rc = socket_gets( inputBuf, sizeof inputBuf, &inputBufPos );
-    // return codes from stream_gets:
-    enum getsResult {
-        GETS_NOCONNECTION = -2,
-        GETS_NOCHAR = -1,
-        GETS_PARTIAL = 0,
-        GETS_FULLCMD = 1,
-    };
     switch ( rc ) {
-        case GETS_NOCONNECTION: // no available byte or no connection
         case GETS_NOCHAR:       // no data is available
+            break;
         case GETS_PARTIAL:      // recorded a partial command line
+            socketLastByteReceivedMs = millis();
             break;
         case GETS_FULLCMD:      // complete command line, to interpret
+        {
+            socketLastByteReceivedMs = millis();
             char *uptimeRendered = display_uptime();
-            if ( (inputCounter > 0) && (strlen( inputBuf ) > 0) ) {
-                // suppress the first line of the connection .. because it is garbage.
+            if ( strlen( inputBuf ) > 0 ) {
                 const char *result = shell_execute( SOCKET, inputBuf );
-                if ( strlen(result) ) {
-                    snprintf( CmdOutput, sizeof CmdOutput, "%s | %s  ---- %s ---- \n",
-                              uptimeRendered, inputBuf, result );
-                }
-                else {
-                    snprintf( CmdOutput, sizeof CmdOutput, "%s | %s\n",
-                              uptimeRendered, inputBuf );
-                }
+                snprintf( CmdOutput, sizeof CmdOutput, "%s | %s\n",
+                          uptimeRendered, inputBuf );
                 my_puts( SOCKET, CmdOutput );
-                ignore_next_blank_line = false;
+                if ( strlen(result) ) {
+                    my_puts( SOCKET, result );
+                    if (result[strlen(result) - 1] != '\n') {
+                        my_puts( SOCKET, "\n" );
+                    }
+                }
             }
             else {
-                // some oddity of the socket code, we get blank lines twice
-                // using the boolean "ignore_next_blank_line", we can suppress that
-                if ( ignore_next_blank_line ) {
-                    ignore_next_blank_line = false;
-                } else {
-                    snprintf( CmdOutput, sizeof CmdOutput, "%s |\n", uptimeRendered );
-                    my_puts( SOCKET, CmdOutput );
-                    ignore_next_blank_line = true;
-                }
+                snprintf( CmdOutput, sizeof CmdOutput, "%s |\n", uptimeRendered );
+                my_puts( SOCKET, CmdOutput );
             }
 
-            inputCounter++;
             inputBufPos = 0;
             memset( inputBuf, 0, sizeof inputBuf );
             break;
+        }
     }
 }
 
 
 /**
- * socket_gets ... this is our fgets() routine which reads a single line from
- *       the network socket
+ * socket_gets ... read one line from the already-connected TCP client
  *
  *    console_gets() reads in at most one less than size characters from the
  *    serial UART stream and and stores them into the buffer pointed to by str.
- *    Reading stops after a newline or cr or the str is filled.
- *    If a newline or cr is read, it is not stored into the buffer.
+ *    NUL and carriage return are ignored. Reading stops after a newline or
+ *    when the buffer is filled. The newline is not stored.
  *    A terminating null byte ('0' is stored after the last character.
  *
- *    This non-threaded version of console_gets() does not block, rather it
- *    returns immediately, that is returns after the current packet is read.
- *    The boolean result code indicates whether a full line was read
+ *    This function owns no listener, connection, timeout, or reconnection
+ *    policy. socket_thread() establishes the client before calling it.
  *
  * @param input    the resulting null-terminated string
  * @param maxsize  max size we can store, including a NULL
  * @param piIndex  pointer to a count of the number of bytes read into input
  *
- * @returns an int, an enumeration of the getsReturns (or the state of the gets)
+ * @returns GETS_NOCHAR, GETS_PARTIAL, or GETS_FULLCMD
  */
 int socket_gets(char *input, const unsigned int maxsize, int *piIndex)
 {
-    // socket_gets can return the following, representing connection state:
-    enum getsReturns {
-        GETS_NOCONNECTION = -2,
-        GETS_NOCHAR = -1,
-        GETS_PARTIAL = 0,
-        GETS_FULLCMD = 1,
-    };
-    
-    EthernetClient client = socket.available();
-    if ( client ) {
-        int c;        // we will read character 'c' by character
-        while ( (c = client.read()) > 0 ) {
-            // Handle backspace
-            if (c == '\b') {
-                if (*piIndex > 0) {
-                    *piIndex--;
-                }
-                continue;
-            }
+    if (socketClient.available() == 0) {
+        return GETS_NOCHAR;
+    }
 
-            // Handle CR or LF
-            if ((c == '\r') || (c == '\n')) {
-                return GETS_FULLCMD;
-            }
-
-            // Handling potential overflow of buffer, by just returning
-            if (*piIndex >= (maxsize - 1)) {
-                return GETS_FULLCMD;
-            }
-
-            // normal character
-            input[*piIndex] = c;
-            *piIndex = *piIndex + 1;
-            input[*piIndex] = '\0';
-        }
-        if ( c < 0 ) {
+    while (socketClient.available() > 0) {
+        int c = socketClient.read();
+        if (c < 0) {
             return GETS_NOCHAR;
         }
-        if ( c == 0 ) {
-            return GETS_PARTIAL;
+
+        // Handle backspace
+        if (c == '\b') {
+            if (*piIndex > 0) {
+                *piIndex--;
+            }
+            continue;
         }
+
+        // Ignore NUL and CR; LF completes one command. This avoids a
+        // second blank command when a client sends CRLF.
+        if (c == 0 || c == '\r') {
+            continue;
+        }
+        if (c == '\n') {
+            return GETS_FULLCMD;
+        }
+
+        // Handling potential overflow of buffer, by just returning
+        if (*piIndex >= (maxsize - 1)) {
+            return GETS_FULLCMD;
+        }
+
+        // normal character
+        input[*piIndex] = c;
+        *piIndex = *piIndex + 1;
+        input[*piIndex] = '\0';
     }
-    return GETS_NOCONNECTION;
+    return GETS_PARTIAL;
 }
 
 
@@ -365,10 +439,41 @@ char *display_uptime( void )
  *
  * @param msg      the line to display, a C string
  */
-void console_log( char *msg )
+void console_log( const char *msg )
 {
     snprintf( CmdOutput, sizeof CmdOutput, "%s | %s\n", display_uptime(), msg );
     Serial.print( CmdOutput );
+}
+
+
+/**
+ * Print an assertion failure, wait five minutes, then restart the Mega using
+ * the AVR watchdog.
+ */
+void panic( const char *expression, const char *file, int line )
+{
+    Serial.println( "\n*** PANIC ***" );
+    Serial.print( "ASSERT: " );
+    Serial.println( expression );
+    Serial.print( "FILE: " );
+    Serial.println( file );
+    Serial.print( "LINE: " );
+    Serial.println( line );
+    Serial.print( "Restarting in " );
+    Serial.print( PANIC_MINUTES );
+    Serial.println( " minutes" );
+    Serial.flush();
+
+    const unsigned long panicStartedMs = millis();
+    const unsigned long panicDelayMs =
+        (unsigned long)PANIC_MINUTES * 60UL * 1000UL;
+    while (millis() - panicStartedMs < panicDelayMs) {
+        delay(1000);
+    }
+
+    wdt_enable(WDTO_1S);
+    while (true) {
+    }
 }
 
 
@@ -378,11 +483,13 @@ void console_log( char *msg )
  * @param streamID    display output on the SOCKET or CONSOLE
  * @param msg         the line to display, a C string
  */
-void my_puts( byte streamID, char *msg )
+void my_puts( byte streamID, const char *msg )
 {
     switch ( streamID ) {
         case SOCKET:
-            socket.write( msg );
+            if (socketClient && socketClient.connected()) {
+                socketClient.write( msg );
+            }
             break;
             
         case CONSOLE:
@@ -390,4 +497,3 @@ void my_puts( byte streamID, char *msg )
             break;
     }
 }
-

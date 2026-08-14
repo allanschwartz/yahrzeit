@@ -14,12 +14,6 @@
 
  #include "yahrzeit_v2.h"
 
-#if 1
-#define ASSERT(e)   if (!(e)) { Serial.println(#e); while (1); }
-#else
-#define ASSERT(e)
-#endif
-
 // ----------------------------------------------------------------------------
 //            F U N C T I O N S
 // ----------------------------------------------------------------------------
@@ -33,6 +27,9 @@
 static void  selftest_corners( byte panel )
 {
     ASSERT (panel <= NPANELS );
+
+    int rc = led_all_on( 0, panel );
+    ASSERT(rc == NO_ERROR);
     
     if ( panel == PANEL0 ) {
                 // bit, row, col
@@ -87,17 +84,33 @@ static void  selftest_all_on( boolean pixelbit, byte panel )
 
 
 /**
- * SELF TEST 4: all LEDs on, then off
+ * SELF TEST 4: checkerboard pattern
  *
  * @param panel     panel number 0 or [1..NPANELS]
  */
-static void  selftest_flashes( byte panel )
+static void  selftest_checkerboard( byte panel )
 {
     ASSERT (panel <= NPANELS );
-    
-    selftest_all_on( 1, panel );
 
-    selftest_all_on( 0, panel );
+    int rc = led_all_on( 0, panel );
+    ASSERT(rc == NO_ERROR);
+
+    static boolean invertPattern = false;
+    const byte nRows = nrows_perpanel[panel];
+    const byte nCols = ncols_perpanel[panel];
+
+    for (byte row = 1; row <= nRows; row++) {
+        for (byte col = 1; col <= nCols; col++) {
+            const boolean pixel = ((row + col) & 1) ^ invertPattern;
+            rc = (panel == PANEL0)
+               ? led_store_in_array(pixel, row, col)
+               : led_store_in_panel(pixel, row, col, panel);
+            ASSERT(rc == NO_ERROR);
+        }
+    }
+
+    invertPattern = !invertPattern;
+    sleep_ms( true, 500 );
 }
 
 
@@ -143,7 +156,7 @@ void  selftest_marching_row( byte panel )
 
 
 /**
- * SELF TEST 6: marching column pattern, repeat 3 times
+ * SELF TEST 6: marching column pattern
  *
  * @param panel     panel number 0 or [1..NPANELS]
  */
@@ -246,7 +259,7 @@ void  selftest_description( byte streamID, byte testNumber, const char * testDes
  *      TEst 1 [<panel>] --   4 corners ON
  *      TEst 2 [<panel>] --   all pixels ON
  *      TEst 3 [<panel>] --   all pixels OFF
- *      TEst 4 [<panel>] --   all ON / all OFF
+ *      TEst 4 [<panel>] --   checkerboard pattern
  *      TEst 5 [<panel>] --   marching row pattern
  *      TEst 6 [<panel>] --   marching column pattern
  *      TEst 7 [<panel>] --   Cylon pattern
@@ -256,50 +269,45 @@ void  selftest_description( byte streamID, byte testNumber, const char * testDes
  * @param streamID    display output on the SOCKET or CONSOLE
  * @param testNumber  testNumber, see above
  * @param panel       which panel [1..NPANELS] (0 means using entire LED arrary)
- * @param repeat           repeat count
- *
- * @returns           n/a
+ * @returns           NO_ERROR, ERR_PANEL, or ERR_TESTNUM
  */
-int  selftest( byte streamID, byte testNumber, byte panel, int repeat )
+int  selftest( byte streamID, byte testNumber, byte panel )
 {
     if (panel > NPANELS ) {
         return ERR_PANEL;
     }
-    for ( int i = 0; i < repeat; i++ ) {
-        switch ( testNumber ) {
-            case 1:
-                selftest_description( streamID, testNumber, "corner LEDs on", panel );
-                selftest_corners( panel );
-                break;
-            case 2:
-                selftest_description( streamID, testNumber, "turn pixels ON", panel );
-                selftest_all_on( 1, panel );
-                break;
-            case 3:
-                selftest_description( streamID, testNumber, "turn pixels OFF", panel );
-                selftest_all_on( 0, panel );
-                break;
-            case 4:
-                selftest_description( streamID, testNumber, "all pixels ON then OFF", panel );
-                selftest_flashes( panel );
-                break;
-            case 5:
-                selftest_description( streamID, testNumber, "marching row pattern", panel );
-                selftest_marching_row( panel );
-                break;
-            case 6:
-                selftest_description( streamID, testNumber, "marching column pattern", panel );
-                selftest_marching_col( panel );
-                break;
-            case 7:
-                selftest_description( streamID, testNumber, "Cylon pattern", panel );
-                selftest_cylon( panel );
-                break;
-            default:
-            case 0:
-                return ERR_TESTNUM;
-        }
+    switch ( testNumber ) {
+        case 1:
+            selftest_description( streamID, testNumber, "corner LEDs on", panel );
+            selftest_corners( panel );
+            break;
+        case 2:
+            selftest_description( streamID, testNumber, "turn pixels ON", panel );
+            selftest_all_on( 1, panel );
+            break;
+        case 3:
+            selftest_description( streamID, testNumber, "turn pixels OFF", panel );
+            selftest_all_on( 0, panel );
+            break;
+        case 4:
+            selftest_description( streamID, testNumber, "checkerboard pattern", panel );
+            selftest_checkerboard( panel );
+            break;
+        case 5:
+            selftest_description( streamID, testNumber, "marching row pattern", panel );
+            selftest_marching_row( panel );
+            break;
+        case 6:
+            selftest_description( streamID, testNumber, "marching column pattern", panel );
+            selftest_marching_col( panel );
+            break;
+        case 7:
+            selftest_description( streamID, testNumber, "Cylon pattern", panel );
+            selftest_cylon( panel );
+            break;
+        default:
+        case 0:
+            return ERR_TESTNUM;
     }
     return NO_ERROR;
 }
-

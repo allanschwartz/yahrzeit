@@ -60,7 +60,7 @@
  *      The LED CONTROLLER implements the following console commands,
  *      to facilitate the yahrzeit appliance controlling the LED array.
  *          All on|off [<panel>]
- *          BRightness <n> (1:low, 10:high)
+ *          BRightness <n> (0:full, 255:off)
  *          DAta <row> <col> <binary data>
  *          DUmp
  *          HElp
@@ -68,7 +68,7 @@
  *          PIxel on|off <row> <col> [<panel>]
  *          REfresh
  *          SAve
- *          TEst <testnumber> [<panel>]
+ *          TEst <testnumber> [<panel>|*]
  */
 
 #ifndef __YAHRZEIT_R2_H__
@@ -77,6 +77,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
+class EthernetClient;
 //#include "stdlib.h"
 //#include "string.h"
 #define STRMATCH2(s1,s2)      (strncmp(s1,s2,2) == 0)
@@ -96,7 +97,9 @@ enum commandIds  {
     CMD_PIXEL,          // set a pixel memory on/off
     CMD_REFRESH,        // refresh the LED display from pixel memory
     CMD_SAVE,           // store the pixel memory into EEPROM
+    CMD_STATUS,         // display controller and network configuration
     CMD_TEST,           // do one of several LED test pattern
+    CMD_VERSION,        // display firmware and compile-time board target
     CMD_NOP,            // (was required on the slower 8051 inplementation)
     MISSING_ARG = 255
 };
@@ -107,6 +110,9 @@ enum ResultIds {
 };
 
 extern const char *ResultStrings[8];
+extern EthernetClient socketClient;
+extern boolean socketListenerRunning;
+extern unsigned long socketLastByteReceivedMs;
     
 
     
@@ -118,9 +124,18 @@ extern const char *ResultStrings[8];
 void    socket_thread( void );
 int     socket_gets( char *input, const unsigned int maxsize, int *piIndex );
 void    sleep_ms( boolean, const unsigned int ms );
-void    console_log( char *msg );
-void    my_puts( byte streamID, char *msg );
+void    console_log( const char *msg );
+void    my_puts( byte streamID, const char *msg );
 char   *display_uptime( void );
+const char *versionText( void );
+void    panic( const char *expression, const char *file, int line );
+
+#define ASSERT(expression) \
+    do { \
+        if (!(expression)) { \
+            panic(#expression, __FILE__, __LINE__); \
+        } \
+    } while (0)
 
 // define as extern the public functions defined in "led_console.c"
 void    console_init( void );
@@ -140,7 +155,7 @@ boolean led_pixel_value( byte row, byte col );
 int     led_store_in_panel( boolean pixelbit, byte row, byte col, byte panel );
 void    led_savedata( void );
 void    led_loaddata( void );
-int     led_set_intensity( byte intensity );
+int     led_set_intensity( int intensity );
 int     led_all_on( boolean pixelbit, byte panel );
 extern const  byte led_row_of_panel[];
 extern const  byte led_col_of_panel[];
@@ -149,7 +164,7 @@ extern const  byte ncols_perpanel[];
 
 // define as extern the public functions defined in "selftest.h"
 void  selftest_description( byte streamID, byte testNumber, const char * testDescription, byte panel );
-int   selftest( byte streamID, byte testnumber, byte panel, int repeat );
+int   selftest( byte streamID, byte testnumber, byte panel );
 void  selftest_marching_row( byte panel );
 
 
