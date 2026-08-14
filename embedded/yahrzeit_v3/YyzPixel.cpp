@@ -217,7 +217,7 @@ void YyzPixel::refresh()
         }
         // Diagnostic gap: makes column/grouping boundaries visible
         // on a logic analyzer.  Not required by the 74HC595.
-        delayMicroseconds(4);
+        delayMicroseconds(20);
     }
 
     // Latch data by pulsing ST.
@@ -225,7 +225,7 @@ void YyzPixel::refresh()
     // the 74HC595 storage register.
 
     digitalWrite(stPin_, HIGH);          //  on rising edge...   ____
-    delayMicroseconds(1);                // 1 u-sec pulse    ___/    \___
+    delayMicroseconds(10);               // 10 u-sec pulse   ___/    \___
     digitalWrite(stPin_, LOW);           // Storage register now drives the outputs
 
     // OE (Output Enable) is active LOW and driven by PWM.

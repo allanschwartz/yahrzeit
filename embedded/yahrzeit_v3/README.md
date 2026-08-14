@@ -266,6 +266,18 @@ TEst 5 [<panel>]  -- marching row pattern
 TEst 6 [<panel>]  -- marching column pattern
 ```
 
+Use `*` in place of the optional panel number to repeat a test separately for
+every physical panel, in panel-number order:
+
+```text
+test 1 *
+test 5 *
+```
+
+An omitted panel still means the whole active display. For example, `test 1`
+turns on the four corners of the complete wall, while `test 1 *` turns on the
+four corners of each individual panel.
+
 ## Startup Behavior
 
 On startup, `setup()`:

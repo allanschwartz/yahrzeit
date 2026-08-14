@@ -105,19 +105,20 @@ const char HelpText[]  =
     "\tREfresh\n"
     "\tSAve\n"
     "\tSTatus\n"
-    "\tTEst <testnumber> [<panel>]\n"
+    "\tTEst <testnumber> [<panel>|*]\n"
     "\tTIming on|off\n"
     "\tVErsion\n";
     
 // displayed with the "test" command
 const char TestMenu[]  = 
     "\n"
-    "\tTEst 1 [<panel>]  --   4 corners ON\n"
-    "\tTEst 2 [<panel>]  --   all pixels ON\n"
-    "\tTEst 3 [<panel>]  --   all pixels OFF\n"
-    "\tTEst 4 [<panel>]  --   checkerboard test\n"
-    "\tTEst 5 [<panel>]  --   marching row pattern\n"
-    "\tTEst 6 [<panel>]  --   marching column pattern\n";
+    "\tTEst 1 [<panel>|*]  --   4 corners ON\n"
+    "\tTEst 2 [<panel>|*]  --   all pixels ON\n"
+    "\tTEst 3 [<panel>|*]  --   all pixels OFF\n"
+    "\tTEst 4 [<panel>|*]  --   checkerboard test\n"
+    "\tTEst 5 [<panel>|*]  --   marching row pattern\n"
+    "\tTEst 6 [<panel>|*]  --   marching column pattern\n"
+    "\t* repeats the test for panels 1 through n\n";
 
 }       // end anonymous namespace
 
@@ -274,14 +275,27 @@ const char *CmdProc::execute( const byte streamID, char *command )
 
         case CMD_TEST:
         {
-            // test <testnumber> [<panel>]
+            // test <testnumber> [<panel>|*]
             if ( argString[1] == nullptr ) {
                 return TestMenu;
             }
-            rc = selftest(
-                     streamID,
-                     argValue[1],                 /* test number */
-                     argValue[2]);                /* optional <panel> */
+
+            if (argString[2] != nullptr && strcmp(argString[2], "*") == 0) {
+                rc = NO_ERROR;
+                for (byte panel = 1; panel <= displayConfig.nPanels; ++panel) {
+                    rc = selftest(streamID,
+                                  argValue[1],     /* test number */
+                                  panel);
+                    if (rc != NO_ERROR) {
+                        break;
+                    }
+                }
+            } else {
+                rc = selftest(
+                         streamID,
+                         argValue[1],             /* test number */
+                         argValue[2]);            /* optional <panel> */
+            }
             break;
         }
 
