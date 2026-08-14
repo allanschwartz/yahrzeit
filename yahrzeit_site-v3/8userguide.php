@@ -99,15 +99,16 @@ reported.
 <p>
 Normal yahrzeit and Yizkor lighting is automatic. Cron runs a small number of
 named scheduler phases at the times saved on the Minhag page. Each scheduler
-phase either performs one action or does nothing.
+phase either performs one action or does nothing. Yizkor phases are entered
+only on the specific civil dates of the upcoming observances.
 </p>
 
 <pre>
-11:00 AM   yahrzeit_scheduler --phase yizkor-on
-           If today is a configured Yizkor day, turn on Yizkor lighting.
+11:00 AM   yahrzeit_scheduler --phase yizkor-festival-on
+           If today is a configured festival Yizkor day, turn on Yizkor lighting.
 
-1:00 PM    yahrzeit_scheduler --phase yizkor-off
-           If today is a configured Yizkor day, restore normal yahrzeit lighting.
+12:00 PM   yahrzeit_scheduler --phase yizkor-festival-off
+           If today is a configured festival Yizkor day, restore normal lighting.
 
 Every evening at the configured fixed or sunset-relative time:
            yahrzeit_scheduler --phase yahrzeit
@@ -117,7 +118,8 @@ Every evening at the configured fixed or sunset-relative time:
 The application maintains its own marked block in the appliance crontab.
 Normal Yahrzeit lighting is reapplied every evening. Fixed times remain
 stable. Sunset-based times are recalculated automatically as sunset changes
-through the year.
+through the year. At 12:05 AM each morning, the block is regenerated with the
+next civil date of every enabled Yizkor observance.
 </p>
 
 <p>
@@ -222,7 +224,7 @@ shows and when to use it.
     <p>
     The Yizkor page lists the next enabled Yizkor observances, in upcoming
     date order. The dates reflect the Yom Kippur, Shemini Atzeret, Pesach, 
-    Shavuot, and optional additional observances selected on the Minhag page.
+    Shavuot, as selected on the Minhag page.
     </p>
 
     <p>
@@ -506,10 +508,9 @@ shows and when to use it.
 
     <p>
     The Yizkor settings enable the four annual Yizkor observances and select
-    the appropriate Pesach and Shavuot days. An optional additional Hebrew
-    date may be configured for another full-wall memorial observance. The
-    preview lists the next civil date of every currently saved observance.
-    Yizkor on/off times may use fixed clock times or a window around sunset.
+    the appropriate Pesach and Shavuot days. The preview lists the next civil
+    date of every currently saved observance. The three festival services
+    share one start time and duration; Yom Kippur has its own schedule.
     </p>
 
     <p>

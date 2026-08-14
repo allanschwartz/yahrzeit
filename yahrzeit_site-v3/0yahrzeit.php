@@ -128,15 +128,10 @@ function yahrzeit_minhag_summary_lines()
         'atSunset' => 'a sunset-relative window',
     ]);
 
-    $yizkorTiming = yahrzeit_label($minhag['yizkorLightTime'] ?? "", [
-        'setTime'  => 'a fixed clock time',
-        'atSunset' => 'a sunset-relative window',
-    ]);
-
     return [
         'Yahrzeits are normally observed by ' . h($dateType) . ' date',
         'Yahrzeit lighting uses ' . h($yahrzeitTiming),
-        'Yizkor lighting uses ' . h($yizkorTiming),
+        'Yizkor lighting has separate festival and Yom Kippur schedules',
         'Minhag settings are edited on the <a href="7minhag.php">Minhag</a> screen'
     ];
 }

@@ -75,9 +75,7 @@ function read_minhag_ini()
         'synagogueName' => "your synagogue",
         'affiliation' => "Conservative",
         'yahrzeitEngOrHeb' => "heb",
-        'yahrzeitLightOnHH' => "06",
-        'yahrzeitLightOnMM' => "00",
-        'yahrzeitLightOnAmPm' => "pm",
+        'yahrzeitStartTime' => "18:00",
         'yahrzeitLightTime' => "atSunset",
         'yahrzeitMinBefore' => "18",
         'yahrzeitObservance' => "week",
@@ -87,21 +85,10 @@ function read_minhag_ini()
         'yizkorPesachDay' => "8",
         'yizkorShavuot' => "YES",
         'yizkorShavuotDay' => "2",
-        'yizkorOther' => "NO",
-        'otherEngOrHeb' => "eng",
-        'otherEngMM' => "May",
-        'otherEngDD' => "22",
-        'otherHebDD' => "01",
-        'otherHebMM' => "Tishri",
-        'yizkorLightTime' => "setTime",
-        'yizkorLightOnHH' => "10",
-        'yizkorLightOnMM' => "00",
-        'yizkorLightOnAmPm' => "am",
-        'yizkorLightOffHH' => "01",
-        'yizkorLightOffMM' => "00",
-        'yizkorLightOffAmPm' => "pm",
-        'yizkorMinBefore' => "18",
-        'yizkorMinAfter' => "72",
+        'yizkorFestivalStartTime' => "10:00",
+        'yizkorFestivalDuration' => "1:00",
+        'yizkorYomKippurStartTime' => "10:00",
+        'yizkorYomKippurDuration' => "1:00",
     );
     if ( file_exists ( $filename ) ) {
         $minhag = parse_ini_file( $filename );
@@ -125,7 +112,6 @@ function read_minhag_ini()
     $minhag['yizkorShmini'] = myBool( $minhag['yizkorShmini'] );
     $minhag['yizkorPesach'] = myBool( $minhag['yizkorPesach'] );
     $minhag['yizkorShavuot'] = myBool( $minhag['yizkorShavuot'] );
-    $minhag['yizkorOther'] = myBool( $minhag['yizkorOther'] );
 
     return $minhag;
 }

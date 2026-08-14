@@ -14,10 +14,9 @@
  *
  *          - whether yahrzeits follow the English or Hebrew date
  *          - whether each yahrzeit is observed for one day or a full week
- *          - normal-Yahrzeit run time and Yizkor start/end times
+ *          - normal-Yahrzeit run time and Yizkor service schedules
  *          - which Yizkor holidays are observed
  *          - whether Pesach and Shavuot Yizkor are observed on day 1/2/7/8
- *          - optional Yizkor-style lighting for another Hebrew date
  *
  *      Settings are stored in:
  *
@@ -93,9 +92,7 @@ function minhag_build_from_post()
             'affiliation'          => minhag_post_value('affiliation'),
 
             'yahrzeitEngOrHeb'     => minhag_post_value('yahrzeitEngOrHeb'),
-            'yahrzeitLightOnHH'    => minhag_post_value('yahrzeitLightOnHH'),
-            'yahrzeitLightOnMM'    => minhag_post_value('yahrzeitLightOnMM'),
-            'yahrzeitLightOnAmPm'  => minhag_post_value('yahrzeitLightOnAmPm'),
+            'yahrzeitStartTime'    => minhag_post_value('yahrzeitStartTime'),
             'yahrzeitLightTime'    => minhag_post_value('yahrzeitLightTime'),
             'yahrzeitMinBefore'    => minhag_post_value('yahrzeitMinBefore'),
             'yahrzeitObservance'   => minhag_observance_from_post(),
@@ -106,22 +103,10 @@ function minhag_build_from_post()
             'yizkorPesachDay'      => minhag_post_value('yizkorPesachDay'),
             'yizkorShavuot'        => myBool(minhag_post_value('yizkorShavuot')),
             'yizkorShavuotDay'     => minhag_post_value('yizkorShavuotDay'),
-            'yizkorOther'          => myBool(minhag_post_value('yizkorOther')),
-            'otherEngOrHeb'        => minhag_post_value('otherEngOrHeb'),
-            'otherEngMM'           => minhag_post_value('otherEngMM'),
-            'otherEngDD'           => minhag_post_value('otherEngDD'),
-            'otherHebDD'           => minhag_post_value('otherHebDD'),
-            'otherHebMM'           => minhag_post_value('otherHebMM'),
-
-            'yizkorLightTime'      => minhag_post_value('yizkorLightTime'),
-            'yizkorLightOnHH'      => minhag_post_value('yizkorLightOnHH'),
-            'yizkorLightOnMM'      => minhag_post_value('yizkorLightOnMM'),
-            'yizkorLightOnAmPm'    => minhag_post_value('yizkorLightOnAmPm'),
-            'yizkorLightOffHH'     => minhag_post_value('yizkorLightOffHH'),
-            'yizkorLightOffMM'     => minhag_post_value('yizkorLightOffMM'),
-            'yizkorLightOffAmPm'   => minhag_post_value('yizkorLightOffAmPm'),
-            'yizkorMinBefore'      => minhag_post_value('yizkorMinBefore'),
-            'yizkorMinAfter'       => minhag_post_value('yizkorMinAfter'),
+            'yizkorFestivalStartTime' => minhag_post_value('yizkorFestivalStartTime'),
+            'yizkorFestivalDuration' => minhag_post_value('yizkorFestivalDuration'),
+            'yizkorYomKippurStartTime' => minhag_post_value('yizkorYomKippurStartTime'),
+            'yizkorYomKippurDuration' => minhag_post_value('yizkorYomKippurDuration'),
     ];
 }
 
@@ -199,15 +184,9 @@ function minhag_render_form($minhag)
                 <input type="radio" name="yahrzeitLightTime" value="setTime"
                        <?php echo ($minhag['yahrzeitLightTime'] == 'setTime' ? "checked" : ""); ?> >
                        Run at
-                <select name="yahrzeitLightOnHH" style="width:40" class="formStyleSmall">
-                    <?php print_option_n1n2($minhag['yahrzeitLightOnHH'], 1, 12, "%02d"); ?>
-                </select>
-                <select name="yahrzeitLightOnMM" style="width:40" class="formStyleSmall">
-                    <?php print_option_n1n2($minhag['yahrzeitLightOnMM'], 0, 59, "%02d"); ?>
-                </select>
-                <select name="yahrzeitLightOnAmPm" style="width:40" class="formStyleSmall">
-                    <?php print_option1($minhag['yahrzeitLightOnAmPm'], array('am', 'pm')); ?>
-                </select>
+                <input type="time" name="yahrzeitStartTime"
+                       value="<?php echo h($minhag['yahrzeitStartTime']); ?>"
+                       step="900" required class="formStyleSmall">
                 <br>
                 <input type="radio" name="yahrzeitLightTime" value="atSunset"
                        <?php echo ($minhag['yahrzeitLightTime'] == 'atSunset' ? "checked" : ""); ?> >
@@ -245,58 +224,51 @@ function minhag_render_form($minhag)
         <tr>
             <td height="25" align="left" valign="top">
                 <span class="text">Yizkor dates observed </span><br>
-                <span class="textSmall">Up to five memorial dates may be selected.
-                <br>These extra observances apply to all individuals.</span>
+                <span class="textSmall">These observances apply to all individuals.</span>
             </td>
-            <td class="text">
-                <input type="checkbox" name="yizkorYomKippur" value="YES"
-                       <?php echo ($minhag['yizkorYomKippur'] == "YES" ? "checked" : ""); ?> >
-                       Yom Kippur <br>
-                <input type="checkbox" name="yizkorShmini" value="YES"
-                       <?php echo ($minhag['yizkorShmini'] == "YES" ? "checked" : ""); ?> >
-                       Shmini Atzeret <br>
-                <input type="checkbox" name="yizkorPesach" value="YES"
-                       <?php echo ($minhag['yizkorPesach'] == "YES" ? "checked" : ""); ?> >
-                <select name="yizkorPesachDay" style="width:50" class="formStyleSmall">
-                    <?php print_option2($minhag['yizkorPesachDay'], array('7' => '7th', '8' => '8th')); ?>
-                </select>
-                day of Passover <br>
-
-                <input type="checkbox" name="yizkorShavuot" value="YES"
-                       <?php echo ($minhag['yizkorShavuot'] == "YES" ? "checked" : ""); ?> >
-                <select name="yizkorShavuotDay" style="width:50" class="formStyleSmall">
-                    <?php print_option2($minhag['yizkorShavuotDay'], array('1' => '1st', '2' => '2nd')); ?>
-                </select>
-                day of Shavuot <br>
-
-                <input type="checkbox" name="yizkorOther" value="YES"
-                       <?php echo ($minhag['yizkorOther'] == "YES" ? "checked" : ""); ?> >
-                       Other date: <br>
-
-                &nbsp;&nbsp;&nbsp;
-                <input type="radio" name="otherEngOrHeb" value="eng"
-                       <?php echo ($minhag['otherEngOrHeb'] == "eng" ? "checked" : ""); ?> >
-                       English
-                <select name="otherEngMM" style="width:50" class="formStyleSmall">
-                    <?php print_option1($minhag['otherEngMM'], ENGLISH_MONTH_NAMES); ?>
-                </select>
-                <select name="otherEngDD" style="width:40" class="formStyleSmall">
-                    <?php print_option_n1n2($minhag['otherEngDD'], 1, 31, "%02d"); ?>
-                </select>
-                <br>
-
-                &nbsp;&nbsp;&nbsp;
-                <input type="radio" name="otherEngOrHeb" value="heb"
-                       <?php echo ($minhag['otherEngOrHeb'] == "heb" ? "checked" : ""); ?> >
-                       Hebrew
-                <select name="otherHebDD" style="width:40" class="formStyleSmall">
-                    <?php print_option_n1n2($minhag['otherHebDD'], 1, 30, "%02d"); ?>
-                </select>
-                <select name="otherHebMM" style="width:80" class="formStyleSmall">
-                    <?php print_option1($minhag['otherHebMM'], HEBREW_MONTH_NAMES); ?>
-                </select>
+            <td colspan="2" class="text">
+                <table class="yizkorTiming" cellspacing="0" cellpadding="3">
+                    <tr><th>Observance</th><th>Start time</th><th>Duration</th></tr>
+                    <tr>
+                        <td><label><input type="checkbox" name="yizkorYomKippur" value="YES"
+                                   <?php echo ($minhag['yizkorYomKippur'] == "YES" ? "checked" : ""); ?> >
+                                   Yom Kippur</label></td>
+                        <td><input type="time" name="yizkorYomKippurStartTime"
+                                   value="<?php echo h($minhag['yizkorYomKippurStartTime']); ?>"
+                                   step="900" required class="formStyleSmall"></td>
+                        <td><select name="yizkorYomKippurDuration" class="formStyleSmall">
+                            <?php print_option1($minhag['yizkorYomKippurDuration'], array(':30', ':45', '1:00', '1:15', '1:30', '1:45', '2:00')); ?>
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td><label><input type="checkbox" name="yizkorShmini" value="YES"
+                                   <?php echo ($minhag['yizkorShmini'] == "YES" ? "checked" : ""); ?> >
+                                   Shemini Atzeret</label></td>
+                        <td rowspan="3"><input type="time" name="yizkorFestivalStartTime"
+                                   value="<?php echo h($minhag['yizkorFestivalStartTime']); ?>"
+                                   step="900" required class="formStyleSmall"></td>
+                        <td rowspan="3"><select name="yizkorFestivalDuration" class="formStyleSmall">
+                            <?php print_option1($minhag['yizkorFestivalDuration'], array(':30', ':45', '1:00', '1:15', '1:30', '1:45', '2:00')); ?>
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td><label><input type="checkbox" name="yizkorPesach" value="YES"
+                                   <?php echo ($minhag['yizkorPesach'] == "YES" ? "checked" : ""); ?> >
+                            <select name="yizkorPesachDay" style="width:50" class="formStyleSmall">
+                                <?php print_option2($minhag['yizkorPesachDay'], array('7' => '7th', '8' => '8th')); ?>
+                            </select>
+                            day of Passover</label></td>
+                    </tr>
+                    <tr>
+                        <td><label><input type="checkbox" name="yizkorShavuot" value="YES"
+                                   <?php echo ($minhag['yizkorShavuot'] == "YES" ? "checked" : ""); ?> >
+                            <select name="yizkorShavuotDay" style="width:50" class="formStyleSmall">
+                                <?php print_option2($minhag['yizkorShavuotDay'], array('1' => '1st', '2' => '2nd')); ?>
+                            </select>
+                            day of Shavuot</label></td>
+                    </tr>
+                </table>
             </td>
-            <td id="dateErr">&nbsp;</td>
         </tr>
 
         <tr>
@@ -306,51 +278,6 @@ function minhag_render_form($minhag)
             </td>
             <td colspan="2" class="text">
                 <?php minhag_render_next_yizkor_events($minhag); ?>
-            </td>
-        </tr>
-
-        <tr>
-            <td height="25" align="left" valign="top" class="text">
-                Yizkor Light On/Off Times:
-            </td>
-            <td colspan="2" class="text">
-                <input type="radio" name="yizkorLightTime" value="setTime"
-                       <?php echo ($minhag['yizkorLightTime'] == 'setTime' ? "checked" : ""); ?> >
-                       Set time<br>
-                &nbsp; &nbsp; &nbsp; &nbsp; <b>On at</b>
-                <select name="yizkorLightOnHH" style="width:40" class="formStyleSmall">
-                    <?php print_option_n1n2($minhag['yizkorLightOnHH'], 1, 12, "%02d"); ?>
-                </select>
-                <select name="yizkorLightOnMM" style="width:40" class="formStyleSmall">
-                    <?php print_option_n1n2($minhag['yizkorLightOnMM'], 0, 59, "%02d"); ?>
-                </select>
-                <select name="yizkorLightOnAmPm" style="width:40" class="formStyleSmall">
-                    <?php print_option1($minhag['yizkorLightOnAmPm'], array('am', 'pm')); ?>
-                </select>
-                <br>
-
-                &nbsp; &nbsp; &nbsp; &nbsp; <b>Off at</b>
-                <select name="yizkorLightOffHH" style="width:40" class="formStyleSmall">
-                    <?php print_option_n1n2($minhag['yizkorLightOffHH'], 1, 12, "%02d"); ?>
-                </select>
-                <select name="yizkorLightOffMM" style="width:40" class="formStyleSmall">
-                    <?php print_option_n1n2($minhag['yizkorLightOffMM'], 0, 59, "%02d"); ?>
-                </select>
-                <select name="yizkorLightOffAmPm" style="width:40" class="formStyleSmall">
-                    <?php print_option1($minhag['yizkorLightOffAmPm'], array('am', 'pm')); ?>
-                </select>
-                <br>
-
-                <input type="radio" name="yizkorLightTime" value="atSunset"
-                       <?php echo ($minhag['yizkorLightTime'] == 'atSunset' ? "checked" : ""); ?> >
-                <input type="text" name="yizkorMinBefore" maxlength="3" size="3" class="formStyle" style="width:25"
-                       value="<?php echo h($minhag['yizkorMinBefore']); ?>"
-                       onchange="validateNumber(this, 'dateErr', false);" >
-                       min. before Sunset to
-                <input type="text" name="yizkorMinAfter" maxlength="3" size="3" class="formStyle" style="width:25"
-                       value="<?php echo h($minhag['yizkorMinAfter']); ?>"
-                       onchange="validateNumber(this, 'dateErr', false);" >
-                       min. after sunset
             </td>
         </tr>
 

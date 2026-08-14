@@ -574,7 +574,7 @@
           replaces only the marked CBS block, and preserves unrelated entries
           in the target user's crontab.</dd>
           <dt>Major functions</dt>
-          <dd><code>cron_options</code>, <code>cron_clock_fields</code>,
+          <dd><code>cron_options</code>, <code>cron_time_fields</code>,
           <code>cron_sunset_fields</code>, <code>cron_managed_block</code>,
           <code>cron_replace_managed_block</code>,
           <code>cron_target_user</code>, <code>cron_read_current</code>,
@@ -719,7 +719,7 @@
           today, reapplies normal Yahrzeit lighting every evening, and
           refreshes moving sunset cron times.</dd>
           <dt>Major functions</dt>
-          <dd><code>parse_options</code>, <code>yizkor_reasons_today</code>, <code>run_yahrzeit_command</code>, <code>refresh_sunset_crontab</code>, <code>finish_phase</code>, <code>main</code>.</dd>
+          <dd><code>parse_options</code>, <code>yizkor_reasons_today</code>, <code>run_yahrzeit_command</code>, <code>refresh_managed_crontab</code>, <code>finish_phase</code>, <code>main</code>.</dd>
           <dt>Constants / globals</dt>
           <dd>No file constants.
           Global <code>$argv</code> is used for usage text; global <code>$log_now</code> is used by timestamp logging.</dd>

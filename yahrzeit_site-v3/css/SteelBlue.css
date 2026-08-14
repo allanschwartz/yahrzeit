@@ -929,3 +929,17 @@ table.yizkorEvents td {
 table.yizkorEvents td.yizkorCivilDate {
     padding-right: 0;
 }
+
+table.yizkorTiming {
+    border-collapse: collapse;
+    font: inherit;
+    color: inherit;
+}
+
+table.yizkorTiming th,
+table.yizkorTiming td {
+    padding: 3px 1.25em 3px 0;
+    border-bottom: 0;
+    text-align: left;
+    vertical-align: middle;
+}

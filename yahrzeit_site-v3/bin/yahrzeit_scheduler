@@ -19,13 +19,13 @@
  *
  *      Supported phases:
  *
- *          --phase yizkor-on
- *              If today is a configured Yizkor day, run:
+ *          --phase yizkor-festival-on | yizkor-yom-kippur-on
+ *              If today is the corresponding Yizkor day, run:
  *                  bin/yahrzeit --yizkor
  *              Otherwise do nothing.
  *
- *          --phase yizkor-off
- *              If today is a configured Yizkor day, restore normal lighting:
+ *          --phase yizkor-festival-off | yizkor-yom-kippur-off
+ *              If today is the corresponding Yizkor day, restore normal lighting:
  *                  bin/yahrzeit
  *              Otherwise do nothing.
  *
@@ -34,7 +34,7 @@
  *                  bin/yahrzeit
  *
  *          --phase cron-refresh
- *              Rebuild moving sunset-based cron times.
+ *              Rebuild upcoming Yizkor dates and moving sunset times.
  *
  *      The normal scheduled-control path is:
  *
@@ -81,10 +81,10 @@ function scheduler_usage()
     echo "Usage:\n";
     echo "  $prog --phase PHASE [options]\n\n";
     echo "Phases:\n";
-    echo "  --phase yizkor-on     Run Yizkor lighting if today is a configured Yizkor day.\n";
-    echo "  --phase yizkor-off    Restore normal yahrzeit lighting if today is a configured Yizkor day.\n";
+    echo "  --phase yizkor-festival-on|off     Run/restore lighting for a festival Yizkor.\n";
+    echo "  --phase yizkor-yom-kippur-on|off   Run/restore lighting for Yom Kippur.\n";
     echo "  --phase yahrzeit      Run normal yahrzeit lighting.\n\n";
-    echo "  --phase cron-refresh  Rebuild moving sunset-based cron times.\n\n";
+    echo "  --phase cron-refresh  Rebuild upcoming Yizkor dates and moving sunset times.\n\n";
     echo "Options:\n";
     echo "  --dry-run             Show what would be run; do not call bin/yahrzeit.\n";
     echo "  --now 'YYYY-MM-DD HH:MM'\n";
@@ -141,7 +141,7 @@ function parse_options($argv)
         case '--phase':
             $i++;
             if ($i >= count($argv)) {
-                fail("--phase requires yizkor-on, yizkor-off, yahrzeit, or cron-refresh");
+                fail("--phase requires a Yizkor phase, yahrzeit, or cron-refresh");
             }
             $opts['phase'] = $argv[$i];
             break;
@@ -156,8 +156,10 @@ function parse_options($argv)
     }
 
     switch ($opts['phase']) {
-    case 'yizkor-on':
-    case 'yizkor-off':
+    case 'yizkor-festival-on':
+    case 'yizkor-festival-off':
+    case 'yizkor-yom-kippur-on':
+    case 'yizkor-yom-kippur-off':
     case 'yahrzeit':
     case 'cron-refresh':
         break;
@@ -192,13 +194,17 @@ function finish_phase($phase, $status, $started_at)
     return $status;
 }
 
-/** Return enabled Yizkor observances whose next occurrence is today. */
-function yizkor_reasons_today($minhag, $now)
+/** Return matching enabled Yizkor observances whose next occurrence is today. */
+function yizkor_reasons_today($minhag, $now, $schedule)
 {
     $reasons = array();
 
     $today = date('Y-m-d', $now);
     foreach (next_yizkor_observances($minhag, $now) as $observance) {
+        $is_yom_kippur = ($observance['name'] == 'Yom Kippur');
+        if (($schedule == 'yom-kippur') != $is_yom_kippur) {
+            continue;
+        }
         if ($observance['date_key'] == $today) {
             $reasons[] = $observance['name'] . ' (' .
                          $observance['observance_date'] . ')';
@@ -240,23 +246,23 @@ function run_yahrzeit_command($args, $reason, $opts)
 }
 
 /**
- * Refresh moving sunset-based cron times and include its result in this log.
+ * Refresh the managed cron schedule and include its result in this log.
  *
  * A normal Yahrzeit phase refreshes only when Yahrzeit time follows sunset.
- * The daily cron-refresh phase forces regeneration because either Yahrzeit or
- * Yizkor timing may have placed that phase in the managed block.
+ * The daily cron-refresh phase forces regeneration so the block always names
+ * the next civil dates of the configured Hebrew-date Yizkor observances.
  */
-function refresh_sunset_crontab($minhag, $opts, $force = false)
+function refresh_managed_crontab($minhag, $opts, $force = false)
 {
     if (!$force && ($minhag['yahrzeitLightTime'] ?? 'setTime') != 'atSunset') {
         return 0;
     }
 
-    $command = escapeshellarg(__DIR__ . '/fix-up-crontab');
+    $command = escapeshellarg(__DIR__ . '/fix-up-crontab') . ' --summary';
     if ($opts['dry_run']) {
         $command .= ' --dry-run --crontab-file /dev/null';
     }
-    timestamp_line("ACTION: refresh next sunset-based cron schedule");
+    timestamp_line("ACTION: refresh managed cron schedule");
     timestamp_line("COMMAND: $command");
     $output = array();
     exec("$command 2>&1", $output, $status);
@@ -290,36 +296,38 @@ function main($argv)
         if ($status != 0) {
             return finish_phase($phase, $status, $started_at);
         }
-        $status = refresh_sunset_crontab($minhag, $opts);
+        $status = refresh_managed_crontab($minhag, $opts);
         return finish_phase($phase, $status, $started_at);
     }
 
     if ($phase == 'cron-refresh') {
-        $status = refresh_sunset_crontab($minhag, $opts, true);
+        $status = refresh_managed_crontab($minhag, $opts, true);
         return finish_phase($phase, $status, $started_at);
     }
 
-    $reasons = yizkor_reasons_today($minhag, $now);
+    $schedule = str_contains($phase, 'yom-kippur') ? 'yom-kippur' : 'festival';
+    $operation = str_ends_with($phase, '-on') ? 'on' : 'off';
+    $reasons = yizkor_reasons_today($minhag, $now, $schedule);
     $is_yizkor_day = (count($reasons) > 0);
     $reason_text = $is_yizkor_day ? implode(", ", $reasons) : "not a configured Yizkor day";
 
-    if ($phase == 'yizkor-on') {
+    if ($operation == 'on') {
         if ($is_yizkor_day) {
             $status = run_yahrzeit_command(array("--yizkor"), "Yizkor lighting on: $reason_text", $opts);
             return finish_phase($phase, $status, $started_at);
         }
 
-        timestamp_line("DECISION: no action; yizkor-on phase, $reason_text");
+        timestamp_line("DECISION: no action; $phase phase, $reason_text");
         return finish_phase($phase, 0, $started_at);
     }
 
-    if ($phase == 'yizkor-off') {
+    if ($operation == 'off') {
         if ($is_yizkor_day) {
             $status = run_yahrzeit_command(array(), "Yizkor service over; restore normal yahrzeit lighting: $reason_text", $opts);
             return finish_phase($phase, $status, $started_at);
         }
 
-        timestamp_line("DECISION: no action; yizkor-off phase, $reason_text");
+        timestamp_line("DECISION: no action; $phase phase, $reason_text");
         return finish_phase($phase, 0, $started_at);
     }
 

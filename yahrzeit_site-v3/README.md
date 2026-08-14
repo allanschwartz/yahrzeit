@@ -178,7 +178,9 @@ Yahrzeit block in the installation account's crontab. It preserves unrelated
 cron jobs. Normal Yahrzeit lighting is reapplied every evening; the saved
 day-only or weekly observance determines which memorial lights are selected.
 Fixed times remain stable, while sunset-based times are recalculated for that
-evening automatically.
+evening automatically. Yizkor on/off phases are installed only for the next
+civil date of each enabled observance; the managed block is regenerated every
+morning at 12:05 AM.
 
 Every managed cron invocation appends to `data/automation.log`. Each run records
 its phase, decision or action, controller transport summary, cron-repair

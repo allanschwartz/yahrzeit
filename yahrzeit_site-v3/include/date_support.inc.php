@@ -301,7 +301,7 @@ function add_next_yizkor_row(&$rows, $name, $observance_date, $timestamp)
  *
  * Rows are sorted by upcoming date and contain name, observance_date,
  * next_date, timestamp, and date_key. The calculation follows the choices in
- * data/minhag.ini, including Pesach/Shavuot day and the optional Other date.
+ * data/minhag.ini, including the selected Pesach and Shavuot days.
  *
  * @param array<string, mixed> $minhag
  * @return array<int, array{name:string, observance_date:string,
@@ -353,30 +353,6 @@ function next_yizkor_observances($minhag, $timestamp = null)
             $sivan_day . ' Sivan',
             next_hebrew_date_timestamp(10, $sivan_day, $timestamp)
         );
-    }
-
-    if (yizkor_setting_enabled($minhag['yizkorOther'] ?? 'NO')) {
-        if (($minhag['otherEngOrHeb'] ?? 'eng') == 'heb') {
-            $month_name = closest_hebrew_month($minhag['otherHebMM'] ?? '');
-            $month = HEBREW_MONTH_MAPPING[$month_name] ?? 0;
-            $day = (int)($minhag['otherHebDD'] ?? 0);
-            add_next_yizkor_row(
-                $rows,
-                'Other',
-                $day . ' ' . hebrew_month_display_name($month_name),
-                next_hebrew_date_timestamp($month, $day, $timestamp)
-            );
-        } else {
-            $month_name = $minhag['otherEngMM'] ?? '';
-            $month = ENGLISH_MONTH_MAPPING[$month_name] ?? 0;
-            $day = (int)($minhag['otherEngDD'] ?? 0);
-            add_next_yizkor_row(
-                $rows,
-                'Other',
-                $month_name . ' ' . $day . ' (English date)',
-                next_english_date_timestamp($month, $day, $timestamp)
-            );
-        }
     }
 
     usort($rows, function ($left, $right) {

@@ -68,8 +68,8 @@ following Friday.
 
 <p>
 Yizkor is observed four times during the year: on Yom Kippur, Shemini Atzeret,
-Pesach, and Shavuot. The Yizkor section controls full-wall lighting for those
-services.
+Pesach, and Shavuot. In the <strong>Yizkor dates observed</strong> table, select
+the checkbox for each observance held by <?php echo h($synagogueName); ?>.
 </p>
 
 <p>
@@ -79,26 +79,18 @@ which day Yizkor is observed. Use the setting that matches
 Yizkor services are held.
 </p>
 
-<h3>Other Yizkor Date</h3>
-
 <p>
-An optional <strong>Other</strong> date may be specified for a special full-wall
-memorial observance on a selected Hebrew date, such as Tisha B’Av (9 Av), Yom
-HaShoah (27 Nisan), or Yom HaZikaron (4 Iyar). Whether to add such an observance
-depends on local practice and synagogue custom.
+The start time and duration are entered beside the observance checkboxes.
+Yom Kippur has its own schedule. Shemini Atzeret, Pesach, and Shavuot share
+the festival start time and duration shown in the cells spanning those three
+rows. Durations are selectable in 15-minute increments from 30 minutes through
+two hours.
 </p>
 
 <p>
 The <strong>Next Yizkor events</strong> preview shows the next civil date for
 each observance in the settings currently saved. Save any changes before
-using the preview to verify the revised dates.
-</p>
-
-<p>
-The <strong>Yizkor Light On/Off Times</strong> section is used to define the
-run times of the Yizkor lighting. Similar to the Yahrzeit lighting, the
-Yizkor lighting may run at a fixed clock time or a selected number of minutes
-before sunset.
+using the preview to verify the revised dates and schedule.
 </p>
 
 <h3>Saving Changes</h3>
@@ -123,7 +115,10 @@ maintainer reruns the appliance installer or runs
 markers and preserves unrelated jobs. The normal Yahrzeit phase runs every
 evening, reapplying the intended wall image. The day-only or weekly setting
 determines which memorial lights are selected; it does not change how often
-the wall is refreshed. Sunset policies refresh the clock time automatically.
+the wall is refreshed. Yizkor phases are installed only for the next civil
+date of each selected observance. The managed block is regenerated every
+morning at 12:05 AM, which advances completed observances and refreshes any
+sunset-derived Yahrzeit time.
 </p>
 
 <code>

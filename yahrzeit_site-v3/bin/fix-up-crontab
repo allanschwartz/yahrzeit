@@ -29,6 +29,7 @@ function cron_usage()
     echo "Usage: fix-up-crontab [--dry-run] [--now 'YYYY-MM-DD HH:MM']\n";
     echo "                        [--crontab-file FILE] [--minhag-file FILE]\n\n";
     echo "  --dry-run         Print the proposed crontab without installing it.\n";
+    echo "  --summary         Print one result line instead of the managed block.\n";
     echo "  --now TIME        Calculate moving sunset times as of TIME.\n";
     echo "  --crontab-file    Read/write FILE instead of the system crontab (test use).\n";
     echo "  --minhag-file     Read policy overrides from FILE (dry-run/test use).\n";
@@ -39,6 +40,7 @@ function cron_options($argv)
 {
     $options = [
         'dry_run' => false,
+        'summary' => false,
         'now' => time(),
         'crontab_file' => '',
         'minhag_file' => '',
@@ -53,6 +55,10 @@ function cron_options($argv)
 
         case '--dry-run':
             $options['dry_run'] = true;
+            break;
+
+        case '--summary':
+            $options['summary'] = true;
             break;
 
         case '--now':
@@ -88,30 +94,39 @@ function cron_options($argv)
     return $options;
 }
 
-/** Validate a 12-hour clock setting and return cron minute/hour fields. */
-function cron_clock_fields($hour, $minute, $ampm)
+/** Validate an HTML/INI HH:MM time and return cron minute/hour fields. */
+function cron_time_fields($time, $setting)
 {
-    if (!preg_match('/^\d{1,2}$/', trim((string)$hour)) ||
-        !preg_match('/^\d{1,2}$/', trim((string)$minute))) {
-        cron_fail("invalid clock time in data/minhag.ini");
+    if (!preg_match('/^(\d{2}):(\d{2})$/', trim((string)$time), $parts)) {
+        cron_fail("invalid $setting in data/minhag.ini");
     }
-    $hour = (int)$hour;
-    $minute = (int)$minute;
-    $ampm = strtolower(trim((string)$ampm));
-
-    if ($hour < 1 || $hour > 12 || $minute < 0 || $minute > 59 ||
-        !in_array($ampm, ['am', 'pm'], true)) {
-        cron_fail("invalid clock time in data/minhag.ini");
+    $hour = (int)$parts[1];
+    $minute = (int)$parts[2];
+    if ($hour > 23 || $minute > 59 || ($minute % 15) != 0) {
+        cron_fail("invalid $setting in data/minhag.ini");
     }
-
-    if ($hour == 12) {
-        $hour = 0;
-    }
-    if ($ampm == 'pm') {
-        $hour += 12;
-    }
-
     return [$minute, $hour];
+}
+
+/** Validate a supported Yizkor duration and return its length in minutes. */
+function cron_duration_minutes($duration)
+{
+    $durations = [
+        ':30' => 30, ':45' => 45, '1:00' => 60, '1:15' => 75,
+        '1:30' => 90, '1:45' => 105, '2:00' => 120,
+    ];
+    $duration = trim((string)$duration);
+    if (!isset($durations[$duration])) {
+        cron_fail("invalid Yizkor duration in data/minhag.ini");
+    }
+    return $durations[$duration];
+}
+
+/** Return the cron time obtained by adding a duration to a start time. */
+function cron_end_time_fields($minute, $hour, $duration)
+{
+    $end = (($hour * 60) + $minute + cron_duration_minutes($duration)) % (24 * 60);
+    return [$end % 60, intdiv($end, 60)];
 }
 
 /** Return the next future daily cron time at a sunset-relative offset. */
@@ -160,6 +175,16 @@ function cron_scheduler_line($minute, $hour, $days, $phase, $site_dir)
     );
 }
 
+/** Return cron day/month fields for one upcoming observance row. */
+function cron_observance_fields($observance)
+{
+    $timestamp = $observance['timestamp'] ?? 0;
+    if (!is_int($timestamp) || $timestamp <= 0) {
+        cron_fail("invalid upcoming Yizkor date");
+    }
+    return date('j n *', $timestamp);
+}
+
 /** Return the complete managed cron block for the saved Minhag policy. */
 function cron_managed_block($minhag, $now)
 {
@@ -168,38 +193,37 @@ function cron_managed_block($minhag, $now)
         cron_fail("could not resolve the site directory");
     }
 
-    $dynamic_sunset = false;
     $lines = [CRON_BEGIN];
 
-    $yizkor_time_policy = $minhag['yizkorLightTime'] ?? 'setTime';
-    if (!in_array($yizkor_time_policy, ['setTime', 'atSunset'], true)) {
-        cron_fail("invalid yizkorLightTime in data/minhag.ini");
-    }
-    if ($yizkor_time_policy == 'atSunset') {
-        [$on_minute, $on_hour] = cron_sunset_fields(
-            $now,
-            '-' . ltrim((string)($minhag['yizkorMinBefore'] ?? 0), '+-')
-        );
-        [$off_minute, $off_hour] = cron_sunset_fields(
-            $now,
-            $minhag['yizkorMinAfter'] ?? 0
-        );
-        $dynamic_sunset = true;
-    } else {
-        [$on_minute, $on_hour] = cron_clock_fields(
-            $minhag['yizkorLightOnHH'] ?? '',
-            $minhag['yizkorLightOnMM'] ?? '',
-            $minhag['yizkorLightOnAmPm'] ?? ''
-        );
-        [$off_minute, $off_hour] = cron_clock_fields(
-            $minhag['yizkorLightOffHH'] ?? '',
-            $minhag['yizkorLightOffMM'] ?? '',
-            $minhag['yizkorLightOffAmPm'] ?? ''
-        );
-    }
+    [$festival_on_minute, $festival_on_hour] = cron_time_fields(
+        $minhag['yizkorFestivalStartTime'] ?? '',
+        'yizkorFestivalStartTime'
+    );
+    [$festival_off_minute, $festival_off_hour] = cron_end_time_fields(
+        $festival_on_minute,
+        $festival_on_hour,
+        $minhag['yizkorFestivalDuration'] ?? ''
+    );
+    [$yk_on_minute, $yk_on_hour] = cron_time_fields(
+        $minhag['yizkorYomKippurStartTime'] ?? '',
+        'yizkorYomKippurStartTime'
+    );
+    [$yk_off_minute, $yk_off_hour] = cron_end_time_fields(
+        $yk_on_minute,
+        $yk_on_hour,
+        $minhag['yizkorYomKippurDuration'] ?? ''
+    );
 
-    $lines[] = cron_scheduler_line($on_minute, $on_hour, '* * *', 'yizkor-on', $site_dir);
-    $lines[] = cron_scheduler_line($off_minute, $off_hour, '* * *', 'yizkor-off', $site_dir);
+    foreach (next_yizkor_observances($minhag, $now) as $observance) {
+        $days = cron_observance_fields($observance);
+        if ($observance['name'] == 'Yom Kippur') {
+            $lines[] = cron_scheduler_line($yk_on_minute, $yk_on_hour, $days, 'yizkor-yom-kippur-on', $site_dir);
+            $lines[] = cron_scheduler_line($yk_off_minute, $yk_off_hour, $days, 'yizkor-yom-kippur-off', $site_dir);
+        } else {
+            $lines[] = cron_scheduler_line($festival_on_minute, $festival_on_hour, $days, 'yizkor-festival-on', $site_dir);
+            $lines[] = cron_scheduler_line($festival_off_minute, $festival_off_hour, $days, 'yizkor-festival-off', $site_dir);
+        }
+    }
 
     $observance = $minhag['yahrzeitObservance'] ?? 'week';
     if (!in_array($observance, ['day', 'week'], true)) {
@@ -214,12 +238,10 @@ function cron_managed_block($minhag, $now)
             $now,
             '-' . ltrim((string)($minhag['yahrzeitMinBefore'] ?? 0), '+-')
         );
-        $dynamic_sunset = true;
     } else {
-        [$yz_minute, $yz_hour] = cron_clock_fields(
-            $minhag['yahrzeitLightOnHH'] ?? '',
-            $minhag['yahrzeitLightOnMM'] ?? '',
-            $minhag['yahrzeitLightOnAmPm'] ?? ''
+        [$yz_minute, $yz_hour] = cron_time_fields(
+            $minhag['yahrzeitStartTime'] ?? '',
+            'yahrzeitStartTime'
         );
     }
 
@@ -227,15 +249,9 @@ function cron_managed_block($minhag, $now)
     // restores the intended state after electrical noise disturbs a driver.
     $lines[] = cron_scheduler_line($yz_minute, $yz_hour, '* * *', 'yahrzeit', $site_dir);
 
-    if ($dynamic_sunset) {
-        $lines[] = cron_scheduler_line(
-            5,
-            0,
-            '* * *',
-            'cron-refresh',
-            $site_dir
-        );
-    }
+    // Recalculate the next civil occurrence of each Hebrew-date observance.
+    // This is required even when the normal Yahrzeit time is fixed.
+    $lines[] = cron_scheduler_line(5, 0, '* * *', 'cron-refresh', $site_dir);
 
     $lines[] = CRON_END;
     return implode("\n", $lines);
@@ -396,6 +412,19 @@ function cron_install($content, $options, $target_user)
     }
 }
 
+/** Count executable schedule entries in a managed cron block. */
+function cron_entry_count($managed)
+{
+    $count = 0;
+    foreach (preg_split('/\R/', trim($managed)) as $line) {
+        $line = trim($line);
+        if ($line !== '' && !str_starts_with($line, '#')) {
+            $count++;
+        }
+    }
+    return $count;
+}
+
 function cron_main($argv)
 {
     $options = cron_options($argv);
@@ -421,7 +450,17 @@ function cron_main($argv)
         return 0;
     }
 
+    if ($proposed === $current) {
+        echo "Yahrzeit cron schedule unchanged for $target_user.\n";
+        return 0;
+    }
+
     cron_install($proposed, $options, $target_user);
+    if ($options['summary']) {
+        echo "Updated Yahrzeit cron schedule for $target_user: " .
+             cron_entry_count($managed) . " scheduled operations.\n";
+        return 0;
+    }
     echo "Installed Yahrzeit cron schedule";
     if ($target_user !== '') {
         echo " for $target_user";
