@@ -1,0 +1,107 @@
+# -----------------------------------------------------------------------------
+# @file        CBL-03-jst-vh-100mm.yml
+#
+# @brief       YYZ Pixel V2 100 mm power jumper cable.
+#
+#              Connects two JST VH 2-position cable receptacles using
+#              18 AWG stranded conductors.  Used between adjacent
+#              YYZ_PIXEL_V2 boards.
+#
+# @history     version 1.0 created August 2026
+#
+# @author      Allan M. Schwartz
+#
+# @copyright   copyright (c) 2026, by Allan M. Schwartz
+#              All rights reserved.
+#
+# @notes       WireViz source file.
+#              Red = +5V, Black = GND.
+#              Finished cable assembly is intended for manufacture by
+#              PCBWay or equivalent cable-assembly vendor.
+# -----------------------------------------------------------------------------
+
+metadata:
+  title: YYZ Pixel V2 Power Jumper
+  revision: A
+  description: >
+    100 mm power jumper for YYZ_PIXEL_V2 boards.
+    JST VH receptacle housing on both ends.
+    Straight-through +5V and GND wiring.
+
+
+connectors:
+
+  # Both ends mate with the B2P-VH headers on YYZ_PIXEL_V2 boards.
+  #
+  # VHR-2N is the 2-position JST VH cable receptacle housing.
+  # SVH-21T-P1.1 is the female crimp contact selected for 18 AWG wire.
+
+  J1:
+    type: JST VH
+    subtype: F cable receptacle
+    pincount: 2
+    pinlabels: [+5V, GND]
+    manufacturer: JST
+    mpn: VHR-2N
+    notes: |
+      for: <i><b>YYZ-PIXEL_V2 </b> end</i>
+
+    additional_components:
+      - type: Crimp contact
+        qty_multiplier: populated
+        manufacturer: JST
+        mpn: SVH-21T-P1.1
+
+  J2:
+    type: JST VH
+    subtype: F cable receptacle
+    pincount: 2
+    pinlabels: [+5V, GND]
+    manufacturer: JST
+    mpn: VHR-2N
+    notes: |
+      for: <i><b>YYZ-PIXEL_V2 </b> end</i>
+
+    additional_components:
+      - type: Crimp contact
+        qty_multiplier: populated
+        manufacturer: JST
+        mpn: SVH-21T-P1.1
+
+
+cables:
+
+  # 18 AWG stranded copper wire was selected for low voltage drop,
+  # mechanical robustness, and compatibility with the selected JST VH
+  # crimp contact.
+  #
+  # This is a pair of discrete conductors, not a jacketed cable.
+
+  W1:
+    category: bundle
+    wirecount: 2
+    gauge: 18 AWG
+    length: 100 mm
+    colors: [RD, BK]
+    wirelabels: [+5V, GND]
+    notes: |
+      Finished Cable Length: 100 mm +/- 10 mm.
+
+      • Measure length between the rear wire-exit 
+        faces of the two connector housings.
+
+      • Use JST-approved crimp tool.
+
+      • Test assembly for continuity and polarity.
+
+connections:
+
+  # Straight-through connection.
+  #
+  # J1 pin 1 -> red wire   -> J2 pin 1
+  # J1 pin 2 -> black wire -> J2 pin 2
+
+  -
+    - J1: [1, 2]
+    - W1: [1, 2]
+    - J2: [1, 2]

@@ -1,0 +1,139 @@
+# -----------------------------------------------------------------------------
+# @file        CBL-02-molex-p-to-jst-vh-50mm.yml
+#
+# @brief       Legacy YYZ-PIXEL to YYZ Pixel V2 power adapter cable.
+#
+#              Adapts the legacy 3-position Molex Standard .093" plug
+#              connection to the JST VH 2-position power connector used
+#              on YYZ_PIXEL_V2.
+#
+#              The legacy connector uses only pins 1 and 3.
+#              Pin 2 is intentionally unused.
+#
+# @history     version 1.0 created August 2026
+#
+# @author      Allan M. Schwartz
+#
+# @copyright   copyright (c) 2026, by Allan M. Schwartz
+#              All rights reserved.
+#
+# @notes       WireViz source file.
+#
+#              Legacy YYZ-PIXEL wiring:
+#                Molex pin 1 = +5V, red
+#                Molex pin 2 = not connected
+#                Molex pin 3 = GND, black
+#
+#              JST VH wiring:
+#                pin 1 = +5V
+#                pin 2 = GND
+#
+#              This adapter allows normal field service to be performed
+#              by unplugging and plugging connectors only.  No soldering
+#              or pigtail replacement is required.
+#
+#              Finished cable assembly is intended for manufacture by
+#              PCBWay or equivalent cable-assembly vendor.
+# -----------------------------------------------------------------------------
+
+
+metadata:
+  title: YYZ Pixel V2 Legacy Power Adapter
+  revision: A
+  description: >
+    50 mm adapter cable from legacy YYZ-PIXEL 3-position Molex Standard
+    .093" plug to JST VH 2-position receptacle.
+    Connects +5V and GND only.
+
+
+connectors:
+
+  # Legacy YYZ-PIXEL connector.
+  #
+  # Molex Standard .093" series, 3 circuits, single row.
+  #
+  # Only positions 1 and 3 are populated.
+  # Position 2 is intentionally unused.
+  #
+  # Housing:
+  #   Molex 03-09-2032
+  #
+  # Contact:
+  #   Molex 1190-series male pin terminal for 18 AWG wire.
+
+  J1:
+    type: Molex Standard .093
+    subtype: plug
+    pincount: 3
+    pinlabels: [+5V, NC, GND]
+    manufacturer: Molex
+    mpn: 03-09-2032
+    notes: |
+      for: <i>legacy <b>YYZ-PIXEL </b> end</i>
+
+    additional_components:
+      - type: Pin crimp contact
+        qty: 2
+        manufacturer: Molex
+        mpn: 1190
+
+
+  # New YYZ_PIXEL_V2 power connector.
+  #
+  # VHR-2N is the JST VH 2-position cable receptacle housing.
+  # SVH-21T-P1.1 is the female crimp contact selected for 18 AWG wire.
+
+  J2:
+    type: JST VH
+    subtype: F cable receptacle
+    pincount: 2
+    pinlabels: [+5V, GND]
+    manufacturer: JST
+    mpn: VHR-2N
+    notes: |
+      for: <i><b>YYZ-PIXEL_V2 </b> end</i>
+
+    additional_components:
+      - type: Crimp contact
+        qty_multiplier: populated
+        manufacturer: JST
+        mpn: SVH-21T-P1.1
+
+
+cables:
+
+  # Short field-adapter cable.
+  #
+  # 18 AWG stranded copper wire matches the legacy power wiring and
+  # is compatible with both selected connector contact families.
+
+  W1:
+    category: bundle
+    wirecount: 2
+    gauge: 18 AWG
+    length: 50 mm
+    colors: [RD, BK]
+    wirelabels: [+5V, GND]
+    notes: |
+      FINISHED CABLE LENGTH: 50 mm +/- 5 mm.
+
+      • Measure length between the rear wire-exit 
+        faces of the two connector housings.
+
+      • Use manufacturer-approved crimp tooling, 
+        or equivalent production crimp tooling.
+
+      • Test assembly for continuity and polarity.
+
+
+connections:
+
+  # Legacy pin 2 is intentionally unpopulated.
+  #
+  # J1 pin 1 -> red wire   -> J2 pin 1
+  # J1 pin 3 -> black wire -> J2 pin 2
+
+  -
+    - J1: [1, 3]
+    - W1: [1, 2]
+    - J2: [1, 2]

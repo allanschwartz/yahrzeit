@@ -1,0 +1,15 @@
+That looks like a sensible first production request.
+
+The quantities line up well with the installation strategy:
+
+   • CBL-01: 25         (adapter molex-r)
+   • CBL-02: 25         (adapter molex-p)
+   • CBL-03: 280        (jst-vh 100mm)
+   • CBL-04: 40         (jst-vh 600mm)
+   • CBL-05: 280        (ribbon 100mm)
+   • CBL-06: 7          (ribbon 2800mm)
+
+For the RFQ, I’d ask for **one sample of each cable first**, then separate pricing for those production quantities. For CBL-06, I’d explicitly mark the 2800 mm length as provisional and say final production release depends on field measurement.
+
+That gives you a clean vendor workflow: approve six first articles, then release the bulk order. Good stopping point for today.
+

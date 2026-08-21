@@ -1,0 +1,6 @@
+# Ignore wireviz generated outputs
+*.html
+*.png
+*.svg
+*.bom.tsv
+

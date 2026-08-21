@@ -1,0 +1,80 @@
+# -----------------------------------------------------------------------------
+# @file        CBL-05-idc-100mm.yml
+#
+# @brief       YYZ Pixel V2 100 mm signal ribbon cable.
+#
+#              Short straight-through 10-conductor IDC ribbon cable used
+#              between adjacent YYZ_PIXEL_V2 boards.
+#
+#              This cable intentionally uses unkeyed 2x5 IDC connectors.
+#
+# @history     version 1.0 created August 2026
+#
+# @author      Allan M. Schwartz
+#
+# @copyright   copyright (c) 2026, by Allan M. Schwartz
+#              All rights reserved.
+#
+# @notes       WireViz source file.
+#
+#              Red stripe = conductor 1 = connector pin 1.
+#
+#              YYZ signal pinout:
+#                pins 1,2   = DI
+#                pins 3,4   = OE
+#                pins 5,6   = CP
+#                pins 7,8   = ST
+#                pins 9,10  = GND
+#
+#              Finished cable assembly is intended for manufacture by
+#              PCBWay or equivalent cable-assembly vendor.
+# -----------------------------------------------------------------------------
+
+metadata:
+  title: YYZ Pixel V2 Signal Jumper
+  revision: A
+  description: >
+    100 mm straight-through 10-conductor IDC ribbon cable for adjacent
+    YYZ_PIXEL_V2 boards. Unkeyed 2x5 IDC connectors on both ends.
+    Red stripe identifies conductor 1 and connector pin 1.
+
+connectors:
+  J1:
+    type: IDC
+    subtype: unkeyed 2x5 female
+    pincount: 10
+    pinlabels: [DI, DI, OE, OE, CP, CP, ST, ST, GND, GND]
+    notes: |
+      YYZ_PIXEL_V2 END
+
+  J2:
+    type: IDC
+    subtype: unkeyed 2x5 female
+    pincount: 10
+    pinlabels: [DI, DI, OE, OE, CP, CP, ST, ST, GND, GND]
+    notes: |
+      YYZ_PIXEL_V2 END
+
+cables:
+  W1:
+    category: ribbon
+    wirecount: 10
+    gauge: 28 AWG
+    length: 100 mm
+    colors: [RD, WH, WH, WH, WH, WH, WH, WH, WH, WH]
+
+    notes: |
+      FINISHED LENGTH: 100 mm +/- 5 mm.
+      • Red stripe = conductor 1 = pin 1.
+      • Straight-through assembly.
+      • Test for continuity and correct pin-to-pin wiring.
+
+
+connections:
+  -
+    - J1: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    - W1: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    - J2: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+
+

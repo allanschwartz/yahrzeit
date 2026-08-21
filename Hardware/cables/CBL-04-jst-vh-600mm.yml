@@ -1,0 +1,124 @@
+# -----------------------------------------------------------------------------
+# @file        CBL-04-jst-vh-600mm.yml
+#
+# @brief       YYZ Pixel V2 600 mm power feed cable.
+#
+#              Connects the Yahrzeit Wall power-distribution board to the
+#              top YYZ_PIXEL_V2 board in a column.
+#
+#              Both ends use JST VH 2-position cable receptacles with
+#              18 AWG stranded conductors.
+#
+# @history     version 1.0 created August 2026
+#
+# @author      Allan M. Schwartz
+#
+# @copyright   copyright (c) 2026, by Allan M. Schwartz
+#              All rights reserved.
+#
+# @notes       WireViz source file.
+#
+#              Nominal length is based on the intended mechanical routing:
+#              from the power-distribution board upward toward the hinge/
+#              pivot area, through the cable-relief point, and then downward
+#              to the power connector near the top of the YYZ_PIXEL_V2 board.
+#
+#              Red = +5V, Black = GND.
+#              Finished cable assembly is intended for manufacture by
+#              PCBWay or equivalent cable-assembly vendor.
+# -----------------------------------------------------------------------------
+
+metadata:
+  title: YYZ Pixel V2 Power Feed
+  revision: A
+  description: >
+    600 mm power feed cable from the Yahrzeit Wall power-distribution board
+    to the top YYZ_PIXEL_V2 board in a column.
+    JST VH receptacle housing on both ends.
+    Straight-through +5V and GND wiring.
+
+
+connectors:
+
+  # Both ends mate with B2P-VH headers.
+  #
+  # One end connects to a +5V output on the power-distribution board.
+  # The other end connects to the power input on the top YYZ_PIXEL_V2 board.
+  #
+  # VHR-2N is the 2-position JST VH cable receptacle housing.
+  # SVH-21T-P1.1 is the female crimp contact selected for 18 AWG wire.
+
+  J1:
+    type: JST VH
+    subtype: F cable receptacle
+    pincount: 2
+    pinlabels: [+5V, GND]
+    manufacturer: JST
+    mpn: VHR-2N
+    notes: |
+      PWR-DIST.-BOARD end
+
+    additional_components:
+      - type: Crimp contact
+        qty_multiplier: populated
+        manufacturer: JST
+        mpn: SVH-21T-P1.1
+
+  J2:
+    type: JST VH
+    subtype: F cable receptacle
+    pincount: 2
+    pinlabels: [+5V, GND]
+    manufacturer: JST
+    mpn: VHR-2N
+    notes: |
+      for: <i><b>YYZ-PIXEL_V2 </b> end</i>
+
+    additional_components:
+      - type: Crimp contact
+        qty_multiplier: populated
+        manufacturer: JST
+        mpn: SVH-21T-P1.1
+
+
+cables:
+
+  # 18 AWG stranded copper wire was selected for low voltage drop,
+  # mechanical robustness, and compatibility with the selected JST VH
+  # crimp contact.
+  #
+  # This is a pair of discrete conductors, not a jacketed cable.
+  #
+  # The 600 mm finished length includes routing/service allowance for
+  # the hinged aluminum panel installation.
+
+  W1:
+    category: bundle
+    wirecount: 2
+    gauge: 18 AWG
+    length: 600 mm
+    colors: [RD, BK]
+    wirelabels: [+5V, GND]
+    notes: |
+      Finished Cable Length: 600 mm +/- 10 mm.
+
+      • Measure length between the rear wire-exit 
+        faces of the two connector housings.
+
+      • Use JST-approved crimp tooling, or 
+        equivalent production crimp tooling.
+
+      • Test assembly for continuity and polarity.
+
+
+connections:
+
+  # Straight-through connection.
+  #
+  # J1 pin 1 -> red wire   -> J2 pin 1
+  # J1 pin 2 -> black wire -> J2 pin 2
+
+  -
+    - J1: [1, 2]
+    - W1: [1, 2]
+    - J2: [1, 2]

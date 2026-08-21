@@ -1,0 +1,89 @@
+# -----------------------------------------------------------------------------
+# @file        CBL-06-idc-2800mm.yml
+#
+# @brief       YYZ Pixel V2 long signal ribbon cable.
+#
+#              Long straight-through 10-conductor IDC ribbon cable used
+#              for the Yahrzeit Wall signal interconnect.
+#
+#              This cable uses keyed 2x5 IDC connectors.
+#
+# @history     version 1.0 created August 2026
+#
+# @author      Allan M. Schwartz
+#
+# @copyright   copyright (c) 2026, by Allan M. Schwartz
+#              All rights reserved.
+#
+# @notes       WireViz source file.
+#
+#              PROVISIONAL LENGTH ONLY.
+#              Final finished length must be confirmed by field measurement
+#              before production release.
+#
+#              Current estimate:
+#                approximately 110 inches
+#                = approximately 2800 mm
+#
+#              Red stripe = conductor 1 = connector pin 1.
+#
+#              YYZ signal pinout:
+#                pins 1,2   = DI
+#                pins 3,4   = OE
+#                pins 5,6   = CP
+#                pins 7,8   = ST
+#                pins 9,10  = GND
+#
+#              Finished cable assembly is intended for manufacture by
+#              PCBWay or equivalent cable-assembly vendor.
+# -----------------------------------------------------------------------------
+
+metadata:
+  title: YYZ Pixel V2 Long Signal Cable
+  revision: A
+  description: >
+    Provisional 2800 mm straight-through 10-conductor IDC ribbon cable
+    for the Yahrzeit Wall signal interconnect. Keyed 2x5 IDC connectors
+    on both ends. Final length must be confirmed by field measurement.
+
+connectors:
+  J1:
+    type: IDC
+    subtype: keyed 2x5 female
+    pincount: 10
+    pinlabels: [DI, DI, OE, OE, CP, CP, ST, ST, GND, GND]
+    notes: |
+      SIGNAL END A
+
+  J2:
+    type: IDC
+    subtype: keyed 2x5 female
+    pincount: 10
+    pinlabels: [DI, DI, OE, OE, CP, CP, ST, ST, GND, GND]
+    notes: |
+      SIGNAL END B
+
+cables:
+  W1:
+    category: ribbon
+    wirecount: 10
+    gauge: 28 AWG
+    length: 2800 mm
+    colors: [RD, WH, WH, WH, WH, WH, WH, WH, WH, WH]
+    notes: |
+      PROVISIONAL FINISHED LENGTH: 2800 mm.
+
+      • <i>Final cable length must be confirmed by field
+        measurement before production release.</i>
+      • Red stripe = conductor 1 = pin 1.
+      • Straight-through assembly.
+      • Connector polarization key orientation shall follow
+        the selected connector manufacturer's pin-1 definition.
+      • Test for continuity and correct pin-to-pin wiring.
+
+
+connections:
+  -
+    - J1: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    - W1: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    - J2: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
