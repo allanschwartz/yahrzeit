@@ -37,6 +37,10 @@ connectors:
   # SVH-21T-P1.1 is the female crimp contact selected for 18 AWG wire.
 
   J1:
+    image:
+        src: JST_VHR-2N.png
+        caption: JST VHR-2N
+        width: 200
     type: JST VH
     subtype: F cable receptacle
     pincount: 2

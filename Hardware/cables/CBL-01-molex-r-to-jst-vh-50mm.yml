@@ -1,16 +1,17 @@
 # -----------------------------------------------------------------------------
 # @file        CBL-01-molex-r-to-jst-vh-50mm.yml
 #
-# @brief       Legacy YYZ-PIXEL to YYZ Pixel V2 power adapter cable.
+# @brief       Legacy YYZ-PIXEL to YYZ Pixel V2 power adapter 01 cable.
 #
-#              Adapts the legacy 3-position Molex Standard .093"
-#              receptacle connection to the JST VH 2-position power
-#              connector used on YYZ_PIXEL_V2.
+#              Adapts a legacy YYZ-PIXEL POWER-OUT connector to the
+#              JST VH 2-position power connector used on YYZ_PIXEL_V2.
 #
-#              The legacy connector uses only pins 1 and 3.
-#              Pin 2 is intentionally unused.
+#              The legacy connector uses only circuits 1 and 3.
+#              Circuit 2 is intentionally unused.
 #
 # @history     version 1.0 created August 2026
+#              version 1.1 corrected legacy connector identification
+#              to Molex Mini-Fit Jr., August 2026
 #
 # @author      Allan M. Schwartz
 #
@@ -20,13 +21,16 @@
 # @notes       WireViz source file.
 #
 #              Legacy YYZ-PIXEL wiring:
-#                Molex pin 1 = +5V, red
-#                Molex pin 2 = not connected
-#                Molex pin 3 = GND, black
+#                Molex circuit 1 = +5V, red
+#                Molex circuit 2 = not connected
+#                Molex circuit 3 = GND, black
 #
 #              JST VH wiring:
 #                pin 1 = +5V
 #                pin 2 = GND
+#
+#              The Molex receptacle on this adapter mates with the
+#              legacy 5559-series plug used for YYZ-PIXEL POWER-OUT.
 #
 #              Finished cable assembly is intended for manufacture by
 #              PCBWay or equivalent cable-assembly vendor.
@@ -34,44 +38,51 @@
 
 
 metadata:
-  title: YYZ Pixel V2 Legacy Power Adapter
+  title: YYZ Pixel V2 Legacy Power Adapter 01
   revision: A
   description: >
-    50 mm adapter cable from legacy YYZ-PIXEL 3-position Molex Standard
-    .093" receptacle to JST VH 2-position receptacle.
+    50 mm adapter cable from legacy YYZ-PIXEL POWER-OUT to JST VH.
+    Molex Mini-Fit Jr. 3-circuit receptacle to JST VH 2-position receptacle.
     Connects +5V and GND only.
 
 
 connectors:
 
-  # Legacy YYZ-PIXEL connector.
+  # Adapter connector which mates with the legacy YYZ-PIXEL POWER-OUT plug.
   #
-  # Molex Standard .093" series, 3 circuits, single row.
+  # Molex Mini-Fit Jr., 4.20 mm pitch, 3 circuits, single row.
   #
-  # Only positions 1 and 3 are populated.
-  # Position 2 is intentionally unused.
+  # Only circuits 1 and 3 are populated.
+  # Circuit 2 is intentionally unused.
   #
   # Housing:
-  #   Molex 03-09-1032
+  #   Molex 39-01-4030
+  #   Engineering number 5557-03R2
   #
   # Contact:
-  #   Molex 1189-series socket terminal for 14-18 AWG wire.
+  #   Molex 39-00-0039
+  #   Mini-Fit female crimp terminal, 24-18 AWG, bag.
 
   J1:
-    type: Molex Standard .093
+    image:
+        src: molex_5557-03R.JPG
+        width: 200
+        caption: Molex Mini-Fit Jr. 03R
+    type: Molex Mini-Fit Jr.
     subtype: receptacle
     pincount: 3
     pinlabels: [+5V, NC, GND]
     manufacturer: Molex
-    mpn: 03-09-1032
+    mpn: 39-01-4030
     notes: |
-      for: <i>legacy <b>YYZ-PIXEL </b> end</i>
+      for: <i>legacy <b>YYZ-PIXEL POWER-OUT</b></i>
 
     additional_components:
-      - type: Socket crimp contact
+      - type: Female crimp contact
         qty: 2
         manufacturer: Molex
-        mpn: 1189
+        mpn: 39-00-0039
+
 
   # New YYZ_PIXEL_V2 power connector.
   #
@@ -79,6 +90,9 @@ connectors:
   # SVH-21T-P1.1 is the female crimp contact selected for 18 AWG wire.
 
   J2:
+    image:
+        src: JST_VHR-2N.png
+        width: 200
     type: JST VH
     subtype: F cable receptacle
     pincount: 2
@@ -97,11 +111,6 @@ connectors:
 
 cables:
 
-  # Short field-adapter cable.
-  #
-  # 18 AWG stranded copper wire matches the legacy power wiring and
-  # is compatible with both selected connector contact families.
-
   W1:
     category: bundle
     wirecount: 2
@@ -112,10 +121,10 @@ cables:
     notes: |
       Finished Cable Length: 50 mm +/- 5 mm.
 
-      • Measure length between the rear wire-exit 
+      • Measure length between the rear wire-exit
         faces of the two connector housings.
 
-      • Use manufacturer-approved crimp tooling, 
+      • Use manufacturer-approved crimp tooling,
         or equivalent production crimp tooling.
 
       • Test assembly for continuity and polarity.
@@ -123,10 +132,10 @@ cables:
 
 connections:
 
-  # Legacy pin 2 is intentionally unpopulated.
+  # Legacy circuit 2 is intentionally unpopulated.
   #
-  # J1 pin 1 -> red wire   -> J2 pin 1
-  # J1 pin 3 -> black wire -> J2 pin 2
+  # J1 circuit 1 -> red wire   -> J2 pin 1
+  # J1 circuit 3 -> black wire -> J2 pin 2
 
   -
     - J1: [1, 3]
