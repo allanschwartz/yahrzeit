@@ -190,6 +190,8 @@ installation clearances must be verified before production.
   review without KiCad.
 - [yahrzeit\_power\_dist.png](yahrzeit_power_dist/yahrzeit_power_dist.png) --
   KiCad board rendering.
+- [DESIGN\_TODO.md](yahrzeit_power_dist/DESIGN_TODO.md) -- Outstanding
+  component-selection, indicator, layout, and pre-fabrication checks.
 
 ## Reference Schematics
 
