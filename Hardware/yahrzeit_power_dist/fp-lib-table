@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name "yahrzeit_power_dist")(type "KiCad")(uri "${KIPRJMOD}/yahrzeit_power_dist.pretty")(options "")(descr "Project-local Yahrzeit power distribution footprints"))
+)

@@ -125,6 +125,72 @@ times.*
 - [yahrzeit\_pixel9.png](yahrzeit_pixel9/yahrzeit_pixel9.png) -- KiCad board
   rendering.
 
+## YYZ Pixel Board V2
+
+<a href="yahrzeit_yyz_pixel-v2/yyz_pixel-v2%20schematic.png">
+  <img src="yahrzeit_yyz_pixel-v2/yyz_pixel-v2%20schematic.png"
+       alt="YYZ Pixel Board V2 schematic" width="500">
+</a>
+
+*Schematic of the preliminary YYZ Pixel Board V2 design.*
+
+YYZ Pixel Board V2 is a proposed modern replacement for an individual
+installed pixel board. It retains the legacy 74HC245 input buffer, 74HC595
+shift register, 5 V power daisy chain, and 2x5 signal-cable interface so that
+it can be evaluated with the existing wall and controller. The present
+prototype provides eight LED channels. Its LED resistors intentionally use
+four different values, in pairs, so brightness and current can be compared
+with the original wall before a production value is selected.
+
+This is design work in progress, not a released production board. Connector
+part numbers, the final LED resistor value, cable construction, power margin,
+and mechanical fit must be confirmed before fabrication or installation.
+
+- [yahrzeit\_yyz\_pixel-v2.kicad\_pro](yahrzeit_yyz_pixel-v2/yahrzeit_yyz_pixel-v2.kicad_pro)
+  -- Open this project file in KiCad.
+- [yahrzeit\_yyz\_pixel-v2.kicad\_sch](yahrzeit_yyz_pixel-v2/yahrzeit_yyz_pixel-v2.kicad_sch)
+  -- KiCad schematic.
+- [yahrzeit\_yyz\_pixel-v2.kicad\_pcb](yahrzeit_yyz_pixel-v2/yahrzeit_yyz_pixel-v2.kicad_pcb)
+  -- Preliminary KiCad PCB layout.
+- [YYZ\_PIXEL\_V2\_CABLE\_AND\_POWER\_NOTES.md](YYZ_PIXEL_V2_CABLE_AND_POWER_NOTES.md)
+  -- Field observations and deferred cable, signal-integrity, and power-design
+  decisions.
+
+## Column Power Distribution Board
+
+<a href="yahrzeit_power_dist/yahrzeit_power_dist.png">
+  <img src="yahrzeit_power_dist/yahrzeit_power_dist.png"
+       alt="Yahrzeit Wall column power-distribution board" width="700">
+</a>
+
+*Preliminary layout of the proposed column power-distribution board.*
+
+The proposed power-distribution assembly replaces the direct 5 V supply and
+wire-nut fan-out for one vertical panel column. One assembly serves six
+56-LED branches. It accepts nominal 12 V input, uses a TI PTH12060WAH
+through-hole module to produce regulated 5 V, and provides six individually
+protected outputs. Input reverse-polarity and transient protection, local
+filtering, clearly polarized connectors, and accessible 5 V/GND test points
+make the assembly easier to diagnose and replace in the field.
+
+The long-term concept uses one assembly for each of the wall's seven panel
+columns, plus complete spare assemblies and purpose-built labeled cables. The
+entire board-and-cable assembly is intended to be a field-replaceable unit.
+The design remains preliminary: measured wall current, fuse ratings, thermal
+performance, copper geometry, connector selections, cable lengths, and
+installation clearances must be verified before production.
+
+- [yahrzeit\_power\_dist.kicad\_pro](yahrzeit_power_dist/yahrzeit_power_dist.kicad_pro)
+  -- Open this project file in KiCad.
+- [yahrzeit\_power\_dist.kicad\_sch](yahrzeit_power_dist/yahrzeit_power_dist.kicad_sch)
+  -- KiCad schematic.
+- [yahrzeit\_power\_dist.kicad\_pcb](yahrzeit_power_dist/yahrzeit_power_dist.kicad_pcb)
+  -- Preliminary PCB placement and routing.
+- [power\_dist.schematic.pdf](power_dist.schematic.pdf) -- Schematic PDF for
+  review without KiCad.
+- [yahrzeit\_power\_dist.png](yahrzeit_power_dist/yahrzeit_power_dist.png) --
+  KiCad board rendering.
+
 ## Reference Schematics
 
 Approximately 280 individual YYZ Pixel boards are installed behind the
@@ -139,6 +205,10 @@ eight, or ten memorial lights. Their common circuit is documented in:
   engineering or electronics-technician procedure for bench-testing a removed
   board, including the special controller cable and Saleae logic-analyzer
   checks.
+- [YYZ\_PIXEL\_V2\_CABLE\_AND\_POWER\_NOTES.md](YYZ_PIXEL_V2_CABLE_AND_POWER_NOTES.md)
+  -- Deferred Version 2 design notes covering signal-cable construction,
+  shielding and grounding alternatives, field cable-retention observations,
+  and power-supply margin.
   
 The nine-section board is electrically nine of these circuits condensed onto
 one PCB. Both designs use the same 74HC245 octal bus transceiver and
