@@ -186,8 +186,8 @@ installation clearances must be verified before production.
   -- KiCad schematic.
 - [yahrzeit\_power\_dist.kicad\_pcb](yahrzeit_power_dist/yahrzeit_power_dist.kicad_pcb)
   -- Preliminary PCB placement and routing.
-- [power\_dist.schematic.pdf](power_dist.schematic.pdf) -- Schematic PDF for
-  review without KiCad.
+- [power\_dist.schematic.pdf](yahrzeit_power_dist/power_dist.schematic.pdf) -- Current schematic
+  PDF for review without KiCad.
 - [yahrzeit\_power\_dist.png](yahrzeit_power_dist/yahrzeit_power_dist.png) --
   KiCad board rendering.
 - [DESIGN\_TODO.md](yahrzeit_power_dist/DESIGN_TODO.md) -- Outstanding
