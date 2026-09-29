@@ -1,75 +1,83 @@
-# Yahrzeit Power Distribution Board — Design TODO
+# Yahrzeit 5 V Power Distribution Board — Design TODO
 
-**Status:** Preliminary design; review these items before fabrication or BOM
-release.
+**Status — September 29, 2026:** Direct-5 V distribution layout is ready for
+PCBWay quotation. Fabrication choice: 140 × 50 mm, two-layer FR-4, 2.0 mm
+thickness, 2 oz finished copper, green mask, white silkscreen, lead-free HASL.
+The earlier 200 × 50 mm board was quoted at $82.63 for ten bare boards;
+request a new quote for this revision. Assembly and cables remain unquoted.
 
-## Power-present indicator
+Completed layout work includes 20 mm output spacing, a broad fused +5 V bus,
+nominally 3 mm main-input routing, 2 mm branch routing, and mounting holes
+7.5 mm from each adjacent edge. TP3 measures output 6; `POWERED` indicates
+the bus after F1. Text sizes and label placement have been reviewed.
 
-- Add a conspicuous power-present LED near J1, with a board legend such as
-  `POWER ON — 12V`.
-- Connect the indicator to the protected/rectified 12 V rail, after F1 and D1,
-  rather than only to the regulated 5 V output. This ensures that an energized
-  board remains visibly identified even if U1 has failed or is inhibited.
-- Tentative circuit: green SMD LED plus an SMD series resistor. Select the LED,
-  current, resistor value, power rating, footprints, and MPNs during the BOM
-  review. Approximately 2–4 mA should provide a clearly visible indicator
-  without meaningful loading.
-- Position the LED so it remains visible with the board installed and does not
-  sit beneath a cable or the buck module.
-- The indicator is advisory only. Documentation must still require power to be
-  disconnected and verified with a meter before servicing.
+The resized layout has no unconnected items and passes targeted 0.2 mm
+trace-to-trace/pad clearance checks. Run editor DRC after the final edits
+and before exporting fabrication files. Schematic ERC subsequently passed
+with zero violations after adding a GND power flag; connector pin types and
+physical circuit connections were preserved. The remaining work is below.
 
-## Component and footprint audit
+## Electrical validation
 
-### F1 — resolve part/footprint mismatch
+- Measure the actual current of one fully illuminated panel column and verify
+  adequate margin in the selected 5 V supply.
+- Measure voltage at the supply, J1, and the most distant YYZ_PIXEL board under
+  maximum load. Select the supply setpoint and feed-wire gauge from these
+  measurements; do not exceed the pixel electronics' permitted supply voltage.
+- Check supply startup, shutdown, and load-step behavior. Decide from those
+  measurements whether an input TVS is useful.
+- Confirm that the 7.5 A F1 fuse tolerates normal startup current while opening
+  safely for a feed or board fault.
+- Validate F2–F7 normal current, voltage drop, temperature derating, fault trip
+  behavior, and reset behavior.
+- Confirm LED1 is clearly visible at the final 5 V setpoint.
 
-- The present MPN, Littelfuse `0215004.MXP`, is a 4 A, 5 x 20 mm cartridge
-  fuse.
-- The assigned footprint, `Fuseholder_Blade_Mini_Keystone_3568`, is for a MINI
-  automotive blade fuse and is not compatible with that MPN.
-- Choose one implementation and make the symbol value, MPN, datasheet, holder,
-  and PCB footprint agree.
-- Confirm the required time-current characteristic, interrupting rating,
-  voltage rating, inrush behavior, and field-replacement procedure.
+## Component and mechanical verification
 
-### D1 — select and verify the final reverse-polarity diode
+- Print the current PCB STEP model and fit physical examples of J1, J2–J7, the
+  Keystone 3568 holder, and its MINI blade fuse.
+- Using the mockup, verify connector fit and orientation, cable bend room,
+  fuse-removal access, LED visibility, mounting holes, and hinged-panel
+  clearance.
+- Measure the installed J1 supply-cable route and confirm its final length.
+- Confirm the 50 mm J2–J7 output-cable length in the installation, especially
+  after the board shrank and output spacing changed to 20 mm.
+- First experiment with local cable assembly using the crimpers and wire
+  already received. Make and inspect sample JST VH, Molex Mini-Fit Jr., and
+  ferrule terminations; check conductor retention, mating fit, continuity,
+  polarity, and strain relief before producing the complete set.
+- Record local cable material costs and assembly time. Use those results to
+  decide whether PCBWay cable fabrication is still needed.
 
-- Confirm a currently manufactured and orderable single Schottky rectifier.
-- The selected part must match the two-lead TO-220 footprint and pin numbering.
-- Add the manufacturer datasheet to the schematic field.
-- Calculate forward loss and temperature rise at measured maximum input
-  current. Reconsider an ideal-diode MOSFET solution if the Schottky loss is
-  excessive.
+## Pricing and documentation
 
-### F2–F7 — reconcile rating and labeling
+- Obtain PCBWay assembly/parts pricing for five and ten boards; retain the
+  ten-board, 2 oz fabrication quote as the current planning basis.
+- Verify the Amazon power-supply price and select quantities for installed
+  columns and spares. Seven columns need 42 output adapters and seven input
+  cables; ten complete assemblies need 60 and ten respectively.
+- Update the budget for local cable fabrication and confirm whether two
+  PCBWay shipments are still required. Separate quoted charges from
+  allowances, shipping, taxes/import charges, and labor.
+- Prepare the intended customer quote at $200 per installed column
+  ($1,400 for seven), with the included scope stated explicitly.
+- Verify the saved PCB/3D views and schematic PDF/PNG match the release files.
+  Export sources and drawings from the same final design revision.
+- Verify schematic-to-PCB agreement, particularly TP3's move to output 6.
+- Check the F1 supplier link: the current README URL contains `0297002`,
+  while the specified fuse is `0297007.WXNV` (7.5 A). Correct it before
+  releasing the purchasing BOM.
 
-- The current MPN, Littelfuse `1812L150/16DR`, is a resettable PTC with a 1.5 A
-  hold current and 2.8 A trip current at 20 degrees C; it is not a 1.25 A
-  slow-blow fuse.
-- Either relabel the schematic and board for the actual 1.5 A-hold PTC or
-  select a genuine 1.25 A-hold device.
-- Evaluate temperature derating, normal branch current, fault current, trip
-  time, resistance/voltage drop, and reset behavior.
-- After selection, copy the final MPN and manufacturer datasheet into F2–F7.
+## Prototype and production release
 
-### Connector ordering codes
-
-- Replace abbreviated JST values such as `B2P-VH` and `B3P-VH` with complete,
-  orderable manufacturer MPNs, including the required plating/packaging
-  suffixes.
-- Confirm mating housings, crimp contacts, wire gauge, polarization, and cable
-  drawings for J1 and J3–J8.
-
-## Final pre-fabrication checks
-
-- Measure actual column current and voltage at the wall under worst-case LED
-  load before finalizing fuse and conductor ratings.
-- Complete the high-current routing, front-side power copper, back-side GND
-  plane, and ground-stitching-via design.
-- Review U1 input/output capacitor loops and the local `SENSE` and `ADJ`
-  routing.
-- Check creepage/clearance, copper bottlenecks, thermal reliefs, connector
-  access, hinge clearance, cable clearance, and mounting-hole clearance.
-- Run KiCad ERC and DRC and resolve or explicitly document every exception.
-- Generate and review the fabrication outputs, BOM, placement data, assembly
-  drawing, and cable drawings before ordering.
+- Check main-feed, fuse-pad, and ground-return temperature and voltage drop
+  at maximum measured load using the selected 2 oz copper.
+- Review thermal reliefs, ground-plane continuity, stitching vias, connector
+  access, and copper and solder-mask clearances.
+- Run final ERC and DRC and document any intentionally accepted warnings.
+- Generate and review Gerbers, drill files, BOM, placement data, assembly
+  drawings, and cable drawings before ordering the electrical prototype.
+- Assemble and bench-test one complete prototype before releasing the full
+  installation quantity.
+- Arrange for a qualified electrician to design and install the mains-side
+  distribution and power-supply connections.

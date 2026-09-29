@@ -1,0 +1,106 @@
+# -----------------------------------------------------------------------------
+# @file        CBL-PD-01-jst-vh-to-5v-supply.yml
+#
+# @brief       5 V power-supply to Yahrzeit Power Distribution Board cable.
+#
+# @history     revision A created September 2026
+#
+# @author      Allan M. Schwartz
+#
+# @notes       Preliminary WireViz source file.
+#              Finished length must be verified at the installation site.
+#
+#              Power Distribution Board J1:
+#                pin 1 = +5V, red
+#                pin 2 = not connected
+#                pin 3 = GND, black
+#
+#              BTF-LIGHTING AM50-B05-HD supply:
+#                +Vo = +5V, red
+#                -Vo = GND, black
+#
+#              Terminate both supply-end conductors with 18 AWG insulated
+#              ferrules. Do not use fork or ring terminals in the captive
+#              screw-clamp terminal block.
+# -----------------------------------------------------------------------------
+
+metadata:
+  title: Yahrzeit Power Distribution 5 V Input Cable
+  revision: A - PRELIMINARY
+  description: >
+    Input cable from a BTF-LIGHTING AM50-B05-HD regulated 5 V supply to J1
+    on one Yahrzeit Power Distribution Board. Finished length is provisional
+    and must be verified on site before manufacture.
+
+connectors:
+
+  J1:
+    image:
+      src: JST_VHR-3N.png
+      caption: JST VHR-3N
+      width: 200
+    type: JST VH
+    subtype: female cable receptacle
+    pincount: 3
+    pinlabels: [+5V, NC, GND]
+    manufacturer: JST
+    mpn: VHR-3N
+    notes: |
+      Mates with <b>J1</b> on the Power Distribution Board.
+      Position 2 is intentionally unpopulated.
+
+    additional_components:
+      - type: Female crimp contact
+        qty: 2
+        manufacturer: JST
+        mpn: SVH-21T-P1.1
+
+  PS1:
+    image:
+      src: BTF_AM50-B05-HD.jpg
+      width: 240
+      caption: BTF-LIGHTING AM50-B05-HD
+    type: Captive screw-clamp terminal block
+    subtype: ferruled wire ends
+    pincount: 2
+    pinlabels: [+Vo, -Vo]
+    manufacturer: BTF-LIGHTING
+    mpn: AM50-B05-HD
+    notes: |
+      Connect to the supply's <b>+Vo</b> and <b>-Vo</b> terminals.
+      Tighten to the supply manufacturer's specified torque.
+
+    additional_components:
+      - type: Insulated 18 AWG ferrule
+        qty: 2
+        manufacturer: Phoenix Contact
+        mpn: 3200030
+
+cables:
+
+  W1:
+    category: bundle
+    wirecount: 2
+    gauge: 18 AWG
+    length: 1200 mm
+    colors: [RD, BK]
+    wirelabels: [+5V, GND]
+    notes: |
+      Wire: Belden 3055 or equivalent; stranded tinned copper,
+      PVC, UL AWM 1007/1569, 300 V / 80 C.
+
+      PRELIMINARY finished cable length: 1200 mm (approximately 48 inches).
+
+      - Verify the installed route and finished length on site.
+      - Measure between the rear wire-exit face of the JST housing and the
+        ends of the supply-terminal ferrules.
+      - Use manufacturer-approved production crimp tooling or equivalent.
+      - Test every assembly for continuity, polarity, and crimp pull strength.
+      - Set and verify the supply voltage before connecting the board.
+
+connections:
+
+  -
+    - J1: [1, 3]
+    - W1: [1, 2]
+    - PS1: [1, 2]

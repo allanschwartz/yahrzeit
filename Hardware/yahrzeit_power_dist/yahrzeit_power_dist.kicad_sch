@@ -9,8 +9,8 @@
 		(date "2026-09-10")
 		(rev "A-DRAFT")
 		(company "Allan M Schwartz")
-		(comment 1 "TI PTH12060WAH 12V-to-5V module; six individually fused 5V outputs")
-		(comment 2 "PCB outline: 300 mm x 100 mm; verify hinge and cable clearance")
+		(comment 1 "Direct 5V input; six individually fused 5V outputs")
+		(comment 2 "PCB outline: 140 mm x 50 mm; verify hinge and cable clearance")
 	)
 	(lib_symbols
 		(symbol "Connector:TestPoint"
@@ -874,12 +874,12 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Device:D_Schottky"
+		(symbol "Device:C_Small"
 			(pin_numbers
 				(hide yes)
 			)
 			(pin_names
-				(offset 1.016)
+				(offset 0.254)
 				(hide yes)
 			)
 			(exclude_from_sim no)
@@ -887,24 +887,26 @@
 			(on_board yes)
 			(in_pos_files yes)
 			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "D"
-				(at 0 2.54 0)
+			(property "Reference" "C"
+				(at 0.254 1.778 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
-			(property "Value" "D_Schottky"
-				(at 0 -2.54 0)
+			(property "Value" "C_Small"
+				(at 0.254 -2.032 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "Footprint" ""
@@ -929,7 +931,7 @@
 					)
 				)
 			)
-			(property "Description" "Schottky diode"
+			(property "Description" "Unpolarized capacitor, small symbol"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -940,7 +942,7 @@
 					)
 				)
 			)
-			(property "ki_keywords" "diode Schottky"
+			(property "ki_keywords" "capacitor cap"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -951,7 +953,7 @@
 					)
 				)
 			)
-			(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+			(property "ki_fp_filters" "C_*"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -962,13 +964,13 @@
 					)
 				)
 			)
-			(symbol "D_Schottky_0_1"
+			(symbol "C_Small_0_1"
 				(polyline
 					(pts
-						(xy -1.905 0.635) (xy -1.905 1.27) (xy -1.27 1.27) (xy -1.27 -1.27) (xy -0.635 -1.27) (xy -0.635 -0.635)
+						(xy -1.524 0.508) (xy 1.524 0.508)
 					)
 					(stroke
-						(width 0.254)
+						(width 0.3048)
 						(type default)
 					)
 					(fill
@@ -977,22 +979,10 @@
 				)
 				(polyline
 					(pts
-						(xy 1.27 1.27) (xy 1.27 -1.27) (xy -1.27 0) (xy 1.27 1.27)
+						(xy -1.524 -0.508) (xy 1.524 -0.508)
 					)
 					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 0) (xy -1.27 0)
-					)
-					(stroke
-						(width 0)
+						(width 0.3302)
 						(type default)
 					)
 					(fill
@@ -1000,11 +990,11 @@
 					)
 				)
 			)
-			(symbol "D_Schottky_1_1"
+			(symbol "C_Small_1_1"
 				(pin passive line
-					(at -3.81 0 0)
-					(length 2.54)
-					(name "K"
+					(at 0 2.54 270)
+					(length 2.032)
+					(name ""
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1020,175 +1010,9 @@
 					)
 				)
 				(pin passive line
-					(at 3.81 0 180)
-					(length 2.54)
-					(name "A"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "Device:D_TVS"
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 1.016)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "D"
-				(at 0 2.54 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "D_TVS"
-				(at 0 -2.54 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Bidirectional transient-voltage-suppression diode"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "diode TVS thyrector"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "D_TVS_0_1"
-				(polyline
-					(pts
-						(xy -2.54 1.27) (xy -2.54 -1.27) (xy 2.54 1.27) (xy 2.54 -1.27) (xy -2.54 1.27)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.508 1.27) (xy 0 1.27) (xy 0 -1.27) (xy -0.508 -1.27)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 0) (xy -1.27 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "D_TVS_1_1"
-				(pin passive line
-					(at -3.81 0 0)
-					(length 2.54)
-					(name "A1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 3.81 0 180)
-					(length 2.54)
-					(name "A2"
+					(at 0 -2.54 90)
+					(length 2.032)
+					(name ""
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1341,6 +1165,207 @@
 					(at 0 -3.81 90)
 					(length 1.27)
 					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Device:LED"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "D"
+				(at 0 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "LED"
+				(at 0 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Light emitting diode"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Sim.Pins" "1=K 2=A"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "LED diode"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "LED* LED_SMD:* LED_THT:*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "LED_0_1"
+				(polyline
+					(pts
+						(xy -3.048 -0.762) (xy -4.572 -2.286) (xy -3.81 -2.286) (xy -4.572 -2.286) (xy -4.572 -1.524)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.778 -0.762) (xy -3.302 -2.286) (xy -2.54 -2.286) (xy -3.302 -2.286) (xy -3.302 -1.524)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.27 0) (xy 1.27 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.27 -1.27) (xy -1.27 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -1.27) (xy 1.27 1.27) (xy -1.27 0) (xy 1.27 -1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "LED_1_1"
+				(pin passive line
+					(at -3.81 0 0)
+					(length 2.54)
+					(name "K"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 3.81 0 180)
+					(length 2.54)
+					(name "A"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1613,27 +1638,33 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "yahrzeit_power_dist:PTH12060WAH"
+		(symbol "power:PWR_FLAG"
+			(power global)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 1.016)
+				(offset 0)
+				(hide yes)
 			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
 			(in_pos_files yes)
 			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "J"
-				(at 0 12.7 0)
+			(property "Reference" "#FLG"
+				(at 0 1.905 0)
 				(show_name no)
 				(do_not_autoplace no)
+				(hide yes)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
 				)
 			)
-			(property "Value" "Conn_01x10"
-				(at 0 -15.24 0)
+			(property "Value" "PWR_FLAG"
+				(at 0 3.81 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -1664,7 +1695,7 @@
 					)
 				)
 			)
-			(property "Description" "Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(property "Description" "Special symbol for telling ERC where power comes from"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1675,7 +1706,7 @@
 					)
 				)
 			)
-			(property "ki_keywords" "connector"
+			(property "ki_keywords" "flag power"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1686,35 +1717,11 @@
 					)
 				)
 			)
-			(property "ki_fp_filters" "Connector*:*_1x??_*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "PTH12060WAH_0_1"
-				(rectangle
-					(start -10.16 10.16)
-					(end 10.16 -10.16)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-			)
-			(symbol "PTH12060WAH_1_1"
-				(pin power_in line
-					(at -12.7 2.54 0)
-					(length 2.54)
-					(name "GND"
+			(symbol "PWR_FLAG_0_0"
+				(pin power_out line
+					(at 0 0 90)
+					(length 0)
+					(name ""
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1729,188 +1736,27 @@
 						)
 					)
 				)
-				(pin power_in line
-					(at -12.7 7.62 0)
-					(length 2.54)
-					(name "VIN"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
+			)
+			(symbol "PWR_FLAG_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
 					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
+					(stroke
+						(width 0)
+						(type default)
 					)
-				)
-				(pin input line
-					(at -12.7 -2.54 0)
-					(length 2.54)
-					(name "INH"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 12.7 -7.62 180)
-					(length 2.54)
-					(name "ADJ"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 12.7 2.54 180)
-					(length 2.54)
-					(name "SENSE"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_out line
-					(at 12.7 7.62 180)
-					(length 2.54)
-					(name "VOUT"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 12.7 -2.54 180)
-					(length 2.54)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "7"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -12.7 -7.62 0)
-					(length 2.54)
-					(name "TRACK"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "8"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 2.54 12.7 270)
-					(length 2.54)
-					(name "MARGIN_UP"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "9"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -2.54 12.7 270)
-					(length 2.54)
-					(name "MARGIN_DOWN"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "10"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
+					(fill
+						(type none)
 					)
 				)
 			)
 			(embedded_fonts no)
 		)
 	)
-	(text "U1: TI PTH12060WAH through-hole buck module.\nR1 = 280 ohm sets 5.0 V. Leave INHIBIT, TRACK,\nMARGIN UP and MARGIN DOWN open for normal operation."
-		(exclude_from_sim no)
-		(at 84.582 80.518 0)
-		(effects
-			(font
-				(size 1.778 1.778)
-				(thickness 0.3556)
-				(bold yes)
-			)
-			(justify left bottom)
-		)
-		(uuid "1af1d7c9-b2c0-468b-917a-e48193797c55")
-	)
 	(text "SIX FUSED 5 V OUTPUTS"
 		(exclude_from_sim no)
-		(at 186.69 24.384 0)
+		(at 175.006 30.988 0)
 		(effects
 			(font
 				(size 3.048 3.048)
@@ -1921,22 +1767,9 @@
 		)
 		(uuid "399b0c06-a6a8-4b65-9bc9-8553fde8a36d")
 	)
-	(text "TI PTH12060WAH BUCK MODULE (10 A)"
+	(text "5 V INPUT / PROTECTION"
 		(exclude_from_sim no)
-		(at 90.17 24.384 0)
-		(effects
-			(font
-				(size 3.048 3.048)
-				(thickness 0.6096)
-				(bold yes)
-			)
-			(justify left bottom)
-		)
-		(uuid "3bfe8b82-8340-4ae4-99ad-2eb007a9a818")
-	)
-	(text "12 V INPUT / PROTECTION"
-		(exclude_from_sim no)
-		(at 17.018 24.638 0)
+		(at 24.638 24.638 0)
 		(effects
 			(font
 				(size 3.048 3.048)
@@ -1947,9 +1780,22 @@
 		)
 		(uuid "44697869-fd40-4bf1-8390-538a94409142")
 	)
+	(text "bulk, mid-freq., high-freq. bypass"
+		(exclude_from_sim no)
+		(at 78.232 37.592 0)
+		(effects
+			(font
+				(size 1.778 1.778)
+				(thickness 0.6096)
+				(bold yes)
+			)
+			(justify left bottom)
+		)
+		(uuid "57132150-b6f4-4f30-a461-73a524475a16")
+	)
 	(text "All output connector pin 1 = +5V; pin 2 = GND.\n"
 		(exclude_from_sim no)
-		(at 182.626 115.824 0)
+		(at 174.752 129.032 0)
 		(effects
 			(font
 				(size 1.778 1.778)
@@ -1960,9 +1806,9 @@
 		)
 		(uuid "84e0c7be-d1ad-4e6f-9449-07fb6de7c1f3")
 	)
-	(text "DESIGN NOTES:\n1. Board distributes power for one panel column (six branches of 56 LEDs).\n2. U1 is TI PTH12060WAH, configured for regulated 5.0 V output.\n3. F1 and F2-F7 are starting values only; confirm from measured operating/inrush current.\n4. Use 2 oz copper, broad +5V/GND pours, short high-current paths, and 2.0 mm FR-4.\n5. D1 must be selected/rated for full input current; an ideal-diode MOSFET stage may replace it.\n6. Verify every connector polarity against actual harness before assembly.\n7. Board outline is 300 mm x 100 mm; confirm hinge and cable clearance before fabrication."
+	(text "DESIGN NOTES:\n1. Board distributes regulated 5 V power for one panel column (six branches of 56 LEDs).\n2. F1 is a 7.5 A replaceable input fuse; F2-F7 are 1.5 A hold resettable branch protectors.\n3. C1/C2/C3 provide complementary bulk, mid-frequency, and high-frequency bypassing.\n4. Each YYZ_PIXEL chain also provides local bulk and IC decoupling at its load.\n5. Use 2 oz copper, broad +5V/GND pours, short high-current paths, and 2.0 mm FR-4.\n6. Verify every connector polarity against the actual harness before assembly.\n7. Board outline is 140 mm x 50 mm; confirm hinge and cable clearance before fabrication.\n8. LED1 indicates that fused 5 V power is present; it is not a safe-to-service interlock."
 		(exclude_from_sim no)
-		(at 17.78 154.94 0)
+		(at 26.162 128.778 0)
 		(effects
 			(font
 				(size 1.778 1.778)
@@ -1974,180 +1820,128 @@
 		(uuid "a1f9bc48-d952-4af8-823c-4e1b9847f81b")
 	)
 	(junction
-		(at 82.55 40.64)
+		(at 173.99 40.64)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "311f57d6-8e7f-4873-96e6-d7599a5032ae")
+		(uuid "0abffcc3-7e33-4ffb-a2fe-b457eac3be1c")
 	)
 	(junction
-		(at 173.99 59.69)
+		(at 39.37 40.64)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "0ee81844-4e66-4e83-9b81-3bbcd6154dd4")
+	)
+	(junction
+		(at 173.99 68.58)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "3706e28b-9137-4f29-aa4b-a032106e15a3")
 	)
 	(junction
-		(at 173.99 87.63)
+		(at 102.87 58.42)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "391665c8-2400-40a0-bc4c-3d27209edac5")
+	)
+	(junction
+		(at 173.99 96.52)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "3b7de282-b6ca-4e35-b5b4-512ca2b15320")
 	)
 	(junction
-		(at 69.85 40.64)
+		(at 81.28 40.64)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "3c60af95-4d3e-45d2-ac16-b49bbc46f6f1")
+		(uuid "3f4d1e84-8693-4199-bc6a-b26a6e94bd01")
 	)
 	(junction
-		(at 69.85 58.42)
+		(at 102.87 40.64)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "5573a74f-e17a-4733-b1d2-eb11aa12f52d")
+		(uuid "4188ef74-d897-445b-9a68-1deaa0910dec")
 	)
 	(junction
-		(at 95.25 40.64)
+		(at 66.04 58.42)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "7c6c9994-0096-498c-b607-b186a8c4e2a0")
+		(uuid "528dbef4-dd49-4f24-b7b5-3c25243a95bf")
 	)
 	(junction
-		(at 173.99 101.6)
+		(at 210.82 110.49)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "81dbf975-7c74-41ec-b3d0-09d542261677")
+		(uuid "6852cf00-59a0-45ed-b8b5-5411863a5c8e")
 	)
 	(junction
-		(at 173.99 45.72)
+		(at 120.65 40.64)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "8a6b1f9e-c57a-44fb-a5c5-88baab1d2be7")
+	)
+	(junction
+		(at 173.99 54.61)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "995c1c56-6f8c-4b89-af65-581703bb80b8")
 	)
 	(junction
-		(at 143.51 43.18)
+		(at 214.63 114.3)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "a4b7a2b0-382d-4903-b051-b75648abcb70")
+		(uuid "b2da828f-b4be-49b8-963f-f9d4353f75f7")
 	)
 	(junction
-		(at 149.86 45.72)
+		(at 66.04 40.64)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "cb561f7e-97a8-40ba-9be8-5c1caab8795d")
+		(uuid "c3b462e2-bdbc-4970-a646-924be8bbdb7a")
 	)
 	(junction
-		(at 173.99 73.66)
+		(at 39.37 58.42)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "da172d7f-161a-468f-b632-bcc557d5a4ab")
+	)
+	(junction
+		(at 173.99 82.55)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "dd7b51c8-bd16-4f50-b9c0-5b11f6c73a72")
 	)
 	(junction
-		(at 82.55 58.42)
+		(at 81.28 58.42)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "e6ec5eea-f6ac-467f-a2ec-f06ada1be566")
 	)
 	(no_connect
-		(at 111.76 48.26)
-		(uuid "10000000-0000-0000-0000-000000000003")
-	)
-	(no_connect
-		(at 111.76 53.34)
-		(uuid "10000000-0000-0000-0000-000000000008")
-	)
-	(no_connect
-		(at 127 33.02)
-		(uuid "10000000-0000-0000-0000-000000000009")
-	)
-	(no_connect
-		(at 121.92 33.02)
-		(uuid "10000000-0000-0000-0000-000000000010")
-	)
-	(no_connect
-		(at 29.21 43.18)
+		(at 34.29 43.18)
 		(uuid "1fe6ee1e-c3fd-4580-a168-f6312928721c")
 	)
 	(wire
 		(pts
-			(xy 95.25 40.64) (xy 82.55 40.64)
+			(xy 66.04 58.42) (xy 102.87 58.42)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "001ab80e-174c-480a-8e7e-c844f9d03e60")
+		(uuid "0a96a30a-efde-4b8a-9d36-be2af639c1e9")
 	)
 	(wire
 		(pts
-			(xy 107.95 43.18) (xy 111.76 43.18)
+			(xy 66.04 40.64) (xy 81.28 40.64)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "11000000-0000-0000-0000-000000000001")
+		(uuid "0f8437cf-7a13-44e0-a30f-824588a2184b")
 	)
 	(wire
 		(pts
-			(xy 137.16 53.34) (xy 146.05 53.34)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "11000000-0000-0000-0000-000000000004")
-	)
-	(wire
-		(pts
-			(xy 137.16 43.18) (xy 143.51 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "11000000-0000-0000-0000-000000000005")
-	)
-	(wire
-		(pts
-			(xy 137.16 38.1) (xy 143.51 38.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "11000000-0000-0000-0000-000000000006")
-	)
-	(wire
-		(pts
-			(xy 143.51 38.1) (xy 143.51 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "11000000-0000-0000-0000-000000000106")
-	)
-	(wire
-		(pts
-			(xy 95.25 48.26) (xy 95.25 40.64)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "11000000-0000-0000-0000-000000000203")
-	)
-	(wire
-		(pts
-			(xy 146.05 53.34) (xy 146.05 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "11000000-0000-0000-0000-000000000204")
-	)
-	(wire
-		(pts
-			(xy 95.25 55.88) (xy 95.25 58.42)
+			(xy 102.87 52.07) (xy 102.87 58.42)
 		)
 		(stroke
 			(width 0)
@@ -2157,7 +1951,7 @@
 	)
 	(wire
 		(pts
-			(xy 173.99 73.66) (xy 195.58 73.66)
+			(xy 173.99 82.55) (xy 195.58 82.55)
 		)
 		(stroke
 			(width 0)
@@ -2167,37 +1961,7 @@
 	)
 	(wire
 		(pts
-			(xy 29.21 58.42) (xy 69.85 58.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "124600e1-98c7-481e-84dd-735a65630003")
-	)
-	(wire
-		(pts
-			(xy 82.55 58.42) (xy 95.25 58.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1bbfd1a7-63a5-4ce3-ad45-e999231942df")
-	)
-	(wire
-		(pts
-			(xy 149.86 45.72) (xy 149.86 48.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1ddd2339-889c-46a4-a80b-c082a5a5ee13")
-	)
-	(wire
-		(pts
-			(xy 203.2 101.6) (xy 215.9 101.6)
+			(xy 203.2 110.49) (xy 210.82 110.49)
 		)
 		(stroke
 			(width 0)
@@ -2207,7 +1971,7 @@
 	)
 	(wire
 		(pts
-			(xy 173.99 45.72) (xy 173.99 59.69)
+			(xy 173.99 54.61) (xy 173.99 68.58)
 		)
 		(stroke
 			(width 0)
@@ -2217,7 +1981,7 @@
 	)
 	(wire
 		(pts
-			(xy 203.2 31.75) (xy 215.9 31.75)
+			(xy 203.2 40.64) (xy 215.9 40.64)
 		)
 		(stroke
 			(width 0)
@@ -2227,17 +1991,27 @@
 	)
 	(wire
 		(pts
-			(xy 69.85 58.42) (xy 82.55 58.42)
+			(xy 120.65 52.07) (xy 120.65 58.42)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "2e3ce367-3da6-4311-824b-b22d58b4b1f9")
+		(uuid "2df7a7ee-13c6-42a2-a648-64529fcf7389")
 	)
 	(wire
 		(pts
-			(xy 173.99 59.69) (xy 195.58 59.69)
+			(xy 81.28 52.07) (xy 81.28 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3be18240-7941-4fde-88a7-df21b29bc0eb")
+	)
+	(wire
+		(pts
+			(xy 173.99 68.58) (xy 195.58 68.58)
 		)
 		(stroke
 			(width 0)
@@ -2247,27 +2021,17 @@
 	)
 	(wire
 		(pts
-			(xy 143.51 43.18) (xy 143.51 45.72)
+			(xy 66.04 64.77) (xy 66.04 67.31)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "41994adf-9146-4939-8d3a-be57902c6ac0")
+		(uuid "3dd8ab09-d7d8-4624-9d79-72ccd54bd0c3")
 	)
 	(wire
 		(pts
-			(xy 69.85 55.88) (xy 69.85 58.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "46038dbd-739b-4ab2-9ea2-4badb84db8ec")
-	)
-	(wire
-		(pts
-			(xy 173.99 101.6) (xy 195.58 101.6)
+			(xy 173.99 110.49) (xy 195.58 110.49)
 		)
 		(stroke
 			(width 0)
@@ -2277,37 +2041,37 @@
 	)
 	(wire
 		(pts
-			(xy 95.25 40.64) (xy 97.79 40.64)
+			(xy 203.2 68.58) (xy 215.9 68.58)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "49f4f9e4-1973-4bed-956a-790cf0dfc3d9")
+		(uuid "4badfb67-e2f4-4688-a013-638556dfa6dc")
 	)
 	(wire
 		(pts
-			(xy 69.85 48.26) (xy 69.85 40.64)
+			(xy 215.9 113.03) (xy 215.9 114.3)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "5488904c-dfb8-4fcc-8f18-f16417474bcc")
+		(uuid "568d4edf-33be-445a-ad9c-9d65e521944c")
 	)
 	(wire
 		(pts
-			(xy 95.25 38.1) (xy 95.25 40.64)
+			(xy 215.9 114.3) (xy 214.63 114.3)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "5cd41331-7573-4e36-8951-7f2e772e581d")
+		(uuid "6071f247-b9ef-4e51-b384-0b4b9a4f2097")
 	)
 	(wire
 		(pts
-			(xy 173.99 45.72) (xy 195.58 45.72)
+			(xy 173.99 54.61) (xy 195.58 54.61)
 		)
 		(stroke
 			(width 0)
@@ -2317,17 +2081,37 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 40.64) (xy 69.85 40.64)
+			(xy 173.99 40.64) (xy 120.65 40.64)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "6bc1fa69-c2be-4c65-8c06-f53ea5d2ac99")
+		(uuid "675e3c07-edad-41c4-a6c6-b825fbf1523b")
 	)
 	(wire
 		(pts
-			(xy 203.2 45.72) (xy 215.9 45.72)
+			(xy 120.65 40.64) (xy 120.65 46.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6f8037d7-18d2-487a-9831-7ddc82a49449")
+	)
+	(wire
+		(pts
+			(xy 66.04 57.15) (xy 66.04 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7370bf7b-f2e1-4475-9607-bdebb511993c")
+	)
+	(wire
+		(pts
+			(xy 203.2 54.61) (xy 215.9 54.61)
 		)
 		(stroke
 			(width 0)
@@ -2337,17 +2121,37 @@
 	)
 	(wire
 		(pts
-			(xy 220.98 132.08) (xy 173.99 132.08)
+			(xy 53.34 40.64) (xy 66.04 40.64)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "849d7921-29e8-4c50-9b2e-b44038234e4b")
+		(uuid "74f40fd2-0dcc-48b0-a74a-287df0acd147")
 	)
 	(wire
 		(pts
-			(xy 203.2 73.66) (xy 215.9 73.66)
+			(xy 210.82 114.3) (xy 214.63 114.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "78e6fcc8-8e2f-4d6d-b4bc-b26fda861805")
+	)
+	(wire
+		(pts
+			(xy 102.87 40.64) (xy 102.87 46.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7c3fc508-1bf2-4999-8c01-71d8d4f0d79a")
+	)
+	(wire
+		(pts
+			(xy 203.2 82.55) (xy 215.9 82.55)
 		)
 		(stroke
 			(width 0)
@@ -2357,17 +2161,17 @@
 	)
 	(wire
 		(pts
-			(xy 143.51 45.72) (xy 173.99 45.72)
+			(xy 81.28 40.64) (xy 102.87 40.64)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "88179cd5-1f0c-4f01-95d8-cf82ea97ee91")
+		(uuid "89c44f48-48a1-4034-aa14-1f84e0e2208c")
 	)
 	(wire
 		(pts
-			(xy 173.99 31.75) (xy 195.58 31.75)
+			(xy 173.99 40.64) (xy 195.58 40.64)
 		)
 		(stroke
 			(width 0)
@@ -2377,67 +2181,47 @@
 	)
 	(wire
 		(pts
-			(xy 82.55 40.64) (xy 82.55 48.26)
+			(xy 34.29 40.64) (xy 39.37 40.64)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "937a7050-3bba-4700-9dc2-681ba206cfd4")
+		(uuid "907a3fa7-83da-4efb-b89d-abfb1c1688c2")
 	)
 	(wire
 		(pts
-			(xy 69.85 40.64) (xy 82.55 40.64)
+			(xy 210.82 110.49) (xy 215.9 110.49)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "95f1a3ec-50de-436b-a8ab-a3b1f0e8a9c6")
+		(uuid "a027e258-f18a-4c95-820f-578bd3d57ec1")
 	)
 	(wire
 		(pts
-			(xy 111.76 38.1) (xy 95.25 38.1)
+			(xy 66.04 48.26) (xy 66.04 49.53)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "96363be4-cbeb-4553-ad04-fac9e101c5bb")
+		(uuid "a285ad16-0438-4510-94f1-375216923108")
 	)
 	(wire
 		(pts
-			(xy 44.45 40.64) (xy 52.07 40.64)
+			(xy 39.37 40.64) (xy 45.72 40.64)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "9ab67e9f-0f79-4559-ab37-f4b0a105eaeb")
+		(uuid "a7221832-9026-45b5-9668-0b256498b2f0")
 	)
 	(wire
 		(pts
-			(xy 203.2 59.69) (xy 215.9 59.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9de03636-e741-49c5-b1c5-fea80c59eb11")
-	)
-	(wire
-		(pts
-			(xy 29.21 40.64) (xy 36.83 40.64)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a27741bd-be54-4df9-8c0d-293f998081b0")
-	)
-	(wire
-		(pts
-			(xy 29.21 45.72) (xy 29.21 58.42)
+			(xy 34.29 45.72) (xy 34.29 58.42)
 		)
 		(stroke
 			(width 0)
@@ -2447,7 +2231,17 @@
 	)
 	(wire
 		(pts
-			(xy 173.99 73.66) (xy 173.99 87.63)
+			(xy 173.99 40.64) (xy 173.99 54.61)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ac56b54f-3870-47ae-8c1e-99ee397b560c")
+	)
+	(wire
+		(pts
+			(xy 173.99 82.55) (xy 173.99 96.52)
 		)
 		(stroke
 			(width 0)
@@ -2457,37 +2251,37 @@
 	)
 	(wire
 		(pts
-			(xy 173.99 101.6) (xy 173.99 132.08)
+			(xy 120.65 58.42) (xy 102.87 58.42)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "ae90c2b8-22a6-49a0-8e94-09f33085d990")
+		(uuid "ada13dc9-d8b5-4b70-8bdd-65cf83c706f2")
 	)
 	(wire
 		(pts
-			(xy 173.99 31.75) (xy 173.99 45.72)
+			(xy 34.29 58.42) (xy 39.37 58.42)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "bf69fd0a-1469-4763-81a2-4c58ac77ad6a")
+		(uuid "b64e841d-630a-475a-8bdc-0d09ef6aca21")
 	)
 	(wire
 		(pts
-			(xy 82.55 55.88) (xy 82.55 58.42)
+			(xy 81.28 40.64) (xy 81.28 44.45)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "c7b0e2b5-4483-46dc-880b-a20b30e68e14")
+		(uuid "b896c159-077a-4477-8804-f8ee7666d09e")
 	)
 	(wire
 		(pts
-			(xy 173.99 59.69) (xy 173.99 73.66)
+			(xy 173.99 68.58) (xy 173.99 82.55)
 		)
 		(stroke
 			(width 0)
@@ -2497,7 +2291,7 @@
 	)
 	(wire
 		(pts
-			(xy 173.99 87.63) (xy 173.99 101.6)
+			(xy 173.99 96.52) (xy 173.99 110.49)
 		)
 		(stroke
 			(width 0)
@@ -2507,7 +2301,17 @@
 	)
 	(wire
 		(pts
-			(xy 203.2 87.63) (xy 215.9 87.63)
+			(xy 102.87 40.64) (xy 120.65 40.64)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d9384682-739d-4e31-ae4c-efbd9b9be625")
+	)
+	(wire
+		(pts
+			(xy 203.2 96.52) (xy 215.9 96.52)
 		)
 		(stroke
 			(width 0)
@@ -2517,7 +2321,7 @@
 	)
 	(wire
 		(pts
-			(xy 173.99 87.63) (xy 195.58 87.63)
+			(xy 173.99 96.52) (xy 195.58 96.52)
 		)
 		(stroke
 			(width 0)
@@ -2525,18 +2329,18 @@
 		)
 		(uuid "f9f3ce70-76c1-4480-9a91-b1767b2a82b6")
 	)
-	(label "+12V_RECTIFIED"
-		(at 97.79 40.64 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
+	(wire
+		(pts
+			(xy 39.37 58.42) (xy 66.04 58.42)
 		)
-		(uuid "12000000-0000-0000-0000-000000000012")
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fb20cc68-f4ae-4e77-9786-d76196c350f4")
 	)
 	(label "+5V_BUS"
-		(at 143.51 45.72 0)
+		(at 120.65 40.64 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2547,7 +2351,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x03")
-		(at 24.13 43.18 0)
+		(at 29.21 43.18 0)
 		(mirror y)
 		(unit 1)
 		(body_style 1)
@@ -2558,7 +2362,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001001")
 		(property "Reference" "J1"
-			(at 23.876 33.02 0)
+			(at 28.956 33.02 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2567,8 +2371,8 @@
 				)
 			)
 		)
-		(property "Value" "12V Power In"
-			(at 24.638 35.306 0)
+		(property "Value" "5V Power In"
+			(at 28.956 35.306 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2577,8 +2381,8 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_VH_B3P-VH-B_1x03_P3.96mm_Vertical"
-			(at 24.13 40.64 0)
+		(property "Footprint" "Connector_JST:JST_VH_B3P-VH_1x03_P3.96mm_Vertical"
+			(at 29.21 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2589,7 +2393,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
-			(at 24.13 40.64 0)
+			(at 29.21 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2599,8 +2403,8 @@
 				)
 			)
 		)
-		(property "Description" "Connector Header Through Hole 3 position 0.165{dblquote} (4.20mm)"
-			(at 24.13 40.64 0)
+		(property "Description" "JST VH 3-position vertical PCB header, 3.96 mm pitch; pin 1 +5 V, pin 2 unused, pin 3 GND"
+			(at 29.21 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2610,8 +2414,8 @@
 				)
 			)
 		)
-		(property "MPN" "JST B3P-VH"
-			(at 24.384 37.592 0)
+		(property "MPN" "B3P-VH"
+			(at 29.464 37.592 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2640,7 +2444,7 @@
 	)
 	(symbol
 		(lib_id "Device:Fuse")
-		(at 40.64 40.64 270)
+		(at 49.53 40.64 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -2650,7 +2454,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001002")
 		(property "Reference" "F1"
-			(at 40.386 34.29 90)
+			(at 49.276 34.29 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2659,8 +2463,8 @@
 				)
 			)
 		)
-		(property "Value" "4A SLOW"
-			(at 40.386 36.322 90)
+		(property "Value" "7.5A MINI BLADE"
+			(at 49.276 36.322 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2670,7 +2474,7 @@
 			)
 		)
 		(property "Footprint" "Fuse:Fuseholder_Blade_Mini_Keystone_3568"
-			(at 40.64 40.64 0)
+			(at 49.53 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2680,18 +2484,8 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
-			(at 40.64 40.64 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Littelfuse 0215004.MXP"
-			(at 40.64 40.64 0)
+		(property "Datasheet" "https://www.littelfuse.com/assetdocs/littelfuse_datasheet_297_mini32v.pdf"
+			(at 49.53 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2701,8 +2495,19 @@
 				)
 			)
 		)
-		(property "MPN" "0215004.MXP"
-			(at 41.402 38.354 90)
+		(property "Description" "7.5 A, 32 VDC MINI automotive blade fuse in Keystone 3568 vertical PCB holder"
+			(at 49.53 40.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "0297007.WXNV"
+			(at 49.276 38.354 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2727,187 +2532,8 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:D_Schottky")
-		(at 55.88 40.64 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "00000000-0000-0000-0000-000000001003")
-		(property "Reference" "D1"
-			(at 55.88 34.036 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "REVERSE-POLARITY"
-			(at 57.912 36.322 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_THT:TO-220-2_Vertical"
-			(at 55.88 40.64 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 55.88 40.64 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "ST STPS10L40D"
-			(at 55.88 40.64 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "STPS10L40D"
-			(at 55.88 38.354 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "d05b172b-aeaf-40df-88a7-9406aa4cef73")
-		)
-		(pin "2"
-			(uuid "16fb05ae-702b-4218-8e05-bb982e5cc692")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "D1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:D_TVS")
-		(at 69.85 52.07 270)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "00000000-0000-0000-0000-000000001004")
-		(property "Reference" "D2"
-			(at 60.96 49.022 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "15V TVS"
-			(at 59.944 51.308 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Diode_SMD:D_SMB"
-			(at 69.85 52.07 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.littelfuse.com/assetdocs/tvs-diodes-smbj-series-datasheet?assetguid=ba555e99-a12d-4f72-a0b6-86b06c67171e"
-			(at -28.448 183.134 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Littelfuse SMBJ15A"
-			(at 69.85 52.07 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "SMBJ15A"
-			(at 64.008 53.34 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "9602c0c0-539d-428f-8da2-a367ca33d9ef")
-		)
-		(pin "2"
-			(uuid "30e6a8c0-3f56-4f8b-9eba-4d7908fc65d3")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "D2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:C_Polarized")
-		(at 82.55 52.07 0)
+		(at 81.28 48.26 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -2917,7 +2543,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001005")
 		(property "Reference" "C1"
-			(at 85.5472 50.9016 0)
+			(at 84.836 45.974 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2928,7 +2554,7 @@
 			)
 		)
 		(property "Value" "470uF"
-			(at 85.5472 53.213 0)
+			(at 84.582 48.26 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2938,8 +2564,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:CP_Elec_8x10.5"
-			(at 82.55 52.07 0)
+		(property "Footprint" "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm"
+			(at 81.28 48.26 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2949,8 +2575,8 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.digikey.com/en/products/detail/panasonic-electronic-components/EEE-FT1E471AV/10290474"
-			(at 82.55 52.07 0)
+		(property "Datasheet" "https://www.digikey.com/en/products/detail/rubycon/25ZLH470MEFC10X12-5/3563614"
+			(at 81.28 48.26 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2960,8 +2586,8 @@
 				)
 			)
 		)
-		(property "Description" "470 µF, 25 V, 105 °C, 80 mOhm aluminum electrolytic capacitor, SMD"
-			(at 82.55 52.07 0)
+		(property "Description" "470 µF, 25 V, 105 °C, 10000 h low-impedance aluminum electrolytic bulk capacitor, radial THT"
+			(at 81.28 48.26 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2971,8 +2597,8 @@
 				)
 			)
 		)
-		(property "MPN" "EEE-FT1E471AV"
-			(at 95.25 56.134 0)
+		(property "MPN" "25ZLH470MEFC10X12.5"
+			(at 91.186 51.562 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2997,122 +2623,8 @@
 		)
 	)
 	(symbol
-		(lib_id "yahrzeit_power_dist:PTH12060WAH")
-		(at 124.46 45.72 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "00000000-0000-0000-0000-000000001006")
-		(property "Reference" "U1"
-			(at 124.206 28.448 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "PTH12060WAH"
-			(at 124.46 30.48 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "yahrzeit_power_dist:TI_PTH12060WAH_EUW_THT"
-			(at 124.46 43.18 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/pth12060w.pdf"
-			(at 124.46 43.18 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "TI 10 A, 12 V input, non-isolated through-hole adjustable power module"
-			(at 124.46 43.18 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "PTH12060WAH"
-			(at 124.46 43.18 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "0460a5b6-a225-40ae-9d39-dc71eccd5cdb")
-		)
-		(pin "2"
-			(uuid "7cab2cf0-0387-431c-925e-ae095a42b2e4")
-		)
-		(pin "3"
-			(uuid "f09fc28a-58e5-42b7-8001-0e134ebe395f")
-		)
-		(pin "4"
-			(uuid "1bfd1dd3-aea9-4776-bc40-079918d2a110")
-		)
-		(pin "5"
-			(uuid "7faffec3-ba7d-49f9-8636-450f11e245f9")
-		)
-		(pin "6"
-			(uuid "fc54d75f-d605-4c5e-a2b5-151e7a362bbb")
-		)
-		(pin "7"
-			(uuid "a13f1a66-26bb-4e46-aec9-5afc948632d5")
-		)
-		(pin "8"
-			(uuid "e299ea87-4dbd-449f-b986-63ff53a81dca")
-		)
-		(pin "9"
-			(uuid "698c01c1-f346-41e8-a57d-8ef32ebfb336")
-		)
-		(pin "10"
-			(uuid "f975b30d-f489-476e-9cb3-a58876be7a60")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "U1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C_Polarized")
-		(at 149.86 52.07 0)
+		(lib_id "Device:C_Small")
+		(at 120.65 49.53 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3121,8 +2633,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001007")
-		(property "Reference" "C2"
-			(at 152.8572 50.9016 0)
+		(property "Reference" "C3"
+			(at 124.206 46.99 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3132,8 +2644,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1000uF 10V SMD"
-			(at 152.8572 53.213 0)
+		(property "Value" "0.1uF 50V X7R"
+			(at 124.206 49.53 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3143,8 +2655,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:CP_Elec_10x10.5"
-			(at 149.86 52.07 0)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 120.65 49.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3154,8 +2666,8 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.digikey.com/en/products/detail/panasonic-industry/EEE-FP1A102AP/1245933"
-			(at 149.86 52.07 0)
+		(property "Datasheet" "https://www.digikey.com/en/products/detail/yageo/CC0805KRX7R9BB104/302874"
+			(at 120.65 49.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3165,8 +2677,8 @@
 				)
 			)
 		)
-		(property "Description" "1000 µF, 10 V, 105 °C, 60 mOhm aluminum electrolytic capacitor, SMD"
-			(at 149.86 52.07 0)
+		(property "Description" "0.1 µF, 50 V, X7R 0805 ceramic high-frequency bypass capacitor"
+			(at 120.65 49.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3176,8 +2688,8 @@
 				)
 			)
 		)
-		(property "MPN" "EEE-FP1A102AP"
-			(at 160.782 55.372 0)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 131.572 52.832 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3195,7 +2707,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "C2")
+					(reference "C3")
 					(unit 1)
 				)
 			)
@@ -3203,7 +2715,7 @@
 	)
 	(symbol
 		(lib_id "Device:Fuse")
-		(at 199.39 31.75 270)
+		(at 199.39 40.64 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3213,7 +2725,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001010")
 		(property "Reference" "F2"
-			(at 199.39 26.7462 90)
+			(at 199.39 35.6362 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3222,8 +2734,8 @@
 				)
 			)
 		)
-		(property "Value" "1.25A SLOW"
-			(at 200.66 29.21 90)
+		(property "Value" "1.5A HOLD PTC"
+			(at 200.66 38.1 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3233,7 +2745,7 @@
 			)
 		)
 		(property "Footprint" "Fuse:Fuse_1812_4532Metric"
-			(at 199.39 31.75 0)
+			(at 199.39 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3244,7 +2756,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.littelfuse.com/assetdocs/resettable-ptcs-1812l-datasheet?assetguid=ca5c80cb-504e-4a8a-8e74-0107520a1717"
-			(at 199.39 31.75 0)
+			(at 199.39 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3255,7 +2767,7 @@
 			)
 		)
 		(property "Description" "Polymeric PTC Resettable Fuse 16V 1.5 A Ih Surface Mount 1812 (4532 Metric), Concave"
-			(at 199.39 31.75 0)
+			(at 199.39 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3266,7 +2778,7 @@
 			)
 		)
 		(property "MPN" "Littelfuse 1812L150/16DR"
-			(at 202.692 33.528 90)
+			(at 202.692 42.418 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3292,7 +2804,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 220.98 31.75 0)
+		(at 220.98 40.64 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3301,8 +2813,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001011")
-		(property "Reference" "J3"
-			(at 223.012 31.9532 0)
+		(property "Reference" "J2"
+			(at 223.012 40.8432 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3313,7 +2825,7 @@
 			)
 		)
 		(property "Value" "5V Power Out 1"
-			(at 223.012 34.2646 0)
+			(at 223.012 43.1546 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3324,7 +2836,7 @@
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_VH_B2P-VH-B_1x02_P3.96mm_Vertical"
-			(at 220.98 31.75 0)
+			(at 220.98 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3335,7 +2847,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
-			(at 220.98 31.75 0)
+			(at 220.98 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3346,7 +2858,7 @@
 			)
 		)
 		(property "Description" "JST VH 2-position vertical PCB header; pin 1 +5V, pin 2 GND"
-			(at 220.98 31.75 0)
+			(at 220.98 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3357,7 +2869,7 @@
 			)
 		)
 		(property "MPN" "JST B2P-VH"
-			(at 228.854 36.576 0)
+			(at 228.854 45.466 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3375,7 +2887,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "J3")
+					(reference "J2")
 					(unit 1)
 				)
 			)
@@ -3383,7 +2895,7 @@
 	)
 	(symbol
 		(lib_id "Device:Fuse")
-		(at 199.39 45.72 270)
+		(at 199.39 54.61 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3393,7 +2905,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001012")
 		(property "Reference" "F3"
-			(at 199.39 40.7162 90)
+			(at 199.39 49.6062 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3402,8 +2914,8 @@
 				)
 			)
 		)
-		(property "Value" "1.25A SLOW"
-			(at 199.39 43.0276 90)
+		(property "Value" "1.5A HOLD PTC"
+			(at 199.39 51.9176 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3413,7 +2925,7 @@
 			)
 		)
 		(property "Footprint" "Fuse:Fuse_1812_4532Metric"
-			(at 199.39 45.72 0)
+			(at 199.39 54.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3424,7 +2936,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 199.39 45.72 0)
+			(at 199.39 54.61 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3434,7 +2946,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 199.39 45.72 0)
+			(at 199.39 54.61 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3444,7 +2956,7 @@
 			)
 		)
 		(property "MPN" "Littelfuse 1812L150/16DR"
-			(at 202.692 47.244 90)
+			(at 202.692 56.134 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3470,7 +2982,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 220.98 45.72 0)
+		(at 220.98 54.61 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3479,8 +2991,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001013")
-		(property "Reference" "J4"
-			(at 223.012 45.9232 0)
+		(property "Reference" "J3"
+			(at 223.012 54.8132 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3491,7 +3003,7 @@
 			)
 		)
 		(property "Value" "5V Power Out 2"
-			(at 223.012 48.2346 0)
+			(at 223.012 57.1246 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3502,7 +3014,7 @@
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_VH_B2P-VH-B_1x02_P3.96mm_Vertical"
-			(at 220.98 45.72 0)
+			(at 220.98 54.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3513,7 +3025,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
-			(at 220.98 45.72 0)
+			(at 220.98 54.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3524,7 +3036,7 @@
 			)
 		)
 		(property "Description" "JST VH 2-position vertical PCB header; pin 1 +5V, pin 2 GND"
-			(at 220.98 45.72 0)
+			(at 220.98 54.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3535,7 +3047,7 @@
 			)
 		)
 		(property "MPN" "JST B2P-VH"
-			(at 229.108 50.546 0)
+			(at 229.108 59.436 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3553,7 +3065,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "J4")
+					(reference "J3")
 					(unit 1)
 				)
 			)
@@ -3561,7 +3073,7 @@
 	)
 	(symbol
 		(lib_id "Device:Fuse")
-		(at 199.39 59.69 270)
+		(at 199.39 68.58 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3571,7 +3083,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001014")
 		(property "Reference" "F4"
-			(at 199.39 54.6862 90)
+			(at 199.39 63.5762 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3580,8 +3092,8 @@
 				)
 			)
 		)
-		(property "Value" "1.25A SLOW"
-			(at 199.39 56.9976 90)
+		(property "Value" "1.5A HOLD PTC"
+			(at 199.39 65.8876 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3591,7 +3103,7 @@
 			)
 		)
 		(property "Footprint" "Fuse:Fuse_1812_4532Metric"
-			(at 199.39 59.69 0)
+			(at 199.39 68.58 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3602,7 +3114,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 199.39 59.69 0)
+			(at 199.39 68.58 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3612,7 +3124,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 199.39 59.69 0)
+			(at 199.39 68.58 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3622,7 +3134,7 @@
 			)
 		)
 		(property "MPN" "Littelfuse 1812L150/16DR"
-			(at 202.692 61.468 90)
+			(at 202.692 70.358 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3648,7 +3160,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 220.98 59.69 0)
+		(at 220.98 68.58 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3657,8 +3169,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001015")
-		(property "Reference" "J5"
-			(at 223.012 59.8932 0)
+		(property "Reference" "J4"
+			(at 223.012 68.7832 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3669,7 +3181,7 @@
 			)
 		)
 		(property "Value" "5V Power Out 3"
-			(at 223.012 62.2046 0)
+			(at 223.012 71.0946 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3680,7 +3192,7 @@
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_VH_B2P-VH-B_1x02_P3.96mm_Vertical"
-			(at 220.98 59.69 0)
+			(at 220.98 68.58 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3691,7 +3203,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
-			(at 220.98 59.69 0)
+			(at 220.98 68.58 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3702,7 +3214,7 @@
 			)
 		)
 		(property "Description" "JST VH 2-position vertical PCB header; pin 1 +5V, pin 2 GND"
-			(at 220.98 59.69 0)
+			(at 220.98 68.58 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3713,7 +3225,7 @@
 			)
 		)
 		(property "MPN" "JST B2P-VH"
-			(at 228.6 64.77 0)
+			(at 228.6 73.66 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3731,7 +3243,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "J5")
+					(reference "J4")
 					(unit 1)
 				)
 			)
@@ -3739,7 +3251,7 @@
 	)
 	(symbol
 		(lib_id "Device:Fuse")
-		(at 199.39 73.66 270)
+		(at 199.39 82.55 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3749,7 +3261,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001016")
 		(property "Reference" "F5"
-			(at 199.39 68.6562 90)
+			(at 199.39 77.5462 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3758,8 +3270,8 @@
 				)
 			)
 		)
-		(property "Value" "1.25A SLOW"
-			(at 199.39 70.9676 90)
+		(property "Value" "1.5A HOLD PTC"
+			(at 199.39 79.8576 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3769,7 +3281,7 @@
 			)
 		)
 		(property "Footprint" "Fuse:Fuse_1812_4532Metric"
-			(at 199.39 73.66 0)
+			(at 199.39 82.55 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3780,7 +3292,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 199.39 73.66 0)
+			(at 199.39 82.55 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3790,7 +3302,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 199.39 73.66 0)
+			(at 199.39 82.55 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3800,7 +3312,7 @@
 			)
 		)
 		(property "MPN" "Littelfuse 1812L150/16DR"
-			(at 202.438 75.438 90)
+			(at 202.438 84.328 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3826,7 +3338,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 220.98 73.66 0)
+		(at 220.98 82.55 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3835,8 +3347,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001017")
-		(property "Reference" "J6"
-			(at 223.012 73.8632 0)
+		(property "Reference" "J5"
+			(at 223.012 82.7532 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3847,7 +3359,7 @@
 			)
 		)
 		(property "Value" "5V Power Out 4"
-			(at 223.012 76.1746 0)
+			(at 223.012 85.0646 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3858,7 +3370,7 @@
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_VH_B2P-VH-B_1x02_P3.96mm_Vertical"
-			(at 220.98 73.66 0)
+			(at 220.98 82.55 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3869,7 +3381,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
-			(at 220.98 73.66 0)
+			(at 220.98 82.55 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3880,7 +3392,7 @@
 			)
 		)
 		(property "Description" "JST VH 2-position vertical PCB header; pin 1 +5V, pin 2 GND"
-			(at 220.98 73.66 0)
+			(at 220.98 82.55 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3891,7 +3403,7 @@
 			)
 		)
 		(property "MPN" "JST B2P-VH"
-			(at 229.108 78.486 0)
+			(at 229.108 87.376 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3909,7 +3421,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "J6")
+					(reference "J5")
 					(unit 1)
 				)
 			)
@@ -3917,7 +3429,7 @@
 	)
 	(symbol
 		(lib_id "Device:Fuse")
-		(at 199.39 87.63 270)
+		(at 199.39 96.52 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3927,7 +3439,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001018")
 		(property "Reference" "F6"
-			(at 199.39 82.6262 90)
+			(at 199.39 91.5162 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3936,8 +3448,8 @@
 				)
 			)
 		)
-		(property "Value" "1.25A SLOW"
-			(at 199.39 84.9376 90)
+		(property "Value" "1.5A HOLD PTC"
+			(at 199.39 93.8276 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3947,7 +3459,7 @@
 			)
 		)
 		(property "Footprint" "Fuse:Fuse_1812_4532Metric"
-			(at 199.39 87.63 0)
+			(at 199.39 96.52 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3958,7 +3470,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 199.39 87.63 0)
+			(at 199.39 96.52 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3968,7 +3480,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 199.39 87.63 0)
+			(at 199.39 96.52 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3978,7 +3490,7 @@
 			)
 		)
 		(property "MPN" "Littelfuse 1812L150/16DR"
-			(at 202.438 89.408 90)
+			(at 202.438 98.298 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4004,7 +3516,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 220.98 87.63 0)
+		(at 220.98 96.52 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4013,8 +3525,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001019")
-		(property "Reference" "J7"
-			(at 223.012 87.8332 0)
+		(property "Reference" "J6"
+			(at 223.012 96.7232 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4025,7 +3537,7 @@
 			)
 		)
 		(property "Value" "5V Power Out 5"
-			(at 223.012 90.1446 0)
+			(at 223.012 99.0346 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4036,7 +3548,7 @@
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_VH_B2P-VH-B_1x02_P3.96mm_Vertical"
-			(at 220.98 87.63 0)
+			(at 220.98 96.52 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4047,7 +3559,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
-			(at 220.98 87.63 0)
+			(at 220.98 96.52 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4058,7 +3570,7 @@
 			)
 		)
 		(property "Description" "JST VH 2-position vertical PCB header; pin 1 +5V, pin 2 GND"
-			(at 220.98 87.63 0)
+			(at 220.98 96.52 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4069,7 +3581,7 @@
 			)
 		)
 		(property "MPN" "JST B2P-VH"
-			(at 229.108 92.71 0)
+			(at 229.108 101.6 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4087,7 +3599,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "J7")
+					(reference "J6")
 					(unit 1)
 				)
 			)
@@ -4095,7 +3607,7 @@
 	)
 	(symbol
 		(lib_id "Device:Fuse")
-		(at 199.39 101.6 270)
+		(at 199.39 110.49 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4105,7 +3617,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001020")
 		(property "Reference" "F7"
-			(at 199.39 96.5962 90)
+			(at 199.39 105.4862 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4114,8 +3626,8 @@
 				)
 			)
 		)
-		(property "Value" "1.25A SLOW"
-			(at 199.39 98.9076 90)
+		(property "Value" "1.5A HOLD PTC"
+			(at 199.39 107.7976 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4125,7 +3637,7 @@
 			)
 		)
 		(property "Footprint" "Fuse:Fuse_1812_4532Metric"
-			(at 199.39 101.6 0)
+			(at 199.39 110.49 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4136,7 +3648,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 199.39 101.6 0)
+			(at 199.39 110.49 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4146,7 +3658,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 199.39 101.6 0)
+			(at 199.39 110.49 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4156,7 +3668,7 @@
 			)
 		)
 		(property "MPN" "Littelfuse 1812L150/16DR"
-			(at 202.438 103.124 90)
+			(at 202.438 112.014 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4182,7 +3694,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 220.98 101.6 0)
+		(at 220.98 110.49 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4191,8 +3703,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-000000001021")
-		(property "Reference" "J8"
-			(at 223.012 101.8032 0)
+		(property "Reference" "J7"
+			(at 223.012 110.6932 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4203,7 +3715,7 @@
 			)
 		)
 		(property "Value" "5V Power Out 6"
-			(at 223.012 104.1146 0)
+			(at 223.012 113.0046 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4214,7 +3726,7 @@
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_VH_B2P-VH-B_1x02_P3.96mm_Vertical"
-			(at 220.98 101.6 0)
+			(at 220.98 110.49 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4225,7 +3737,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
-			(at 220.98 101.6 0)
+			(at 220.98 110.49 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4236,7 +3748,7 @@
 			)
 		)
 		(property "Description" "JST VH 2-position vertical PCB header; pin 1 +5V, pin 2 GND"
-			(at 220.98 101.6 0)
+			(at 220.98 110.49 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4247,7 +3759,7 @@
 			)
 		)
 		(property "MPN" "JST B2P-VH"
-			(at 228.854 106.426 0)
+			(at 228.854 115.316 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4265,15 +3777,15 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "J8")
+					(reference "J7")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 215.9 62.23 0)
+		(lib_id "Connector:TestPoint")
+		(at 210.82 110.49 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4281,11 +3793,9 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "1b274a66-1ab0-4052-ad9f-65304156486b")
-		(property "Reference" "#PWR03"
-			(at 215.9 68.58 0)
-			(hide yes)
+		(uuid "01e4f7a7-6d0f-467c-93ee-4fceaf8e1717")
+		(property "Reference" "TP3"
+			(at 211.074 104.902 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4294,8 +3804,8 @@
 				)
 			)
 		)
-		(property "Value" "GND"
-			(at 215.9 67.31 0)
+		(property "Value" "OUT6 5V"
+			(at 215.646 106.426 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4304,8 +3814,8 @@
 				)
 			)
 		)
-		(property "Footprint" ""
-			(at 215.9 62.23 0)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D2.5mm"
+			(at 210.82 110.49 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4316,7 +3826,96 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 215.9 62.23 0)
+			(at 210.82 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "2.5 mm diameter exposed-copper SMD voltmeter probe pad"
+			(at 210.82 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "PCB test pad"
+			(at 210.82 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "25f74fab-3c3b-40ec-840b-326321395e7f")
+		)
+		(instances
+			(project "yahrzeit_power_dist"
+				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
+					(reference "TP3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 215.9 71.12 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1b274a66-1ab0-4052-ad9f-65304156486b")
+		(property "Reference" "#PWR05"
+			(at 215.9 77.47 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 215.9 76.2 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 215.9 71.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 215.9 71.12 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4327,7 +3926,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 215.9 62.23 0)
+			(at 215.9 71.12 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4343,7 +3942,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR03")
+					(reference "#PWR05")
 					(unit 1)
 				)
 			)
@@ -4351,7 +3950,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 215.9 34.29 0)
+		(at 215.9 43.18 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4359,10 +3958,9 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "240ad0d4-a75f-44f1-879f-d82158d82a11")
-		(property "Reference" "#PWR01"
-			(at 215.9 40.64 0)
+		(property "Reference" "#PWR03"
+			(at 215.9 49.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4373,7 +3971,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 215.9 39.37 0)
+			(at 215.9 46.736 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4383,7 +3981,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 215.9 34.29 0)
+			(at 215.9 43.18 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4394,7 +3992,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 215.9 34.29 0)
+			(at 215.9 43.18 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4405,7 +4003,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 215.9 34.29 0)
+			(at 215.9 43.18 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4421,7 +4019,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR01")
+					(reference "#PWR03")
 					(unit 1)
 				)
 			)
@@ -4429,7 +4027,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 215.9 48.26 0)
+		(at 215.9 57.15 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4437,10 +4035,9 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "2c85e4b4-a660-4a10-baf6-fca41c411cb3")
-		(property "Reference" "#PWR02"
-			(at 215.9 54.61 0)
+		(property "Reference" "#PWR04"
+			(at 215.9 63.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4451,7 +4048,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 215.9 53.34 0)
+			(at 216.154 60.96 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4461,7 +4058,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 215.9 48.26 0)
+			(at 215.9 57.15 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4472,7 +4069,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 215.9 48.26 0)
+			(at 215.9 57.15 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4483,7 +4080,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 215.9 48.26 0)
+			(at 215.9 57.15 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4499,15 +4096,165 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR02")
+					(reference "#PWR04")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
-		(at 146.05 58.42 0)
+		(lib_id "power:PWR_FLAG")
+		(at 66.04 64.77 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "393b6ddc-c81f-4002-b58d-221656400e5c")
+		(property "Reference" "#FLG01"
+			(at 66.04 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 66.04 60.96 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 66.04 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 66.04 64.77 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 66.04 64.77 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f46f9d6c-571d-4e15-932e-59073c228156")
+		)
+		(instances
+			(project "yahrzeit_power_dist"
+				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
+					(reference "#FLG01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 66.04 67.31 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "41baddfd-9332-4b61-a26b-fe509dc520af")
+		(property "Reference" "#PWR0100"
+			(at 66.04 67.31 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 66.04 71.12 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 66.04 67.31 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 66.04 67.31 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 66.04 67.31 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "feb786f1-0a1d-42ae-88c0-05cb8e53071f")
+		)
+		(instances
+			(project "yahrzeit_power_dist"
+				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
+					(reference "#PWR0100")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 39.37 58.42 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4515,9 +4262,9 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "32f919ee-84d6-4775-a6fd-9db80a529297")
-		(property "Reference" "R1"
-			(at 142.494 57.912 0)
+		(uuid "482c33b7-f411-492b-8a0d-d98d523a77ac")
+		(property "Reference" "TP2"
+			(at 42.672 61.976 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4526,8 +4273,8 @@
 				)
 			)
 		)
-		(property "Value" "280R 1%"
-			(at 139.954 60.198 0)
+		(property "Value" "GND"
+			(at 41.402 64.262 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4536,8 +4283,8 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
-			(at 196.85 31.75 0)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D2.5mm"
+			(at 39.37 58.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4547,8 +4294,8 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_13.pdf"
-			(at 196.85 31.75 0)
+		(property "Datasheet" ""
+			(at 39.37 58.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4558,8 +4305,8 @@
 				)
 			)
 		)
-		(property "Description" "280 ohm, 1%, 0.125 W, 0805 output-set resistor"
-			(at 196.85 31.75 0)
+		(property "Description" "2.5 mm diameter exposed-copper SMD voltmeter probe pad"
+			(at 39.37 58.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4569,8 +4316,8 @@
 				)
 			)
 		)
-		(property "MPN" "RC0805FR-07280RL"
-			(at 200.152 33.528 90)
+		(property "MPN" "PCB test pad"
+			(at 39.37 58.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4581,23 +4328,112 @@
 			)
 		)
 		(pin "1"
-			(uuid "ddc733da-2f7b-47f3-b906-68d94f72e50e")
-		)
-		(pin "2"
-			(uuid "9fd9b54c-24d7-40c2-ac33-3b6ea01ffe6b")
+			(uuid "6e081ff7-e859-4814-bc5e-7d9e0d8f046f")
 		)
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "R1")
+					(reference "TP2")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "Device:C_Polarized")
-		(at 95.25 52.07 0)
+		(lib_id "Device:LED")
+		(at 66.04 53.34 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "4bee3946-7e57-4c22-a1e2-6faca4c9b7e0")
+		(property "Reference" "LED1"
+			(at 68.834 50.546 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "POWER ON"
+			(at 63.754 53.34 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "LED_SMD:LED_0805_2012Metric"
+			(at 66.04 20.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.kingbrightusa.com/images/catalog/SPEC/APT2012CGCK.pdf"
+			(at -32.258 151.384 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Kingbright green 0805 power-present indicator LED"
+			(at 66.04 20.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "APT2012CGCK"
+			(at 69.85 57.15 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "8e09fe38-875a-452a-a6f2-99bb68c27ab9")
+		)
+		(pin "2"
+			(uuid "dedb1db1-1018-4e3a-b76a-9806ee6b8a70")
+		)
+		(instances
+			(project "yahrzeit_power_dist"
+				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
+					(reference "LED1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Small")
+		(at 102.87 49.53 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4606,8 +4442,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "536d1598-8f78-46c6-a750-8ee7d3a30167")
-		(property "Reference" "C3"
-			(at 99.314 50.546 0)
+		(property "Reference" "C2"
+			(at 106.934 47.244 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4617,8 +4453,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "470uF"
-			(at 99.314 53.086 0)
+		(property "Value" "22uF"
+			(at 106.934 50.038 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4628,8 +4464,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:CP_Elec_8x10.5"
-			(at 95.25 52.07 0)
+		(property "Footprint" "Capacitor_SMD:C_1210_3225Metric"
+			(at 102.87 49.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4639,8 +4475,8 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.digikey.com/en/products/detail/panasonic-electronic-components/EEE-FT1E471AV/10290474"
-			(at 95.25 52.07 0)
+		(property "Datasheet" "https://www.digikey.com/en/products/detail/cal-chip-electronics-inc/GMC32X7R226K25NT/22461278"
+			(at 102.87 49.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4650,8 +4486,8 @@
 				)
 			)
 		)
-		(property "Description" "470 µF, 25 V, 105 °C, 80 mOhm aluminum electrolytic capacitor, SMD"
-			(at 95.25 52.07 0)
+		(property "Description" "22 µF, 25 V, X7R 1210 ceramic mid-frequency bypass capacitor"
+			(at 102.87 49.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4661,9 +4497,8 @@
 				)
 			)
 		)
-		(property "MPN" "EEE-FT1E471AV"
-			(at 112.522 55.372 0)
-			(hide yes)
+		(property "MPN" "GMC32X7R226K25NT"
+			(at 108.204 55.118 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4681,7 +4516,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "C3")
+					(reference "C2")
 					(unit 1)
 				)
 			)
@@ -4689,7 +4524,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 220.98 140.97 0)
+		(at 210.82 114.3 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4698,8 +4533,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "55ff2bb1-7c50-46f7-9c08-8588da59f852")
-		(property "Reference" "TP2"
-			(at 224.79 138.684 0)
+		(property "Reference" "TP4"
+			(at 210.82 119.38 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4708,8 +4543,8 @@
 				)
 			)
 		)
-		(property "Value" "GND Test"
-			(at 227.33 140.716 0)
+		(property "Value" "OUTPUT GND"
+			(at 210.82 121.158 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4718,8 +4553,8 @@
 				)
 			)
 		)
-		(property "Footprint" "yahrzeit_power_dist:TestPoint_Keystone_5016_Compact"
-			(at 220.98 140.97 0)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D2.5mm"
+			(at 210.82 114.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4729,8 +4564,8 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.keyelco.com/product.cfm/product_id/1398"
-			(at 220.98 140.97 0)
+		(property "Datasheet" ""
+			(at 210.82 114.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4740,8 +4575,8 @@
 				)
 			)
 		)
-		(property "Description" "Keystone compact SMT loop test point"
-			(at 220.98 140.97 0)
+		(property "Description" "2.5 mm diameter exposed-copper SMD voltmeter probe pad"
+			(at 210.82 114.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4751,8 +4586,8 @@
 				)
 			)
 		)
-		(property "MPN" "Keystone 5016"
-			(at 220.98 140.97 0)
+		(property "MPN" "PCB test pad"
+			(at 210.82 114.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4768,15 +4603,15 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "TP2")
+					(reference "TP4")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 107.95 43.18 0)
+		(lib_id "Connector:TestPoint")
+		(at 39.37 40.64 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4784,10 +4619,9 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "74bbfefc-7c18-4a5b-a762-049f32cc5670")
-		(property "Reference" "#PWR010"
-			(at 107.95 49.53 0)
-			(hide yes)
+		(uuid "647e2dae-c4b4-4774-a91d-07cd2c6b2240")
+		(property "Reference" "TP1"
+			(at 42.418 43.942 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4796,8 +4630,8 @@
 				)
 			)
 		)
-		(property "Value" "GND"
-			(at 107.95 47.244 0)
+		(property "Value" "+5V"
+			(at 39.624 46.482 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4806,8 +4640,8 @@
 				)
 			)
 		)
-		(property "Footprint" ""
-			(at 107.95 43.18 0)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D2.5mm"
+			(at 39.37 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4818,7 +4652,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 107.95 43.18 0)
+			(at 39.37 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4828,8 +4662,8 @@
 				)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 107.95 43.18 0)
+		(property "Description" "2.5 mm diameter exposed-copper SMD voltmeter probe pad"
+			(at 39.37 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4839,84 +4673,8 @@
 				)
 			)
 		)
-		(pin "1"
-			(uuid "0425daaf-993c-4be4-8481-bb99004e40e1")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR010")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 220.98 132.08 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "90788cb2-5806-44aa-b55d-05d683912f72")
-		(property "Reference" "TP1"
-			(at 224.79 129.54 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+5V Test"
-			(at 225.806 131.826 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "yahrzeit_power_dist:TestPoint_Keystone_5016_Compact"
-			(at 220.98 132.08 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.keyelco.com/product.cfm/product_id/1398"
-			(at 220.98 132.08 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Keystone compact SMT loop test point"
-			(at 220.98 132.08 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "Keystone 5016"
-			(at 220.98 132.08 0)
+		(property "MPN" "PCB test pad"
+			(at 39.37 40.64 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4927,7 +4685,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "88f657d9-f914-42e5-bc7c-b9ced0ccc25f")
+			(uuid "8ac0c656-0c05-43c3-a054-d2c8bc62cacc")
 		)
 		(instances
 			(project "yahrzeit_power_dist"
@@ -4940,84 +4698,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 137.16 48.26 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "9796803c-8c5f-44de-8c52-b7d7d71fdd49")
-		(property "Reference" "#PWR013"
-			(at 137.16 54.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 137.16 52.324 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 137.16 48.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 137.16 48.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 137.16 48.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "5869d913-012c-41a9-b10a-e9eb39a91a8d")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR013")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 82.55 58.42 0)
+		(at 81.28 58.42 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -5026,8 +4707,8 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "aa918ef8-d953-44ea-8af1-0060ad9d89ff")
-		(property "Reference" "#PWR011"
-			(at 82.55 64.77 0)
+		(property "Reference" "#PWR01"
+			(at 81.28 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5038,7 +4719,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 82.55 62.484 0)
+			(at 81.28 62.484 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5048,7 +4729,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 82.55 58.42 0)
+			(at 81.28 58.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5059,7 +4740,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 82.55 58.42 0)
+			(at 81.28 58.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5070,7 +4751,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 82.55 58.42 0)
+			(at 81.28 58.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5086,7 +4767,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR011")
+					(reference "#PWR01")
 					(unit 1)
 				)
 			)
@@ -5094,7 +4775,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 215.9 76.2 0)
+		(at 215.9 85.09 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -5104,8 +4785,8 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "ac4b2e94-a7e3-48c9-83bc-21519be60a50")
-		(property "Reference" "#PWR04"
-			(at 215.9 82.55 0)
+		(property "Reference" "#PWR06"
+			(at 215.9 91.44 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5116,7 +4797,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 215.9 81.28 0)
+			(at 215.9 90.17 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5126,7 +4807,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 215.9 76.2 0)
+			(at 215.9 85.09 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5137,7 +4818,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 215.9 76.2 0)
+			(at 215.9 85.09 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5148,7 +4829,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 215.9 76.2 0)
+			(at 215.9 85.09 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5164,161 +4845,6 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR04")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 149.86 55.88 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "cadd1ec6-63ac-42f1-aee5-07eaec408587")
-		(property "Reference" "#PWR08"
-			(at 149.86 62.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 149.86 59.944 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 149.86 55.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 149.86 55.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 149.86 55.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "42a35672-641e-4ca5-8652-edfbedae2f66")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR08")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 215.9 104.14 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "cc027176-0720-4035-adf7-d44e6cbe72c8")
-		(property "Reference" "#PWR06"
-			(at 215.9 110.49 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 215.9 109.22 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 215.9 104.14 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 215.9 104.14 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 215.9 104.14 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "15152b4b-acc9-4d7c-8084-6d0f3876265c")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
 					(reference "#PWR06")
 					(unit 1)
 				)
@@ -5326,8 +4852,8 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 220.98 140.97 0)
+		(lib_id "Device:R")
+		(at 66.04 44.45 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -5335,10 +4861,99 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
+		(uuid "b52a2818-a9c4-4675-ae8e-d08361c41532")
+		(property "Reference" "R1"
+			(at 68.58 43.18 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1K"
+			(at 68.58 45.72 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 193.04 0 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_13.pdf"
+			(at 193.04 0 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "1 kohm, 1%, 0.125 W, 0805 power-indicator resistor"
+			(at 193.04 0 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RC0805FR-071KL"
+			(at 196.342 1.778 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f87ca126-be12-4987-a3d0-22ee46329f4b")
+		)
+		(pin "2"
+			(uuid "aec27507-1113-42a5-86e5-8541cd5c5c24")
+		)
+		(instances
+			(project "yahrzeit_power_dist"
+				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
+					(reference "R1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 214.63 114.3 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
 		(uuid "d5b8805d-ade1-4ac7-a92a-75be0ceed399")
 		(property "Reference" "#PWR09"
-			(at 220.98 147.32 0)
+			(at 214.63 120.65 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5349,7 +4964,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 220.98 146.05 0)
+			(at 215.646 117.856 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5359,7 +4974,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 220.98 140.97 0)
+			(at 214.63 114.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5370,7 +4985,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 220.98 140.97 0)
+			(at 214.63 114.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5381,7 +4996,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 220.98 140.97 0)
+			(at 214.63 114.3 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5405,7 +5020,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 146.05 62.23 0)
+		(at 215.9 99.06 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -5413,87 +5028,9 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "daebb11f-30d1-410d-b405-4d857792cef2")
-		(property "Reference" "#PWR012"
-			(at 146.05 68.58 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 146.05 66.294 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 146.05 62.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 146.05 62.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 146.05 62.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "099864ae-29ee-4a20-8089-011fba97767b")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR012")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 215.9 90.17 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "e279dcb0-b30d-4152-9bc7-47a66ff3810d")
-		(property "Reference" "#PWR05"
-			(at 215.9 96.52 0)
+		(property "Reference" "#PWR07"
+			(at 215.9 105.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5504,7 +5041,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 215.9 95.25 0)
+			(at 215.9 102.87 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5514,7 +5051,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 215.9 90.17 0)
+			(at 215.9 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5525,7 +5062,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 215.9 90.17 0)
+			(at 215.9 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5536,7 +5073,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 215.9 90.17 0)
+			(at 215.9 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5552,7 +5089,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR05")
+					(reference "#PWR07")
 					(unit 1)
 				)
 			)
