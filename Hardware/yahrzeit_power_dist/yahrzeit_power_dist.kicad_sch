@@ -294,193 +294,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Connector_Generic:Conn_01x03"
-			(pin_names
-				(offset 1.016)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "J"
-				(at 0 5.08 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "Conn_01x03"
-				(at 0 -5.08 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "connector"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "Connector*:*_1x??_*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "Conn_01x03_1_1"
-				(rectangle
-					(start -1.27 3.81)
-					(end 1.27 -3.81)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(rectangle
-					(start -1.27 2.667)
-					(end 0 2.413)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.27 0.127)
-					(end 0 -0.127)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.27 -2.413)
-					(end 0 -2.667)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin passive line
-					(at -5.08 2.54 0)
-					(length 3.81)
-					(name "Pin_1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 0 0)
-					(length 3.81)
-					(name "Pin_2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 -2.54 0)
-					(length 3.81)
-					(name "Pin_3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "Connector_Generic:Conn_01x04"
 			(pin_names
 				(offset 1.016)
@@ -1915,10 +1728,6 @@
 		(color 0 0 0 0)
 		(uuid "e6ec5eea-f6ac-467f-a2ec-f06ada1be566")
 	)
-	(no_connect
-		(at 34.29 43.18)
-		(uuid "1fe6ee1e-c3fd-4580-a168-f6312928721c")
-	)
 	(wire
 		(pts
 			(xy 66.04 58.42) (xy 102.87 58.42)
@@ -2141,6 +1950,16 @@
 	)
 	(wire
 		(pts
+			(xy 34.29 43.18) (xy 34.29 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "79ef24f5-6493-481f-aaf3-eac122802027")
+	)
+	(wire
+		(pts
 			(xy 102.87 40.64) (xy 102.87 46.99)
 		)
 		(stroke
@@ -2218,16 +2037,6 @@
 			(type default)
 		)
 		(uuid "a7221832-9026-45b5-9668-0b256498b2f0")
-	)
-	(wire
-		(pts
-			(xy 34.29 45.72) (xy 34.29 58.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a82dbe3a-d496-4935-aa64-2941b7767a69")
 	)
 	(wire
 		(pts
@@ -2350,99 +2159,6 @@
 		(uuid "b939c4aa-da18-4340-ae67-6d30cae0c561")
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x03")
-		(at 29.21 43.18 0)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "00000000-0000-0000-0000-000000001001")
-		(property "Reference" "J1"
-			(at 28.956 33.02 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "5V Power In"
-			(at 28.956 35.306 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_VH_B3P-VH_1x03_P3.96mm_Vertical"
-			(at 29.21 40.64 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
-			(at 29.21 40.64 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "JST VH 3-position vertical PCB header, 3.96 mm pitch; pin 1 +5 V, pin 2 unused, pin 3 GND"
-			(at 29.21 40.64 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "B3P-VH"
-			(at 29.464 37.592 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "0cf0f330-3d2e-400f-b413-abb29956627c")
-		)
-		(pin "2"
-			(uuid "d62e0fd0-437b-4821-90eb-2569167070cc")
-		)
-		(pin "3"
-			(uuid "e6aa8aaf-cce8-4f70-86e7-8e0fdbd1d168")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "J1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:Fuse")
 		(at 49.53 40.64 270)
 		(unit 1)
@@ -2506,7 +2222,7 @@
 				)
 			)
 		)
-		(property "MPN" "0297007.WXNV"
+		(property "MPN" "029707.5WXNV"
 			(at 49.276 38.354 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2824,7 +2540,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "5V Power Out 1"
+		(property "Value" "Power Out"
 			(at 223.012 43.1546 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2835,7 +2551,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_VH_B2P-VH-B_1x02_P3.96mm_Vertical"
+		(property "Footprint" "yahrzeit_power_dist:TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal"
 			(at 220.98 40.64 0)
 			(hide yes)
 			(show_name no)
@@ -2846,7 +2562,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
+		(property "Datasheet" "https://www.phoenixcontact.com/en-us/products/printed-circuit-board-terminal-bc-508x10-2-gn-5442206"
 			(at 220.98 40.64 0)
 			(hide yes)
 			(show_name no)
@@ -2857,7 +2573,7 @@
 				)
 			)
 		)
-		(property "Description" "JST VH 2-position vertical PCB header; pin 1 +5V, pin 2 GND"
+		(property "Description" "TERM BLK 2P SIDE ENT 5.08MM PCB"
 			(at 220.98 40.64 0)
 			(hide yes)
 			(show_name no)
@@ -2868,8 +2584,8 @@
 				)
 			)
 		)
-		(property "MPN" "JST B2P-VH"
-			(at 228.854 45.466 0)
+		(property "MPN" "Phoenix Contact 5442206"
+			(at 235.966 45.72 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2981,97 +2697,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 220.98 54.61 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "00000000-0000-0000-0000-000000001013")
-		(property "Reference" "J3"
-			(at 223.012 54.8132 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "5V Power Out 2"
-			(at 223.012 57.1246 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_VH_B2P-VH-B_1x02_P3.96mm_Vertical"
-			(at 220.98 54.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
-			(at 220.98 54.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "JST VH 2-position vertical PCB header; pin 1 +5V, pin 2 GND"
-			(at 220.98 54.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "JST B2P-VH"
-			(at 229.108 59.436 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "76fceadb-c214-4323-802d-abd7aa138af4")
-		)
-		(pin "2"
-			(uuid "547435d3-7880-4f43-9f25-ffdae33cf4dd")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "J3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:Fuse")
 		(at 199.39 68.58 270)
 		(unit 1)
@@ -3153,97 +2778,6 @@
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
 					(reference "F4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 220.98 68.58 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "00000000-0000-0000-0000-000000001015")
-		(property "Reference" "J4"
-			(at 223.012 68.7832 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "5V Power Out 3"
-			(at 223.012 71.0946 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_VH_B2P-VH-B_1x02_P3.96mm_Vertical"
-			(at 220.98 68.58 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
-			(at 220.98 68.58 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "JST VH 2-position vertical PCB header; pin 1 +5V, pin 2 GND"
-			(at 220.98 68.58 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "JST B2P-VH"
-			(at 228.6 73.66 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "e82764ba-55dd-477f-9b1c-ce716dad9c1a")
-		)
-		(pin "2"
-			(uuid "6357ec3a-6440-49a7-ae04-862f49793b29")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "J4")
 					(unit 1)
 				)
 			)
@@ -3337,97 +2871,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 220.98 82.55 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "00000000-0000-0000-0000-000000001017")
-		(property "Reference" "J5"
-			(at 223.012 82.7532 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "5V Power Out 4"
-			(at 223.012 85.0646 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_VH_B2P-VH-B_1x02_P3.96mm_Vertical"
-			(at 220.98 82.55 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
-			(at 220.98 82.55 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "JST VH 2-position vertical PCB header; pin 1 +5V, pin 2 GND"
-			(at 220.98 82.55 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "JST B2P-VH"
-			(at 229.108 87.376 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "e46612f9-a252-48d8-8bd0-369dc873640f")
-		)
-		(pin "2"
-			(uuid "2cba067b-c4bd-480c-9fa5-ec70dc570b81")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "J5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:Fuse")
 		(at 199.39 96.52 270)
 		(unit 1)
@@ -3515,97 +2958,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 220.98 96.52 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "00000000-0000-0000-0000-000000001019")
-		(property "Reference" "J6"
-			(at 223.012 96.7232 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "5V Power Out 5"
-			(at 223.012 99.0346 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_VH_B2P-VH-B_1x02_P3.96mm_Vertical"
-			(at 220.98 96.52 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
-			(at 220.98 96.52 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "JST VH 2-position vertical PCB header; pin 1 +5V, pin 2 GND"
-			(at 220.98 96.52 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "JST B2P-VH"
-			(at 229.108 101.6 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "1f92ce1f-3f9a-4d81-92f0-a5feee5f1b6b")
-		)
-		(pin "2"
-			(uuid "775c9277-d468-4372-a0f0-b62c72cf2051")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "J6")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:Fuse")
 		(at 199.39 110.49 270)
 		(unit 1)
@@ -3687,97 +3039,6 @@
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
 					(reference "F7")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 220.98 110.49 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "00000000-0000-0000-0000-000000001021")
-		(property "Reference" "J7"
-			(at 223.012 110.6932 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "5V Power Out 6"
-			(at 223.012 113.0046 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_VH_B2P-VH-B_1x02_P3.96mm_Vertical"
-			(at 220.98 110.49 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf"
-			(at 220.98 110.49 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "JST VH 2-position vertical PCB header; pin 1 +5V, pin 2 GND"
-			(at 220.98 110.49 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "JST B2P-VH"
-			(at 228.854 115.316 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "90662ef1-4a52-4c53-87bc-46caae45959b")
-		)
-		(pin "2"
-			(uuid "8b83d225-43f0-454c-869f-6d52a8b384b2")
-		)
-		(instances
-			(project "yahrzeit_power_dist"
-				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "J7")
 					(unit 1)
 				)
 			)
@@ -3882,7 +3143,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1b274a66-1ab0-4052-ad9f-65304156486b")
-		(property "Reference" "#PWR05"
+		(property "Reference" "#PWR06"
 			(at 215.9 77.47 0)
 			(hide yes)
 			(show_name no)
@@ -3942,7 +3203,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR05")
+					(reference "#PWR06")
 					(unit 1)
 				)
 			)
@@ -3959,7 +3220,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "240ad0d4-a75f-44f1-879f-d82158d82a11")
-		(property "Reference" "#PWR03"
+		(property "Reference" "#PWR04"
 			(at 215.9 49.53 0)
 			(hide yes)
 			(show_name no)
@@ -4019,7 +3280,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR03")
+					(reference "#PWR04")
 					(unit 1)
 				)
 			)
@@ -4036,7 +3297,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "2c85e4b4-a660-4a10-baf6-fca41c411cb3")
-		(property "Reference" "#PWR04"
+		(property "Reference" "#PWR05"
 			(at 215.9 63.5 0)
 			(hide yes)
 			(show_name no)
@@ -4096,7 +3357,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR04")
+					(reference "#PWR05")
 					(unit 1)
 				)
 			)
@@ -4188,7 +3449,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "41baddfd-9332-4b61-a26b-fe509dc520af")
-		(property "Reference" "#PWR0100"
+		(property "Reference" "#PWR01"
 			(at 66.04 67.31 0)
 			(hide yes)
 			(show_name no)
@@ -4246,7 +3507,98 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR0100")
+					(reference "#PWR01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 220.98 110.49 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "45b24c38-1f9f-4756-92fc-0cc4828e9887")
+		(property "Reference" "J7"
+			(at 223.012 110.6932 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Power Out"
+			(at 223.012 113.0046 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "yahrzeit_power_dist:TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal"
+			(at 220.98 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.phoenixcontact.com/en-us/products/printed-circuit-board-terminal-bc-508x10-2-gn-5442206"
+			(at 220.98 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "TERM BLK 2P SIDE ENT 5.08MM PCB"
+			(at 220.98 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "Phoenix Contact 5442206"
+			(at 235.966 115.57 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c22fdd88-f5d1-4ff9-8fef-01acd8602160")
+		)
+		(pin "2"
+			(uuid "aef21c74-c677-4ad2-910d-e4478853f0ff")
+		)
+		(instances
+			(project "yahrzeit_power_dist"
+				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
+					(reference "J7")
 					(unit 1)
 				)
 			)
@@ -4610,6 +3962,98 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 29.21 40.64 0)
+		(mirror y)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "61988daa-029c-40a1-a7a4-07d34945d9f9")
+		(property "Reference" "J1"
+			(at 27.178 40.8432 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Power IN"
+			(at 27.178 43.1546 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "yahrzeit_power_dist:TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal"
+			(at 29.21 40.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.phoenixcontact.com/en-us/products/printed-circuit-board-terminal-bc-508x10-2-gn-5442206"
+			(at 29.21 40.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "TERM BLK 2P SIDE ENT 5.08MM PCB"
+			(at 29.21 40.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "Phoenix 5442206"
+			(at 20.828 46.228 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9ff8da63-b23a-40a0-a428-243187b05861")
+		)
+		(pin "2"
+			(uuid "a5b47543-b212-48d7-ae53-89ea7522588b")
+		)
+		(instances
+			(project "yahrzeit_power_dist"
+				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
+					(reference "J1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector:TestPoint")
 		(at 39.37 40.64 180)
 		(unit 1)
@@ -4697,6 +4141,279 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 220.98 68.58 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "66be1d8d-1043-4ca4-bfb2-946818c946e9")
+		(property "Reference" "J4"
+			(at 223.012 68.7832 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Power Out"
+			(at 223.012 71.0946 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "yahrzeit_power_dist:TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal"
+			(at 220.98 68.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.phoenixcontact.com/en-us/products/printed-circuit-board-terminal-bc-508x10-2-gn-5442206"
+			(at 220.98 68.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "TERM BLK 2P SIDE ENT 5.08MM PCB"
+			(at 220.98 68.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "Phoenix Contact 5442206"
+			(at 235.966 73.66 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c0b9526c-0c04-4afc-b13f-18a705b4af0b")
+		)
+		(pin "2"
+			(uuid "3c30f502-9333-4df3-bfa7-0399833fffa2")
+		)
+		(instances
+			(project "yahrzeit_power_dist"
+				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
+					(reference "J4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 220.98 82.55 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "6ba87d3c-8bcc-4d9e-96b3-e05542309082")
+		(property "Reference" "J5"
+			(at 223.012 82.7532 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Power Out"
+			(at 223.012 85.0646 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "yahrzeit_power_dist:TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal"
+			(at 220.98 82.55 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.phoenixcontact.com/en-us/products/printed-circuit-board-terminal-bc-508x10-2-gn-5442206"
+			(at 220.98 82.55 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "TERM BLK 2P SIDE ENT 5.08MM PCB"
+			(at 220.98 82.55 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "Phoenix Contact 5442206"
+			(at 235.966 87.63 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "cb070f05-bfa0-4ccb-af94-8f9cbf16bd8e")
+		)
+		(pin "2"
+			(uuid "06b1da54-2b2d-4244-819f-2e132c925a64")
+		)
+		(instances
+			(project "yahrzeit_power_dist"
+				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
+					(reference "J5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 220.98 54.61 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "a2ff0ede-4f1d-4b66-89e3-bfca03dcb6c0")
+		(property "Reference" "J3"
+			(at 223.012 54.8132 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Power Out"
+			(at 223.012 57.1246 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "yahrzeit_power_dist:TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal"
+			(at 220.98 54.61 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.phoenixcontact.com/en-us/products/printed-circuit-board-terminal-bc-508x10-2-gn-5442206"
+			(at 220.98 54.61 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "TERM BLK 2P SIDE ENT 5.08MM PCB"
+			(at 220.98 54.61 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "Phoenix Contact 5442206"
+			(at 235.966 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c38ad924-5040-440c-9943-e8cce7a3a2d8")
+		)
+		(pin "2"
+			(uuid "9cb2370b-361c-4017-9663-c803655cb524")
+		)
+		(instances
+			(project "yahrzeit_power_dist"
+				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
+					(reference "J3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 81.28 58.42 0)
 		(unit 1)
@@ -4707,7 +4424,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "aa918ef8-d953-44ea-8af1-0060ad9d89ff")
-		(property "Reference" "#PWR01"
+		(property "Reference" "#PWR02"
 			(at 81.28 64.77 0)
 			(hide yes)
 			(show_name no)
@@ -4767,7 +4484,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR01")
+					(reference "#PWR02")
 					(unit 1)
 				)
 			)
@@ -4785,7 +4502,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "ac4b2e94-a7e3-48c9-83bc-21519be60a50")
-		(property "Reference" "#PWR06"
+		(property "Reference" "#PWR07"
 			(at 215.9 91.44 0)
 			(hide yes)
 			(show_name no)
@@ -4845,7 +4562,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR06")
+					(reference "#PWR07")
 					(unit 1)
 				)
 			)
@@ -4942,6 +4659,97 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 220.98 96.52 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "cc10db50-229d-4309-b33b-5f57c55ca071")
+		(property "Reference" "J6"
+			(at 223.012 96.7232 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Power Out"
+			(at 223.012 99.0346 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "yahrzeit_power_dist:TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal"
+			(at 220.98 96.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.phoenixcontact.com/en-us/products/printed-circuit-board-terminal-bc-508x10-2-gn-5442206"
+			(at 220.98 96.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "TERM BLK 2P SIDE ENT 5.08MM PCB"
+			(at 220.98 96.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "Phoenix Contact 5442206"
+			(at 235.966 101.6 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "d9cc7856-0ea5-4189-93e0-e68195deb6c6")
+		)
+		(pin "2"
+			(uuid "9d688dc3-f409-41e4-a5fa-2c1af144e043")
+		)
+		(instances
+			(project "yahrzeit_power_dist"
+				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
+					(reference "J6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 214.63 114.3 0)
 		(unit 1)
@@ -4952,7 +4760,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "d5b8805d-ade1-4ac7-a92a-75be0ceed399")
-		(property "Reference" "#PWR09"
+		(property "Reference" "#PWR03"
 			(at 214.63 120.65 0)
 			(hide yes)
 			(show_name no)
@@ -5012,7 +4820,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR09")
+					(reference "#PWR03")
 					(unit 1)
 				)
 			)
@@ -5029,7 +4837,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e279dcb0-b30d-4152-9bc7-47a66ff3810d")
-		(property "Reference" "#PWR07"
+		(property "Reference" "#PWR08"
 			(at 215.9 105.41 0)
 			(hide yes)
 			(show_name no)
@@ -5089,7 +4897,7 @@
 		(instances
 			(project "yahrzeit_power_dist"
 				(path "/027a921c-cc43-4da2-8b60-43de5c35a77d"
-					(reference "#PWR07")
+					(reference "#PWR08")
 					(unit 1)
 				)
 			)

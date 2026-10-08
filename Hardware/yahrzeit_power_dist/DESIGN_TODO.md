@@ -1,5 +1,22 @@
 # Yahrzeit 5 V Power Distribution Board — Design TODO
 
+## Site visit — Tuesday, October 6, 2026
+
+- Choose the power-distribution board location. Record its mounting height
+  relative to the bottom of the lower panel, rather than the uneven floor;
+  identify the reference point on the board used for that measurement.
+- Affix the printed PCB mockup and check panel movement and service access.
+- Verify that all six existing 18 AWG output cables reach the new terminals
+  with enough slack for ferrule termination and servicing. Retain their
+  existing Molex ends; new CBL-02 output adapters are no longer planned.
+- Measure the routed length needed for CBL-PD-01, including service slack,
+  and record the endpoints used for the measurement.
+- Photograph the installed power supplies, their rating labels, and terminal
+  connections.
+- Measure and record column current in normal operation and full Yizkor mode,
+  noting which column and operating settings were measured.
+
+
 **Status — September 29, 2026:** Direct-5 V distribution layout is ready for
 PCBWay quotation. Fabrication choice: 140 × 50 mm, two-layer FR-4, 2.0 mm
 thickness, 2 oz finished copper, green mask, white silkscreen, lead-free HASL.

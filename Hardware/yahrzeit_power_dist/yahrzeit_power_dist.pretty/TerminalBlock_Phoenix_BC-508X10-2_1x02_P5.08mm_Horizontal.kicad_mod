@@ -1,0 +1,20 @@
+(footprint "TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal"
+ (version 20241229) (generator "pcbnew") (layer "F.Cu")
+ (descr "Phoenix Contact 5442206; 10.16x8.1mm body, installed height 10mm; horizontal wire entry +Y. https://www.phoenixcontact.com/en-us/products/printed-circuit-board-terminal-bc-508x10-2-gn-5442206")
+ (tags "Phoenix Contact 5442206 BC-508X10")
+ (property "Reference" "REF**" (at 2.54 -5.5) (layer "F.SilkS") (effects (font (size 1 1) (thickness 0.15))))
+ (property "Value" "TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal" (at 2.54 5.5) (layer "F.Fab") (effects (font (size 1 1) (thickness 0.15))))
+ (attr through_hole)
+ (fp_rect (start -2.54 -4.05) (end 7.62 4.05) (stroke (width 0.1) (type solid)) (fill none) (layer "F.Fab") (uuid "59699270-4808-48be-baec-94bab52e2048"))
+		(fp_rect (start -2.66 -4.17) (end 7.74 4.17) (stroke (width 0.12) (type solid)) (fill none) (layer "F.SilkS") (uuid "9fd679d1-82a5-4d46-a8e1-3e5e88b4ea02"))
+		(fp_rect (start -3.04 -4.55) (end 8.12 4.55) (stroke (width 0.05) (type solid)) (fill none) (layer "F.CrtYd") (uuid "55355bf6-7fbf-4e5e-ad2f-9513c4ff8b5e"))
+		(fp_line (start -2.54 2.8) (end 7.62 2.8) (stroke (width 0.1) (type solid)) (layer "F.Fab") (uuid "0a5cf101-3726-4b81-845a-696789333fac"))
+		(fp_line (start -2.9 3.7) (end -2.9 4.5) (stroke (width 0.12) (type solid)) (layer "F.SilkS") (uuid "d16b8759-f8d3-40b9-bb11-f0c8aacb79b7"))
+		(fp_line (start -2.9 4.5) (end -2.1 4.5) (stroke (width 0.12) (type solid)) (layer "F.SilkS") (uuid "b9150fbd-8194-4c78-a87f-f800b14c0e11"))
+ (pad "1" thru_hole roundrect (at 0 0) (size 2.6 2.6) (drill 1.3) (layers "*.Cu" "*.Mask") (roundrect_rratio 0.096154))
+ (pad "2" thru_hole circle (at 5.08 0) (size 2.6 2.6) (drill 1.3) (layers "*.Cu" "*.Mask"))
+
+ (model "${KIPRJMOD}/yahrzeit_power_dist.3dshapes/Phoenix_5442206.wrl"
+  (offset (xyz 0 0 0)) (scale (xyz 1 1 1)) (rotate (xyz 0 0 0))
+ )
+)

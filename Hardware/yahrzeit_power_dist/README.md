@@ -9,8 +9,8 @@ that column. The main input and every output branch have independent
 overcurrent protection.
 
 The complete wall has seven panel columns and therefore requires seven working
-assemblies. The pricing basis is ten boards: seven for the installed columns
-and two spares onsite. Fully cabled spare assemblies remain the service objective;
+assemblies. The pricing basis is ten boards: one prototype, seven for the
+installed columns, and two spares onsite. Fully cabled spare assemblies remain the service objective;
 final cable and power-supply quantities depend on how the spares are equipped.
 
 This is a **direct-5 V distribution board**. The external supply, its output-voltage
@@ -33,97 +33,78 @@ the PDF schematic.*
 
 ![Yahrzeit power-distribution 3D view](yahrzeit_power_dist.3Dview.png)
 
-*Saved views of the 140 mm × 50 mm design. JST connector bodies are absent
-from the 3D view. The KiCad sources are authoritative.*
+*The KiCad sources are authoritative; verify connector and cable
+clearances with physical parts before release.*
 
 ## Electrical overview
 
-- Input: regulated +5 V and GND through polarized connector J1. J1 pin 2 is
-  intentionally unused.
-- Main protection: F1 is a replaceable 7.5 A MINI automotive blade fuse in a
+- Input: regulated +5 V and GND through two-position terminal
+  block J1.
+- Main protection: F1 is a replaceable 7.5 A MINI blade fuse in a
   PCB-mounted holder.
 - Input filtering: C1 / C2 / C3 provide bulk capacitance, mid-frequency
   bypassing, and high-frequency bypassing after F1.
 - Distribution: a broad +5 V copper region feeds six output branches.
 - Branch protection: resettable PTC fuses F2 through F7 protect outputs J2
   through J7 independently.
-- Output connectors: J2 through J7 use pin 1 for +5 V and pin 2 for GND.
+- Connectors: J1 through J7 are Phoenix Contact `5442206` (BC-508X10-2 GN),
+  two-position 5.08 mm-pitch PCB terminal blocks with horizontal wire entry.
+  J1 through J7 use pin 1 for +5 V and pin
+  2 for GND.
 - Power indication: LED1 and R1 indicate that fused +5 V is present. The LED is
   advisory only and is not a safe-to-service interlock.
 
 The front layer contains a shaped `+5V_BUS_PLANE` and a surrounding GND pour.
 The back layer is a GND plane. C1, C2, and C3 straddle the +5 V/GND boundary.
 The bus region is approximately 13.5 mm wide and includes F1 pin 1 and
-F2–F7 pin 2. J1 pin 1 feeds F1 pin 2 through a nominally 3 mm-wide trace;
-each PTC-to-output trace is 2 mm wide and carries only its branch current.
+F2–F7 pin 2. J1 pin 1 feeds fuse F1. The fused 5 V input feeds each branch circuit.
 
 TP1/TP2 sit between the left mounting holes and measure the raw input and
 GND. TP3/TP4 sit between the right mounting holes; TP3 measures protected
-output 6 and is labeled `OUT 6 +5V`. R1 and LED1
-sit below J7, with the indicator powered after F1 and labeled `POWERED`.
+output 6 and is labeled `OUT 6 +5V`. LED1, powered through R1 from the fused
+5 V rail, is labeled `POWERED`.
 The indicator does not establish that all six PTC-protected outputs are live.
 
 ## Connector and cable interfaces
 
-| Connector | Function | Pin 1 | Pin 2 | Pin 3 |
-|---|---|---|---|---|
-| J1 | Regulated 5 V input | +5 V | Not connected | GND |
-| J2–J7 | Protected pixel-chain outputs | +5 V | GND | — |
+| Connector | Function | Pin 1 | Pin 2 |
+|---|---|---|---|
+| J1 | Regulated 5 V input | +5 V | GND |
+| J2–J7 | Protected pixel-chain outputs | +5 V | GND |
 
-Connector polarity must be checked against physical mating housings and the
-completed cable drawings before fabrication or connection to a pixel chain.
+Connector polarity must be checked against the board silkscreen, power-supply
+terminals, and existing cable conductors before connection.
 
-### J2-J7 output cable: CBL-02
+### J2-J7 existing output leads
 
-Each protected output uses one CBL-02 adapter cable. Six identical cables are
-required per distribution board. The JST VHR-2N end mates with J2-J7 on this
-board; the Molex Mini-Fit Jr. 03P end mates with the legacy YYZ-PIXEL POWER-IN
-receptacle. Circuit 2 of the three-position legacy connector is intentionally
-unpopulated.
+Reuse the six existing cables that connect this distribution board to the six
+YYZ_PIXEL board chains. At the wire nut or distribution end, cut off the obsolete
+wire-nut termination and crimp on a ferrule sized for the conductor.
+The [Phoenix 5442206](https://www.phoenixcontact.com/en-us/products/printed-circuit-board-terminal-bc-508x10-2-gn-5442206) specifies a 6 mm stripping length;
+select a compatible ferrule and strip to its barrel length, with no exposed
+conductor outside the terminal.
+Keep each cable's existing pixel-board connector intact. With power disconnected,
+confirm polarity with a continuity check to the pixel-board connector; retain
+red for +5 V and black for GND before clamping each ferrule into J2-J7.
 
-[![CBL-02 output cable drawing](cables/CBL-02-molex-p-to-jst-vh-50mm.png)](cables/CBL-02-molex-p-to-jst-vh-50mm.html)
+### J1 supply lead
 
-*CBL-02 is presently specified as two 18 AWG conductors with a finished length
-of 50 mm ±5 mm. Verify the required installed length before ordering.*
+J1 is a two-position screw-clamp terminal. The current
+plan is a short, approximately 24 inch, two-conductor 18 AWG feed from the
+regulated 5 V supply. Terminate the supply end with ferrules compatible with
+the supply's captive screw-clamp terminals; use compatible ferrules at J1
+as well (four ferrules total). Prepare each end for its terminal and ferrule.
+The KiCad design currently shows J1 populated with
+the same Phoenix terminal block used at J2-J7. Confirm the final cable route,
+length, ferrule fit, tightening torque, continuity, and polarity
+before installation. Measure voltage drop under maximum load before approving
+18 AWG for the final length. The power supply output is adjustable by ±10%.
 
-The editable WireViz source is
-[`cables/CBL-02-molex-p-to-jst-vh-50mm.yml`](cables/CBL-02-molex-p-to-jst-vh-50mm.yml).
-Run `make` within `cables/` to regenerate its HTML, PNG, SVG, and TSV BOM.
-
-### J1 supply cable: CBL-PD-01 (preliminary)
-
-The J1 input cable mates with the board's three-position JST B3P-VH header and
-connects to the regulated 5 V supply. The preliminary drawing uses two 18 AWG
-conductors and an installed length of 1200 mm (approximately 48 inches). That
-length must be measured and confirmed on site before manufacture.
-
-[![CBL-PD-01 input cable drawing](cables/CBL-PD-01-jst-vh-to-5v-supply.png)](cables/CBL-PD-01-jst-vh-to-5v-supply.html)
-
-The editable WireViz source is
-[`cables/CBL-PD-01-jst-vh-to-5v-supply.yml`](cables/CBL-PD-01-jst-vh-to-5v-supply.yml).
-
-Selected terminations:
-
-- Board-end housing: JST `VHR-3N`, DigiKey `455-1184-ND`.
-- Board-end contacts: two JST `SVH-21T-P1.1` socket contacts for 18-22 AWG,
-  DigiKey cut-tape `455-1133CT-ND`; J1 position 2 remains unpopulated.
-- Supply-end terminations: two Phoenix Contact `3200030` insulated ferrules
-  for 18 AWG/1.0 mm² wire, with 8 mm contact length; DigiKey `277-2188-ND`.
-- Red connects J1 pin 1 to `+Vo`; black connects J1 pin 3 to `-Vo`.
-
-The BTF-LIGHTING supply uses captive screw-clamp terminals. Do not substitute
-fork or ring terminals. Confirm ferrule fit, terminal tightening torque, wire
-route, strain relief, labels, and continuity/polarity testing before release.
-
-### Cable fabrication plan — September 28, 2026
-
-We have received all the ordered crimpers and wire and will first
-experiment with making the cables locally. Build and inspect sample JST VH,
-Molex Mini-Fit Jr., and ferrule terminations, check continuity and polarity,
-and confirm fit and installed lengths before producing the complete set.
-Record material cost and assembly time; PCBWay cable fabrication remains an
-alternative if local production is impractical. No cable-fabrication quote
-has been received.
+<a href="power-supply-with-input.jpg">
+  <img src="power-supply-with-input.jpg"
+       alt="Power Supply showing input connections"
+       height="350">
+</a>
 
 ## Mechanical and fabrication intent
 
@@ -132,14 +113,9 @@ has been received.
 - Copper weight: 2 oz finished copper selected for the fabrication quote.
 - Fabrication: two layers, green solder mask, white silkscreen, lead-free HASL.
 - Mounting: four 4.5 mm mounting holes for attachment to plywood, with centers
-  7.5 mm from each adjacent edge.
-- Installation: behind a hinged wall panel, with all connectors and fuses
+  7.5 mm from each adjacent edge. Mount on standoffs to provide clearance beneath the PCB.
+- Installation: behind each hinged wall panel, with all connectors and fuses
   accessible for service.
-- Construction: broad +5 V distribution copper, front and back GND copper,
-  short protected branches, and no intentional narrow high-current
-  bottlenecks.
-- Identification: the input, six outputs, fuses, test pads, polarity, and
-  power-present LED are labeled on the front silkscreen.
 
 Before final fabrication, verify the board outline, mounting locations, hinge
 clearance, connector access, fuse-removal clearance, LED visibility, and cable
@@ -153,66 +129,69 @@ bend radius with a full-size print, STEP model, or physical mockup.
 - `power_dist_schematic.pdf` — schematic for reviewers without KiCad
 - `power_dist_schematic.png` — README rendering of the schematic
 - `yahrzeit_power_dist.PCBview.png` — saved PCB layout view
-- `yahrzeit_power_dist.3Dview.png` — saved 3D view; JST models absent
+- `yahrzeit_power_dist.3Dview.png` — saved 3D view; verify current terminal
+  block models and wire access against physical parts
 - `yahrzeit_power_dist.pretty/` — project-specific footprints
-- `cables/` — local WireViz cable sources, connector images, and generated
-  cable documentation
 - `DESIGN_TODO.md` — remaining validation and release checks
 
 ## Component selection / preliminary BOM
 
 Prices below are preliminary quantity-one reference prices.
-This list to be refreshed when the DigiKey order is prepared. 
+Refresh this list when the DigiKey order is prepared.
 The cost column is per part, not the extended cost for one board.
 
 | Designator | Description | Manufacturer part number | Mount | Qty/board | Qty. 1 cost (USD) |
 |---|---|---|:---:|---:|---:|
-| C1 | 470 µF, 25 V, 105 °C, 10,000 h low-impedance aluminum electrolytic bulk capacitor | Rubycon `25ZLH470MEFC10X12.5` | THT radial, 10 mm body, 5 mm pitch | 1 | 0.67 <br>[DigiKey](https://www.digikey.com/en/products/detail/rubycon/25ZLH470MEFC10X12-5/3563614) |
+| C1 | 470 µF, 25 V, 105 °C, 10,000 h low-impedance aluminum electrolytic bulk capacitor | Rubycon `25ZLH470MEFC10X12.5` | THT radial, 10 mm body, 5 mm pitch | 1 | 0.43 <br>[DigiKey](https://www.digikey.com/en/products/detail/rubycon/25ZLH470MEFC10X12-5/3563614) |
 | C2 | 22 µF, 25 V, X7R mid-frequency ceramic bypass capacitor | Cal-Chip `GMC32X7R226K25NT` | SMD 1210 | 1 | 0.77 <br>[DigiKey](https://www.digikey.com/en/products/detail/cal-chip-electronics-inc/GMC32X7R226K25NT/22461278) |
 | C3 | 0.1 µF, 50 V, X7R high-frequency ceramic bypass capacitor | Yageo `CC0805KRX7R9BB104` | SMD 0805 | 1 | 0.17 <br>[DigiKey](https://www.digikey.com/en/products/detail/yageo/CC0805KRX7R9BB104/302874?s=N4IgTCBcDaIMJwAwA5EFYDSAlAGgdiwE4AhYgRkQBYQBdAXyA) |
-| F1 | 7.5 A, 32 VDC MINI automotive blade fuse | Littelfuse `0297007.WXNV` | Plug-in | 1 | 0.39 <br>[DigiKey](https://www.digikey.com/en/products/detail/littelfuse-inc/0297002-WXNV/124900?s=N4IgTCBcDaIAxgJwHY4IHQHcAeA7AbiALoC%2BQA) |
+| F1 | 7.5 A, 32 VDC MINI automotive blade fuse | Littelfuse `029707.5WXNV` | Plug-in | 1 | 0.39 <br>[DigiKey](https://www.digikey.com/en/products/detail/littelfuse-inc/029707-5WXNV/146586) |
 | F1 holder | Vertical MINI blade-fuse PCB holder | Keystone `3568` | THT | 1 | 1.37 <br>[DigiKey](https://www.digikey.com/en/products/detail/keystone-electronics/3568/2137306) |
 | F2–F7 | Resettable PTC, 16 V, 1.5 A hold current | Littelfuse `1812L150/16DR` | SMD 1812 | 6 | 0.74 <br>[DigiKey](https://www.digikey.com/en/products/detail/littelfuse-inc/1812L150-16DR/3305611) |
-| J1 | JST VH, 3-position vertical 5 V input header, 3.96 mm pitch | JST `B3P-VH` | THT | 1 | 0.20 <br>[DigiKey](https://www.digikey.com/en/products/detail/jst-sales-america-inc/B3P-VH/926548) |
-| J2–J7 | JST VH, 2-position vertical 5 V output header, 3.96 mm pitch | JST `B2P-VH` | THT | 6 | 0.16 <br>[DigiKey](https://www.digikey.com/en/products/detail/jst-sales-america-inc/B2P-VH/926547) |
+| J1–J7 | PCB terminal block, 2-position, 5.08 mm pitch, horizontal wire entry | Phoenix Contact `5442206` (BC-508X10-2 GN) | THT | 7 | 0.50 <br>[DigiKey](https://www.digikey.com/en/products/detail/phoenix-contact/5442206/4390264) |
 | LED1 | Green power-present LED | Kingbright `APT2012CGCK` | SMD 0805 | 1 | 0.21 [DigiKey](https://www.digikey.com/en/products/detail/kingbright/APT2012CGCK/1747526) |
 | R1 | 1 kΩ, 1%, 0.125 W power-indicator resistor | Yageo `RC0805FR-071KL` | SMD 0805 | 1 | 0.10 <br> [DigiKey](https://www.digikey.com/en/products/detail/yageo/RC0805FR-071KL/727444?s=N4IgTCBcDaIEoGEAMAOJBWAYnAtEg7AIwDSAMiALoC%2BQA) |
-| **Total PCB components per board** | | | | | **$9.28** |
+| **Subtotal of priced PCB components** | | | | | **$11.38** |
 
-We budget $10 per board for the above PCB components.
+The subtotal includes all seven terminal blocks at an estimated $0.50 each.
+Confirm distributor pricing before ordering.
 
 
 ## Extra parts for one complete column assembly
 
-These parts are outside the PCB assembly BOM but are required to install one
-complete power-distribution assembly. Nine fully equipped assemblies would require nine supplies, nine input cables,
-and 52 output adapter cables. Seven installed assemblies alone require seven
-supplies, seven input cables, and forty output adapters.
+These items are outside the PCB assembly BOM. The existing six pixel-chain
+cables are reused for each board; only their board-end terminations are
+converted to ferrules. A short supply lead is required for each installed
+assembly.
 
 | Item | Description | Part or drawing | Qty/assembly | Unit cost (USD) |
 |---|---|---|---:|---:|
 | Power supply | Regulated 5 V, 10 A, 50 W adjustable enclosed supply | BTF-LIGHTING `AM50-B05-HD` ([Amazon](https://www.amazon.com/dp/B0FZQNMHN6)) | 1 | $22 |
-| Input cable | J1 JST VHR-3N to two 18 AWG ferrules; preliminary 1200 mm length | [`CBL-PD-01`](cables/CBL-PD-01-jst-vh-to-5v-supply.html) | 1 | TBD |
-| Output cables | J2-J7 JST VHR-2N to legacy Molex Mini-Fit Jr. 03P; 50 mm length | [`CBL-02`](cables/CBL-02-molex-p-to-jst-vh-50mm.html) | 6 | TBD |
+| Input lead | Two-conductor 18 AWG supply feed, approximately 600 mm; both ends ferruled | To be finalized | 4 ferrules<br> 24" wire | Negligible—bulk supplies |
+| Output lead preparation | Two ferrules per existing J2-J7 cable; six cables are reused | To be finalized | 12 ferrules | Negligible—bulk supplies |
 
-The PCB BOM excludes the external 5 V supply and cable materials. The extra
-parts table identifies the required assemblies; the two WireViz cable BOMs are
-authoritative for housings, contacts, wire, terminals, and cable quantities.
-Labels, and cable-assembly labor remain to be priced or specified.
+<a href="BTF_AM50-B05-HD.jpg">
+  <img src="BTF_AM50-B05-HD.jpg"
+       alt="BTF-LIGHTING AM50-B05-HD 5 V, 10 A, 50 W power supply"
+       height="350">
+</a>
 
-Do not release this table as a purchasing BOM until every ordering code,
+The PCB BOM excludes the external 5 V supply, input lead, and ferrules. Bulk and lab supplies will be roughly $50 for the total project.
+
+*Do not release this table as a purchasing BOM until every ordering code,
 footprint, voltage/current rating, temperature rating, lifecycle status, and
 stock level has been checked against the current manufacturer datasheet and
-supplier listing.
+supplier listing.*
 
 ## Quote and budget record — September 28, 2026
 
-These quotes apply to the previous 140 × 50 mm board. Request updated
-pricing for the 140 × 50 mm revision before ordering.
+These quotes predate the screw-terminal revision. Request updated pricing
+before ordering.
 
-We shall quote the customer **$200 per installed column**, or **$1,400
-for seven columns**, with the expectation that actual costs will be lower.
-This is the intended customer price, not a supplier quote. 
+We shall quote the customer **$60 per installed column**, or **$600
+for one prototype, seven columns, and two spares**,
+with the expectation that actual costs will be lower.
+This is the intended customer price, not a supplier quote.
 
 
 | Item | Amount (USD) | Basis |
@@ -220,37 +199,24 @@ This is the intended customer price, not a supplier quote.
 | 10 bare PCBs, 2 oz finished copper | $74.50 | PCBWay quote |
 | 10 bare PCBs, 1 oz | $72.72 | Screenshot; comparison only |
 | 5 bare PCBs, 2 oz finished copper | $66.87 | PCBWay quote |
-| Shipping on ten-board quote | $28.58 | cables will change final shipment cost |
+| Shipping on ten-board quote | $28.58 | Confirm for the final order |
 
- Power supplies are budgeted at $22 each, or $220 for ten.
+Power supplies are budgeted at $22 each, or $220 for ten.
 
-The planning estimate for **ten fully equipped assemblies** is
-$863–$1,153 before taxes/import charges, with a $1,200 contingency budget:
-$82.63 PCBs, about $100 PCB parts, $100–$200 assembly/setup, $240–$360
-for sixty fabricated output adapters, $60–$100 for ten fabricated input
-cables, $220 for ten power supplies, and $60–$90 for two PCBWay
-shipments. Except for the PCB quote, these are allowances, not supplier
-prices. That estimate assumed separate populated-board and cable shipments,
-not two PCB production runs.
-
-Trying local cable fabrication changes that estimate: replace outsourced
-cable charges with actual materials, tooling allocation, and labor, and
-reassess the second shipment if cables are no longer ordered from PCBWay.
-Installation labor and mains-side wiring were excluded from the estimate.
+Recalculate the installed-system budget using actual component prices and
+bulk-supply quantities. The existing pixel-chain cables are reused; sixty new
+output cables are not required. Installation labor will be *pro bono*;
+mains-side wiring is excluded from this budget.
 
 ## Current verification status
 
 - The schematic represents the direct-5 V design.
-- The PCB has the direct-5 V component placement and routing.
-- The +5 V and GND zones are defined and filled.
-- C2 and C3 have +5 V pads in the +5 V region and GND pads in the GND region.
-- The 140 × 50 mm revision has no unconnected items and passes targeted
-  0.2 mm trace-to-trace/pad clearance checks; final editor DRC remains to run.
+- KiCad CLI DRC reports zero board violations and zero unconnected pads.
 - Schematic ERC passes.
-- LED1 pin 1 is GND/cathode; pin 2 connects through R1 to the fused bus.
-- The customized F1 holder still requires physical 1:1 verification. The
-  review 3D render lacked JST connector bodies, so it did not validate plug
-  or cable-access clearances.
+- The customized F1 holder still requires physical 1:1 verification. Confirm
+  the terminal-block bodies, screw access, wire entry, ferrule insertion, and
+  cable bend/strain relief against physical parts; the saved 3D view alone is
+  not sufficient for that review.
 
 
 ## Before fabrication
@@ -258,11 +224,11 @@ Installation labor and mains-side wiring were excluded from the estimate.
 1. Measure worst-case current and voltage on an installed wall column.
 2. Confirm the proposed external 5 V supply, its setpoint, and available fault
    current are compatible with F1, F2–F7, the wiring, and the pixel boards.
-4. Verify every footprint and connector against a physical sample or
+3. Verify every footprint and connector against a physical sample or
    manufacturer drawing.
-6. Generate and independently review Gerbers, drills, BOM, placement data,
+4. Generate and independently review Gerbers, drills, BOM, placement data,
    assembly drawings, cable drawings, and service documentation.
-7. Build and bench-test a prototype before ordering the complete installation
+5. Build and bench-test a prototype before ordering the complete installation
    quantity.
 
 ## Service safety
