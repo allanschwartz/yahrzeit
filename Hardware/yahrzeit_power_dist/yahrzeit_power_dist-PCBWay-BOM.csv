@@ -1,0 +1,10 @@
+Item #,*Designator,*Qty,Manufacturer,*Mfg Part #,Description / Value,*Package/Footprint,Your Instructions / Notes,*Unit Price(9 units),*Total,*Delivery Time,*PCBWay Note,Customer Reply,PCBWay Update
+1,C1,1,Rubycon,25ZLH470MEFC10X12.5,"470 uF, 25 V, 105 C, low-impedance electrolytic capacitor","THT radial, 10 mm body, 5 mm pitch",https://www.digikey.com/en/products/detail/rubycon/25ZLH470MEFC10X12-5/3563614,,,,,,
+2,C2,1,Cal-Chip,GMC32X7R226K25NT,"22 uF, 25 V, X7R ceramic capacitor",SMD 1210 (3225 metric),https://www.digikey.com/en/products/detail/cal-chip-electronics-inc/GMC32X7R226K25NT/22461278,,,,,,
+3,C3,1,Yageo,CC0805KRX7R9BB104,"0.1 uF, 50 V, X7R ceramic capacitor",SMD 0805 (2012 metric),https://www.digikey.com/en/products/detail/yageo/CC0805KRX7R9BB104/302874,,,,,,
+4,F1,1,Keystone Electronics,3568,Vertical MINI blade-fuse PCB holder,Fuse:Fuseholder_Blade_Mini_Keystone_3568,https://www.digikey.com/en/products/detail/keystone-electronics/3568/2137306,,,,,,
+5,"F2,F3,F4,F5,F6,F7",6,Littelfuse,1812L150/16DR,"Resettable PTC fuse, 16 V, 1.5 A hold current",SMD 1812 (4532 metric),https://www.littelfuse.com/assetdocs/resettable-ptcs-1812l-datasheet?assetguid=ca5c80cb-504e-4a8a-8e74-0107520a1717,,,,,,
+6,"J1,J2,J3,J4,J5,J6,J7",7,Phoenix Contact,5442206,"BC-508X10-2 GN PCB terminal block, 2-position, 5.08 mm pitch, horizontal wire entry","THT, 5.08 mm pitch, 1.3 mm holes",Assemble on PCB with horizontal wire openings facing the adjacent board edge. https://www.digikey.com/en/products/detail/phoenix-contact/5442206/4390264,,,,,,
+7,LED1,1,Kingbright,APT2012CGCK,Green power-present LED,SMD 0805 (2012 metric),https://www.kingbrightusa.com/images/catalog/SPEC/APT2012CGCK.pdf,,,,,,
+8,R1,1,Yageo,RC0805FR-071KL,"1 kohm, 1%, 0.125 W resistor",SMD 0805 (2012 metric),https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_13.pdf,,,,,,
+9,,,,,,,,,,,,,

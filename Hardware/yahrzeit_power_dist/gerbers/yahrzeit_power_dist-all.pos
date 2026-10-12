@@ -1,0 +1,25 @@
+### Footprint positions - created on 2026-10-08T14:33:24 ###
+### Printed by KiCad version 10.0.0
+## Unit = mm, Angle = deg.
+## Side : All
+# Ref     Val              Package                                                         PosX       PosY       Rot  Side
+C1        470uF            CP_Radial_D10.0mm_P5.00mm                                    96.6000   -32.0000  -90.0000  top
+C2        22uF             C_1210_3225Metric                                           107.0000   -34.5000  -90.0000  top
+C3        0.1uF            C_0805_2012Metric                                           114.0000   -34.5000  -90.0000  top
+F1        7.5A_MINI_BLADE  Fuseholder_Blade_Mini_Keystone_3568                          81.6800   -30.0000  -90.0000  top
+F2        1.5A_HOLD_PTC    Fuse_1812_4532Metric                                         23.0000   -20.0000  -90.0000  top
+F3        1.5A_HOLD_PTC    Fuse_1812_4532Metric                                         43.0000   -20.0000  -90.0000  top
+F4        1.5A_HOLD_PTC    Fuse_1812_4532Metric                                         63.0000   -20.0000  -90.0000  top
+F5        1.5A_HOLD_PTC    Fuse_1812_4532Metric                                         83.0000   -20.0000  -90.0000  top
+F6        1.5A_HOLD_PTC    Fuse_1812_4532Metric                                        103.0000   -20.0000  -90.0000  top
+F7        1.5A_HOLD_PTC    Fuse_1812_4532Metric                                        123.0000   -20.0000  -90.0000  top
+J1        Power_IN         TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal    55.9200   -38.0000    0.0000  top
+J2        Power_Out        TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal    23.0000    -9.0000  180.0000  top
+J3        Power_Out        TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal    43.0000    -9.0000  180.0000  top
+J4        Power_Out        TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal    63.0000    -9.0000  180.0000  top
+J5        Power_Out        TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal    83.0000    -9.0000  180.0000  top
+J6        Power_Out        TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal   103.0000    -9.0000  180.0000  top
+J7        Power_Out        TerminalBlock_Phoenix_BC-508X10-2_1x02_P5.08mm_Horizontal   123.0000    -9.0000  180.0000  top
+LED1      POWER_ON         LED_0805_2012Metric                                         121.0000   -39.2625   90.0000  top
+R1        1K               R_0805_2012Metric                                           121.0000   -34.7625  -90.0000  top
+## End

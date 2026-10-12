@@ -2,37 +2,16 @@
 
 ## Site visit — Tuesday, October 6, 2026
 
-- Choose the power-distribution board location. Record its mounting height
-  relative to the bottom of the lower panel, rather than the uneven floor;
-  identify the reference point on the board used for that measurement.
-- Affix the printed PCB mockup and check panel movement and service access.
-- Verify that all six existing 18 AWG output cables reach the new terminals
-  with enough slack for ferrule termination and servicing. Retain their
-  existing Molex ends; new CBL-02 output adapters are no longer planned.
-- Measure the routed length needed for CBL-PD-01, including service slack,
-  and record the endpoints used for the measurement.
-- Photograph the installed power supplies, their rating labels, and terminal
-  connections.
-- Measure and record column current in normal operation and full Yizkor mode,
+- Choose the power-distribution board location, as 3 inches about the power supply 4x8
+- Verified that the six existing 18 AWG output cables reach the new terminals
+  with enough slack for ferrule termination and servicing.
+- Measured the routed length needed for CBL-PD-01, as 24 inches
+- (next site visit) Measure and record column current in normal operation and full Yizkor mode,
   noting which column and operating settings were measured.
-
 
 **Status — September 29, 2026:** Direct-5 V distribution layout is ready for
 PCBWay quotation. Fabrication choice: 140 × 50 mm, two-layer FR-4, 2.0 mm
 thickness, 2 oz finished copper, green mask, white silkscreen, lead-free HASL.
-The earlier 200 × 50 mm board was quoted at $82.63 for ten bare boards;
-request a new quote for this revision. Assembly and cables remain unquoted.
-
-Completed layout work includes 20 mm output spacing, a broad fused +5 V bus,
-nominally 3 mm main-input routing, 2 mm branch routing, and mounting holes
-7.5 mm from each adjacent edge. TP3 measures output 6; `POWERED` indicates
-the bus after F1. Text sizes and label placement have been reviewed.
-
-The resized layout has no unconnected items and passes targeted 0.2 mm
-trace-to-trace/pad clearance checks. Run editor DRC after the final edits
-and before exporting fabrication files. Schematic ERC subsequently passed
-with zero violations after adding a GND power flag; connector pin types and
-physical circuit connections were preserved. The remaining work is below.
 
 ## Electrical validation
 
@@ -56,19 +35,10 @@ physical circuit connections were preserved. The remaining work is below.
 - Using the mockup, verify connector fit and orientation, cable bend room,
   fuse-removal access, LED visibility, mounting holes, and hinged-panel
   clearance.
-- Measure the installed J1 supply-cable route and confirm its final length.
-- Confirm the 50 mm J2–J7 output-cable length in the installation, especially
-  after the board shrank and output spacing changed to 20 mm.
-- First experiment with local cable assembly using the crimpers and wire
-  already received. Make and inspect sample JST VH, Molex Mini-Fit Jr., and
-  ferrule terminations; check conductor retention, mating fit, continuity,
-  polarity, and strain relief before producing the complete set.
-- Record local cable material costs and assembly time. Use those results to
-  decide whether PCBWay cable fabrication is still needed.
 
 ## Pricing and documentation
 
-- Obtain PCBWay assembly/parts pricing for five and ten boards; retain the
+- Obtain PCBWay assembly/parts pricing for ten boards; retain the
   ten-board, 2 oz fabrication quote as the current planning basis.
 - Verify the Amazon power-supply price and select quantities for installed
   columns and spares. Seven columns need 42 output adapters and seven input
@@ -76,14 +46,11 @@ physical circuit connections were preserved. The remaining work is below.
 - Update the budget for local cable fabrication and confirm whether two
   PCBWay shipments are still required. Separate quoted charges from
   allowances, shipping, taxes/import charges, and labor.
-- Prepare the intended customer quote at $200 per installed column
-  ($1,400 for seven), with the included scope stated explicitly.
+- Prepare the intended customer quote at $100 per installed column
+  ($700 for seven), with the included scope stated explicitly.
 - Verify the saved PCB/3D views and schematic PDF/PNG match the release files.
   Export sources and drawings from the same final design revision.
 - Verify schematic-to-PCB agreement, particularly TP3's move to output 6.
-- Check the F1 supplier link: the current README URL contains `0297002`,
-  while the specified fuse is `0297007.WXNV` (7.5 A). Correct it before
-  releasing the purchasing BOM.
 
 ## Prototype and production release
 

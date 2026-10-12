@@ -9,7 +9,7 @@ that column. The main input and every output branch have independent
 overcurrent protection.
 
 The complete wall has seven panel columns and therefore requires seven working
-assemblies. The pricing basis is ten boards: one prototype, seven for the
+assemblies. The pricing basis is nine boards: seven for the
 installed columns, and two spares onsite. Fully cabled spare assemblies remain the service objective;
 final cable and power-supply quantities depend on how the spares are equipped.
 
@@ -40,7 +40,7 @@ clearances with physical parts before release.*
 
 - Input: regulated +5 V and GND through two-position terminal
   block J1.
-- Main protection: F1 is a replaceable 7.5 A MINI blade fuse in a
+- Main protection: F1 is a replaceable 7.5 A mini blade fuse in a
   PCB-mounted holder.
 - Input filtering: C1 / C2 / C3 provide bulk capacitance, mid-frequency
   bypassing, and high-frequency bypassing after F1.
@@ -49,20 +49,17 @@ clearances with physical parts before release.*
   through J7 independently.
 - Connectors: J1 through J7 are Phoenix Contact `5442206` (BC-508X10-2 GN),
   two-position 5.08 mm-pitch PCB terminal blocks with horizontal wire entry.
-  J1 through J7 use pin 1 for +5 V and pin
-  2 for GND.
+  These connectors use pin 1 for +5 V and pin 2 for GND.
 - Power indication: LED1 and R1 indicate that fused +5 V is present. The LED is
   advisory only and is not a safe-to-service interlock.
 
 The front layer contains a shaped `+5V_BUS_PLANE` and a surrounding GND pour.
 The back layer is a GND plane. C1, C2, and C3 straddle the +5 V/GND boundary.
-The bus region is approximately 13.5 mm wide and includes F1 pin 1 and
-F2–F7 pin 2. J1 pin 1 feeds fuse F1. The fused 5 V input feeds each branch circuit.
+The fused 5 V input feeds each branch circuit.
 
-TP1/TP2 sit between the left mounting holes and measure the raw input and
-GND. TP3/TP4 sit between the right mounting holes; TP3 measures protected
-output 6 and is labeled `OUT 6 +5V`. LED1, powered through R1 from the fused
-5 V rail, is labeled `POWERED`.
+TP1/TP2 sit between the left mounting holes and measure input voltage.
+TP3/TP4 sit between the right mounting holes and measure one of the fused output voltages.
+LED1, powered through R1 from the fused 5 V rail, is labeled `POWERED`.
 The indicator does not establish that all six PTC-protected outputs are live.
 
 ## Connector and cable interfaces
@@ -89,13 +86,14 @@ red for +5 V and black for GND before clamping each ferrule into J2-J7.
 
 ### J1 supply lead
 
-J1 is a two-position screw-clamp terminal. The current
-plan is a short, approximately 24 inch, two-conductor 18 AWG feed from the
+J1 is a two-position screw-clamp terminal.
+The supply wire is a short, approximately 24 inch, two-conductor 18 AWG feed from the
 regulated 5 V supply. Terminate the supply end with ferrules compatible with
 the supply's captive screw-clamp terminals; use compatible ferrules at J1
 as well (four ferrules total). Prepare each end for its terminal and ferrule.
-The KiCad design currently shows J1 populated with
-the same Phoenix terminal block used at J2-J7. Confirm the final cable route,
+Connector J1 is
+the same Phoenix terminal block as used at J2-J7.
+Confirm the cable route,
 length, ferrule fit, tightening torque, continuity, and polarity
 before installation. Measure voltage drop under maximum load before approving
 18 AWG for the final length. The power supply output is adjustable by ±10%.
@@ -132,30 +130,33 @@ bend radius with a full-size print, STEP model, or physical mockup.
 - `yahrzeit_power_dist.3Dview.png` — saved 3D view; verify current terminal
   block models and wire access against physical parts
 - `yahrzeit_power_dist.pretty/` — project-specific footprints
+- `enclosure/` — parametric wall enclosure and 4 × 8 box alignment jig
 - `DESIGN_TODO.md` — remaining validation and release checks
 
-## Component selection / preliminary BOM
+## Component selection / BOM pricing
 
-Prices below are preliminary quantity-one reference prices.
-Refresh this list when the DigiKey order is prepared.
-The cost column is per part, not the extended cost for one board.
+PCBWay prices are from quotation `T-V40W07135A` dated October 9, 2026,
+for nine assembled boards. DigiKey prices are the unit prices in the saved
+shopping cart dated October 7, 2026. Prices are per part; quantities are
+extended only in the subtotal.
 
-| Designator | Description | Manufacturer part number | Mount | Qty/board | Qty. 1 cost (USD) |
-|---|---|---|:---:|---:|---:|
-| C1 | 470 µF, 25 V, 105 °C, 10,000 h low-impedance aluminum electrolytic bulk capacitor | Rubycon `25ZLH470MEFC10X12.5` | THT radial, 10 mm body, 5 mm pitch | 1 | 0.43 <br>[DigiKey](https://www.digikey.com/en/products/detail/rubycon/25ZLH470MEFC10X12-5/3563614) |
-| C2 | 22 µF, 25 V, X7R mid-frequency ceramic bypass capacitor | Cal-Chip `GMC32X7R226K25NT` | SMD 1210 | 1 | 0.77 <br>[DigiKey](https://www.digikey.com/en/products/detail/cal-chip-electronics-inc/GMC32X7R226K25NT/22461278) |
-| C3 | 0.1 µF, 50 V, X7R high-frequency ceramic bypass capacitor | Yageo `CC0805KRX7R9BB104` | SMD 0805 | 1 | 0.17 <br>[DigiKey](https://www.digikey.com/en/products/detail/yageo/CC0805KRX7R9BB104/302874?s=N4IgTCBcDaIMJwAwA5EFYDSAlAGgdiwE4AhYgRkQBYQBdAXyA) |
-| F1 | 7.5 A, 32 VDC MINI automotive blade fuse | Littelfuse `029707.5WXNV` | Plug-in | 1 | 0.39 <br>[DigiKey](https://www.digikey.com/en/products/detail/littelfuse-inc/029707-5WXNV/146586) |
-| F1 holder | Vertical MINI blade-fuse PCB holder | Keystone `3568` | THT | 1 | 1.37 <br>[DigiKey](https://www.digikey.com/en/products/detail/keystone-electronics/3568/2137306) |
-| F2–F7 | Resettable PTC, 16 V, 1.5 A hold current | Littelfuse `1812L150/16DR` | SMD 1812 | 6 | 0.74 <br>[DigiKey](https://www.digikey.com/en/products/detail/littelfuse-inc/1812L150-16DR/3305611) |
-| J1–J7 | PCB terminal block, 2-position, 5.08 mm pitch, horizontal wire entry | Phoenix Contact `5442206` (BC-508X10-2 GN) | THT | 7 | 0.50 <br>[DigiKey](https://www.digikey.com/en/products/detail/phoenix-contact/5442206/4390264) |
-| LED1 | Green power-present LED | Kingbright `APT2012CGCK` | SMD 0805 | 1 | 0.21 [DigiKey](https://www.digikey.com/en/products/detail/kingbright/APT2012CGCK/1747526) |
-| R1 | 1 kΩ, 1%, 0.125 W power-indicator resistor | Yageo `RC0805FR-071KL` | SMD 0805 | 1 | 0.10 <br> [DigiKey](https://www.digikey.com/en/products/detail/yageo/RC0805FR-071KL/727444?s=N4IgTCBcDaIEoGEAMAOJBWAYnAtEg7AIwDSAMiALoC%2BQA) |
-| **Subtotal of priced PCB components** | | | | | **$11.38** |
+| Designator | Description | Manufacturer part number | Mount | Qty/board | PCBWay unit price (USD) | DigiKey cart unit price (USD) |
+|---|---|---|:---:|---:|---:|---:|
+| C1 | 470 µF, 25 V, 105 °C, 10,000 h low-impedance aluminum electrolytic bulk capacitor | Rubycon `25ZLH470MEFC10X12.5` | THT radial, 10 mm body, 5 mm pitch | 1 | 0.150 | 0.670 <br>[DigiKey](https://www.digikey.com/en/products/detail/rubycon/25ZLH470MEFC10X12-5/3563614) |
+| C2 | 22 µF, 25 V, X7R mid-frequency ceramic bypass capacitor | Cal-Chip `GMC32X7R226K25NT` | SMD 1210 | 1 | 1.633 | 1.350 <br>[DigiKey](https://www.digikey.com/en/products/detail/cal-chip-electronics-inc/GMC32X7R226K25NT/22461278) |
+| C3 | 0.1 µF, 50 V, X7R high-frequency ceramic bypass capacitor | Yageo `CC0805KRX7R9BB104` | SMD 0805 | 1 | 0.049 | 0.180 <br>[DigiKey](https://www.digikey.com/en/products/detail/yageo/CC0805KRX7R9BB104/302874?s=N4IgTCBcDaIMJwAwA5EFYDSAlAGgdiwE4AhYgRkQBYQBdAXyA) |
+| F1 | 7.5 A, 32 VDC MINI automotive blade fuse | Littelfuse `029707.5WXNV` | Plug-in; purchased separately | 1 | — | 0.301 <br>[DigiKey](https://www.digikey.com/en/products/detail/littelfuse-inc/029707-5WXNV/146586) |
+| F1 holder | Vertical MINI blade-fuse PCB holder | Keystone `3568` | THT | 1 | 1.174 | 1.310 <br>[DigiKey](https://www.digikey.com/en/products/detail/keystone-electronics/3568/2137306) |
+| F2–F7 | Resettable PTC, 16 V, 1.5 A hold current | Littelfuse `1812L150/16DR` | SMD 1812 | 6 | 0.086 | 0.612 <br>[DigiKey](https://www.digikey.com/en/products/detail/littelfuse-inc/1812L150-16DR/3305611) |
+| J1–J7 | PCB terminal block, 2-position, 5.08 mm pitch, horizontal wire entry | Phoenix Contact `5442206` (BC-508X10-2 GN) | THT | 7 | 0.276 | 0.500 est.<br>[DigiKey](https://www.digikey.com/en/products/detail/phoenix-contact/5442206/4390264) |
+| LED1 | Green power-present LED | Kingbright `APT2012CGCK` | SMD 0805 | 1 | 0.140 | 0.220 <br>[DigiKey](https://www.digikey.com/en/products/detail/kingbright/APT2012CGCK/1747526) |
+| R1 | 1 kΩ, 1%, 0.125 W power-indicator resistor | Yageo `RC0805FR-071KL` | SMD 0805 | 1 | 0.014 | 0.100 <br>[DigiKey](https://www.digikey.com/en/products/detail/yageo/RC0805FR-071KL/727444?s=N4IgTCBcDaIEoGEAMAOJBWAYnAtEg7AIwDSAMiALoC%2BQA) |
+| **Installed PCB-component subtotal per board** | | | | | **$5.608** | **$11.002** |
 
-The subtotal includes all seven terminal blocks at an estimated $0.50 each.
-Confirm distributor pricing before ordering.
-
+PCBWay's installed-component total is $50.472 for nine boards. The plug-in
+fuses are purchased separately and therefore are excluded from both
+subtotals. The DigiKey cart reflects the change from Phoenix Contact `1715721`
+to `5442206`.
 
 ## Extra parts for one complete column assembly
 
@@ -167,8 +168,10 @@ assembly.
 | Item | Description | Part or drawing | Qty/assembly | Unit cost (USD) |
 |---|---|---|---:|---:|
 | Power supply | Regulated 5 V, 10 A, 50 W adjustable enclosed supply | BTF-LIGHTING `AM50-B05-HD` ([Amazon](https://www.amazon.com/dp/B0FZQNMHN6)) | 1 | $22 |
-| Input lead | Two-conductor 18 AWG supply feed, approximately 600 mm; both ends ferruled | To be finalized | 4 ferrules<br> 24" wire | Negligible—bulk supplies |
-| Output lead preparation | Two ferrules per existing J2-J7 cable; six cables are reused | To be finalized | 12 ferrules | Negligible—bulk supplies |
+| Input lead | Two-conductor 18 AWG supply feed, approximately 24 inches; both ends ferruled | n/a | 4 ferrules<br> 24" wire | Negligible—bulk supplies |
+| Output lead preparation | Two ferrules per existing J2-J7 cable; six cables are reused | n/a | 12 ferrules | Negligible—bulk supplies |
+| 3D printed case | | | | bulk supplies |
+| 3mm screws  | with threaded inserts in the case | | | bulk supplies |
 
 <a href="BTF_AM50-B05-HD.jpg">
   <img src="BTF_AM50-B05-HD.jpg"
@@ -183,10 +186,10 @@ footprint, voltage/current rating, temperature rating, lifecycle status, and
 stock level has been checked against the current manufacturer datasheet and
 supplier listing.*
 
-## Quote and budget record — September 28, 2026
+## Quote and budget record — October 9, 2026
 
-These quotes predate the screw-terminal revision. Request updated pricing
-before ordering.
+PCBWay quotation `T-V40W07135A` covers ten fabricated PCBs and nine assembled
+boards using the screw-terminal design. Shipping is not yet included.
 
 We shall quote the customer **$60 per installed column**, or **$600
 for one prototype, seven columns, and two spares**,
@@ -197,9 +200,13 @@ This is the intended customer price, not a supplier quote.
 | Item | Amount (USD) | Basis |
 |---|---:|---|
 | 10 bare PCBs, 2 oz finished copper | $74.50 | PCBWay quote |
+| Components for 9 assembled boards | $50.472 | PCBWay BOM quote |
+| Assembly labor for 9 boards | $29.00 | PCBWay quote |
+| V3 member discount | −$3.105 | PCBWay quote |
+| **PCBWay order subtotal** | **$150.867** | Before shipping |
 | 10 bare PCBs, 1 oz | $72.72 | Screenshot; comparison only |
 | 5 bare PCBs, 2 oz finished copper | $66.87 | PCBWay quote |
-| Shipping on ten-board quote | $28.58 | Confirm for the final order |
+| Shipping on previous ten-board quote | $28.58 | Confirm for the final order |
 
 Power supplies are budgeted at $22 each, or $220 for ten.
 
