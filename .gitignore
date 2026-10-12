@@ -8,6 +8,9 @@
 .*.swp
 *~
 
+# KiCad per-user window and display state
+*.kicad_prl
+
 # macOS
 .DS_Store
 
@@ -16,6 +19,13 @@
 
 # Generated working files and render previews
 /tmp/
+
+# Runtime logs generated on an installed controller
+/yahrzeit_site-v3/data/automation.log*
+
+# Slicer project files are quickly recreated from the committed STL models
+/Hardware/**/*.3mf
+/Hardware/**/*.3ml
 
 # Generated immediately before compiling the embedded controller.
 /embedded/yahrzeit_v3/firmware_release.h

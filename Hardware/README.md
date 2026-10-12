@@ -158,40 +158,43 @@ and mechanical fit must be confirmed before fabrication or installation.
 
 ## Column Power Distribution Board
 
-<a href="yahrzeit_power_dist/yahrzeit_power_dist.png">
-  <img src="yahrzeit_power_dist/yahrzeit_power_dist.png"
+<a href="yahrzeit_power_dist/yahrzeit_power_dist.3Dview.png">
+  <img src="yahrzeit_power_dist/yahrzeit_power_dist.3Dview.png"
        alt="Yahrzeit Wall column power-distribution board" width="700">
 </a>
 
-*Preliminary layout of the proposed column power-distribution board.*
+*KiCad rendering of the 5 V column power-distribution board. Select the image
+for the full-size view.*
 
-The proposed power-distribution assembly replaces the direct 5 V supply and
-wire-nut fan-out for one vertical panel column. One assembly serves six
-56-LED branches. It accepts nominal 12 V input, uses a TI PTH12060WAH
-through-hole module to produce regulated 5 V, and provides six individually
-protected outputs. Input reverse-polarity and transient protection, local
-filtering, clearly polarized connectors, and accessible 5 V/GND test points
-make the assembly easier to diagnose and replace in the field.
+The power-distribution assembly replaces the wire-nut fan-out for one vertical
+panel column. It accepts regulated 5 V from an external 10 A supply through a
+two-position screw terminal, protects the input with a replaceable 7.5 A fuse,
+and supplies six 56-LED branches through independent 1.5 A resettable fuses.
+The screw terminals accept ferrules on the existing output cables, making the
+assembly easier to install, diagnose, and replace without connector crimping
+tools.
 
-The long-term concept uses one assembly for each of the wall's seven panel
-columns, plus complete spare assemblies and purpose-built labeled cables. The
-entire board-and-cable assembly is intended to be a field-replaceable unit.
-The design remains preliminary: measured wall current, fuse ratings, thermal
-performance, copper geometry, connector selections, cable lengths, and
-installation clearances must be verified before production.
+The board is 140 × 50 mm and uses 2 oz finished copper. Ten PCBs and assembly
+of nine boards have been ordered: one assembly for each of the wall's seven
+panel columns and two onsite spares. A parametric 3D-printed enclosure and an
+alignment jig are being developed while the first article is fabricated.
 
 - [yahrzeit\_power\_dist.kicad\_pro](yahrzeit_power_dist/yahrzeit_power_dist.kicad_pro)
   -- Open this project file in KiCad.
 - [yahrzeit\_power\_dist.kicad\_sch](yahrzeit_power_dist/yahrzeit_power_dist.kicad_sch)
   -- KiCad schematic.
 - [yahrzeit\_power\_dist.kicad\_pcb](yahrzeit_power_dist/yahrzeit_power_dist.kicad_pcb)
-  -- Preliminary PCB placement and routing.
+  -- PCB layout.
 - [power\_dist.schematic.pdf](yahrzeit_power_dist/power_dist.schematic.pdf) -- Current schematic
   PDF for review without KiCad.
-- [yahrzeit\_power\_dist.png](yahrzeit_power_dist/yahrzeit_power_dist.png) --
-  KiCad board rendering.
-- [DESIGN\_TODO.md](yahrzeit_power_dist/DESIGN_TODO.md) -- Outstanding
-  component-selection, indicator, layout, and pre-fabrication checks.
+- [yahrzeit\_power\_dist.3Dview.png](yahrzeit_power_dist/yahrzeit_power_dist.3Dview.png)
+  -- KiCad 3D rendering.
+- [README.md](yahrzeit_power_dist/README.md) -- Electrical, mechanical, BOM,
+  fabrication, and installation details.
+- [enclosure/](yahrzeit_power_dist/enclosure/) -- Parametric OpenSCAD enclosure,
+  alignment jig, printable STL models, and printing notes.
+- [DESIGN\_TODO.md](yahrzeit_power_dist/DESIGN_TODO.md) -- Remaining first-article
+  and installation checks.
 
 ## Reference Schematics
 
