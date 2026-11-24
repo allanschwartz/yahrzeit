@@ -68,12 +68,12 @@ Applies to this directory in addition to ../AGENTS.md.
   Normal animation is a 256-entry PROGMEM sine wave, peak PWM 128, period 2560 ms.
 - PANIC_MINUTES remains near panic code; panic blinks for five minutes then
   uses AVR watchdog reset. It is not an always-on watchdog for arbitrary hangs.
-- TEST_FIXTURE is currently selected: two V3-compatible 24-row by 3-column
-  boards, 24x6 overall, with panel columns 1 and 4. TEST_2x24_HARNESS retains
-  the older 24x2 geometry. Select exactly one geometry in yahrzeit_v2.h.
+- TEST_24x6_FIXTURE was used for bench testing: two V3-compatible 24-row by 3-column
+  boards, 24x6 overall, with panel columns 1 and 4. TEST_24x2_FIXTURE retains
+  the 24x2 geometry using six YYZ-PIXEL boards (two columns of three). Select exactly one geometry in yahrzeit_v2.h.
 - CBS_56x40_WALL selects site networking (192.168.13.9, gateway .13.8); bench
-  geometries select lab networking (192.168.86.243, gateway .86.1). Reserve
-  .243 for this shield before use; .240, .241 and .242 responded to ARP.
+  geometries select lab networking (192.168.86.143, gateway .86.1). The
+  final bench tests used .143; .243 was an earlier proposed address.
   Home network inventory: /Users/allan/Desktop/HOUSE/home_network_inventory.md;
   MAC addresses are more reliable identifiers than its historical IP addresses.
 - Build with arduino-cli compile --fqbn arduino:avr:mega; on this Mac the CLI is
@@ -83,3 +83,18 @@ Applies to this directory in addition to ../AGENTS.md.
   need only verification that executable code is unchanged.
 - Never upload firmware or send physical controller commands without explicit
   authorization. Report hardware behavior as unverified until actually tested.
+
+## Recorded bench validation
+
+- Final tested build: November 22, 2026, 16:57:44, Mega with W5500, 24x6 fixture
+  (then named TEST_FIXTURE; now TEST_24x6_FIXTURE).
+  Tests 1–6, 8, 10, and 11 passed on this build. Tests 7 and 9 had earlier
+  reported passes but were not repeated; test 12 was not performed. Allan
+  accepted this scope and stopped further regression testing.
+- ETHERNET_TEST_PLAN.md and test-results/ retain procedures and evidence,
+  including the earlier test 10 failure. Actual-byte idle renewal is stronger
+  than relying on a reader result; the original field lockup cause is unproven.
+- CBS_56x40_WALL is now selected for installation. Before deployment,
+  rebuild/upload and verify
+  56x40 geometry, 21 panels, IP 192.168.13.9 and gateway 192.168.13.8.
+  Do not mistake the tested bench configuration for the site configuration.

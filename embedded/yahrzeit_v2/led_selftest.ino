@@ -13,10 +13,11 @@
  *
  * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
  *              version 2.0 revised in July 2015
+ *              version 2.1 revised in November 2026; tests 1 through 6 retained
  *
  * @author      Allan M. Schwartz, allanschwartz@sbcglobal.net
  *
- * @copyright   copyright (c) 2008-15, by Allan M. Schwartz
+ * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
  *              All rights reserved.
  */
 

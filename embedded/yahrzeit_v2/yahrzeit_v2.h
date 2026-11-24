@@ -1,14 +1,19 @@
 /**
- * @file        yahrzeit_r2.h
+ * @file        yahrzeit_v2.h
  *
- * @brief       overall C header file for the Yahrzeit Embedded Controller
+ * @brief       Shared configuration for the Mega Yahrzeit controller.
+ *
+ *              Selects wall or bench geometry and gathers the module interfaces
+ *              and shared application declarations. Wiring and network defaults
+ *              are defined in the main sketch. Project history follows below.
  *
  * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
  *              version 2.0 revised in July 2015
+ *              version 2.1 revised in November 2026
  *
  * @author      Allan M. Schwartz, allanschwartz@sbcglobal.net
  *
- * @copyright   copyright (c) 2008-15, by Allan M. Schwartz
+ * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
  *              All rights reserved.
  */
 
@@ -104,10 +109,10 @@ constexpr uint16_t SOCKET_LISTEN_PORT = 2001;
 // ----------------------------------------------------------------------------
 
 // Top-level controller services defined in yahrzeit_v2.ino.
-void    sleep_ms( boolean, const unsigned int ms );
-void    writeOutput( byte streamID, const char *msg );
-char   *display_uptime( void );
 const char *versionText( void );
+void    writeOutput( byte streamID, const char *msg );
+void    sleep_ms( boolean doRefresh, const unsigned int ms );
+char   *display_uptime( void );
 void    panic( const char *expression, const char *file, int line );
 
 #define ASSERT(expression) \
@@ -117,10 +122,10 @@ void    panic( const char *expression, const char *file, int line );
         } \
     } while (0)
 
-// define as extern the public functions defined in "selftest.h"
-void  selftest_description( byte streamID, byte testNumber, const char * testDescription, byte panel );
-int   selftest( byte streamID, byte testnumber, byte panel );
+// Public self-test functions defined in led_selftest.ino.
 void  selftest_marching_row( byte panel );
+void  selftest_description( byte streamID, byte testNumber, const char * testDescription, byte panel );
+int   selftest( byte streamID, byte testNumber, byte panel );
 
 
 // ----------------------------------------------------------------------------
@@ -129,11 +134,11 @@ void  selftest_marching_row( byte panel );
 
 
 // Select exactly one display geometry; this also selects site/lab networking.
-//#define CBS_56x40_WALL    1
-#define TEST_FIXTURE      1
-//#define TEST_2x24_HARNESS 1
+#define CBS_56x40_WALL    1
+//#define TEST_24x6_FIXTURE      1
+//#define TEST_24x2_FIXTURE 1
 
-#if (defined(CBS_56x40_WALL) + defined(TEST_FIXTURE) + defined(TEST_2x24_HARNESS)) != 1
+#if (defined(CBS_56x40_WALL) + defined(TEST_24x6_FIXTURE) + defined(TEST_24x2_FIXTURE)) != 1
 #error "Select exactly one display geometry"
 #endif
 
@@ -148,17 +153,18 @@ constexpr byte NCOLS = 40;                  // a column is 56 rows of consecutiv
 #endif
 
 
-#if TEST_2x24_HARNESS
+#if TEST_24x2_FIXTURE
 
-constexpr const char DISPLAY_CONFIGURATION[] = "YYZ 2x24 test harness";
+// Test with 6 YYZ-PIXEL boards, arranged as 2 columns of 3 boards.
+constexpr const char DISPLAY_CONFIGURATION[] = "YYZ 24x2 test fixture";
 
-constexpr byte NPANELS = 1;                   // In this test-harness we have 1 panels
+constexpr byte NPANELS = 1;                   // one 24-row by 2-column fixture
 constexpr byte NROWS = 24;                  // three 8-pixel yyz_pixel boards is 24 rows
-constexpr byte NCOLS = 2;                   // and we only have two columns
+constexpr byte NCOLS = 2;                   // two columns
 
 #endif
 
-#if TEST_FIXTURE
+#if TEST_24x6_FIXTURE
 
 constexpr const char DISPLAY_CONFIGURATION[] = "YYZ 24x6 test fixture";
 

@@ -1,16 +1,19 @@
 /**
  * @file        led_device.ino
  *
- * @brief       LED Driver device specific code.
+ * @brief       Logical pixel addressing, panel geometry, and EEPROM storage.
  *
- *          This is an abstraction layer above the "yyz_pixel" class.
+ *              Implements one-based wall and panel operations above yyz_pixel,
+ *              including brightness, refresh, and saved framebuffer handling.
+ *              Panel tables include PANEL0 for the complete display.
  *
  * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
  *              version 2.0 revised in July 2015
+ *              version 2.1 revised in November 2026
  *
  * @author      Allan M. Schwartz, allanschwartz@sbcglobal.net
  *
- * @copyright   copyright (c) 2008-15, by Allan M. Schwartz
+ * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
  *              All rights reserved.
  */
 
@@ -33,10 +36,10 @@ const  byte led_row_of_panel[ NPANELS+1 ] = {
     1, 17, 39,
     1, 17, 39,
   #endif
-  #if TEST_2x24_HARNESS
+  #if TEST_24x2_FIXTURE
     1, 1
   #endif
-  #if TEST_FIXTURE
+  #if TEST_24x6_FIXTURE
     1, 1, 1
   #endif
 };
@@ -52,10 +55,10 @@ const  byte led_col_of_panel[ NPANELS+1 ] = {
     30, 30, 30,
     36, 36, 36,
   #endif
-  #if TEST_2x24_HARNESS
+  #if TEST_24x2_FIXTURE
     1, 1
   #endif
-  #if TEST_FIXTURE
+  #if TEST_24x6_FIXTURE
     1, 1, 4
   #endif
 };
@@ -71,10 +74,10 @@ const  byte nrows_perpanel[ NPANELS+1 ] = {
     16, 22, 18,
     16, 22, 18,
   #endif
-  #if TEST_2x24_HARNESS
+  #if TEST_24x2_FIXTURE
     NROWS, NROWS
   #endif
-   #if TEST_FIXTURE
+   #if TEST_24x6_FIXTURE
     24, 24, 24
   #endif
 };
@@ -90,10 +93,10 @@ const  byte ncols_perpanel[ NPANELS+1 ] = {
     6, 6, 6,
     5, 5, 5,
   #endif
-  #if TEST_2x24_HARNESS
+  #if TEST_24x2_FIXTURE
     NCOLS, NCOLS
   #endif
-  #if TEST_FIXTURE
+  #if TEST_24x6_FIXTURE
     6, 3, 3
   #endif
 };

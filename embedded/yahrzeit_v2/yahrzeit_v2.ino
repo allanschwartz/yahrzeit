@@ -1,17 +1,21 @@
 /**
- * @file        yahrzeit_v2.c
+ * @file        yahrzeit_v2.ino
  *
- * @brief       top-level C code the Yahrzeit Embedded Controller
+ * @brief       Top-level Arduino Mega Yahrzeit controller sketch.
+ *
+ *              Owns physical wiring, network defaults, setup and cooperative
+ *              loop scheduling, output routing, uptime, and panic indication.
+ *              The external status LED breathes during normal loop operation;
+ *              panic blinks the LED before a watchdog restart.
  *
  * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
  *              version 2.0 revised in July 2015
+ *              version 2.1 revised in November 2026
  *
  * @author      Allan M. Schwartz, allanschwartz@sbcglobal.net
  *
- * @copyright   copyright (c) 2008-15, by Allan M. Schwartz
+ * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
  *              All rights reserved.
- *
- * @notes       see project notes in file yahrzeit_v2.h
  */
 
 /**
@@ -66,9 +70,8 @@ byte mac[] = {
 IPAddress ipaddr(192, 168, 13, 9);
 IPAddress gateway(192, 168, 13, 8);
 #else
-// Allan's home lab. Reserve .243 for this shield before connecting.
-// No ping/ARP response on 2026-11-22; .240, .241 and .242 are occupied.
-// test with 'nc -v 192.168.86.243 2001'
+// Allan's home lab. Reserve .143 for this shield before connecting.
+// test with 'nc -v 192.168.86.143 2001'
 IPAddress ipaddr(192, 168, 86, 143);
 IPAddress gateway(192, 168, 86, 1);
 #endif
@@ -83,8 +86,8 @@ constexpr byte ETHERNET_SD_CS_PIN = 4; // unused SD card shares the SPI bus
 constexpr byte STATUS_LED_PIN = 45;
 constexpr unsigned long ALIVE_PERIOD_MS = 2560;
 
+// forward declarations of functions 
 static void breathingLed();
-
 [[noreturn]] static void blinkPanicLedThenRestart();
 
 // ----------------------------------------------------------------------------
@@ -178,15 +181,27 @@ static void breathingLed()
     // Phase-shifted V3 sine wave: round(64 * (1 - cos(2*pi*i/255))).
     // Mirrored samples start/end at 0; the two center samples peak at PWM 128.
     // PROGMEM stores the 256-byte table in flash rather than RAM.
-    // Table samples 0, 4, ... 252: 64 columns, eight rows, one star per sample.
-    // 128 |                           ***********
-    //     |                       ****           ****
-    //     |                   ****                   ***
-    //     |                ***                          ***
-    //     |             ***                                ***
-    //     |          ***                                      ***
-    //     |      ****                                            *****
-    //   0 |******                                                     *****
+    // PWM amplitude; 65 samples spanning the complete 256-entry table.
+    // PWM
+    // 128 |                             *******
+    //     |                          ***       ***
+    //     |                        **             **
+    //     |                      **                 **
+    //     |                     *                     *
+    //     |                    *                       *
+    //     |                  **                         **
+    //     |                 *                             *
+    //  64 |----------------*-------------------------------*----------------
+    //     |              **                                 **
+    //     |             *                                     *
+    //     |            *                                       *
+    //     |          **                                         **
+    //     |         *                                             *
+    //     |       **                                               **
+    //     |    ***                                                   ***
+    //   0 |****                                                         ****
+    //     +------------------------------------------------------------------> Time (s)
+    //      0             0.64            1.28            1.92            2.56
     static const byte BREATHING_PWM[256] PROGMEM = {
           0,   0,   0,   0,   0,   0,   1,   1,   1,   2,   2,   2,   3,   3,   4,   4,
           5,   6,   6,   7,   8,   8,   9,  10,  11,  12,  13,  14,  15,  16,  17,  18,

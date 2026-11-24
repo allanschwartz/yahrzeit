@@ -21,7 +21,7 @@ These tests focus on Ethernet. No pixel boards need to be connected.
 | Gateway | `192.168.86.1` |
 | Subnet mask | `255.255.255.0` |
 | Serial Monitor | 9600 baud; newline or carriage-return line ending |
-| Display configuration | at CBS: `CBS_56x40_WALL`: 56 rows, 40 columns, in 21 panels <br> at Allan's: `TEST_FIXTURE`: 24 rows, 6 columns, 2 panels|
+| Display configuration | at CBS: `CBS_56x40_WALL`: 56 rows, 40 columns, in 21 panels <br> at Allan's: `TEST_24x6_FIXTURE`: 24 rows, 6 columns, 2 panels|
 
 
 Verify these settings using serial `status` before starting. The firmware's
@@ -272,11 +272,20 @@ Before resetting or unplugging the shield, capture:
 
 ## Results
 
-Firmware build/date: ____________________
+Checkboxes below identify tests completed on the final bench build. Tests 7
+and 9 retain earlier reported passes but were not repeated; test 12 was not run.
+Allan accepted this scope before packing the controller for the CBS visit.
+Detailed responses and timing are preserved in `test-results/`.
 
-Tester and date: ____________________
+The earlier incomplete-command failure no longer reproduced after idle renewal
+was based on actual bytes read. This does not establish the cause of the
+original onsite lockup.
 
-Switch/cable details: ____________________
+Firmware build/date: November 22, 2026, 16:57:44 (final bench regression build).
+
+Tester and date: Allan, with automated TCP checks, November 22, 2026.
+
+Switch/cable details: home network; switch model and cable details not recorded.
 
 | Done | Test | Pass/fail | Notes / recovery required |
 |---|---|---|---|
@@ -286,12 +295,12 @@ Switch/cable details: ____________________
 | [x] | 4. Cable loss without client | PASS | Retested 2026-11-22, build 16:57:44: unplugged serial showed link down/listener stopped; LED kept breathing; after reconnection fresh TCP status succeeded with continuous uptime. |
 | [x] | 5. Cable loss with client | PASS | Retested 2026-11-22, build 16:57:44: active client cleaned up on link loss; serial responsive and LED breathing; fresh TCP status succeeded after reconnect, without reset. |
 | [x] | 6. Boot without Ethernet | PASS | Retested 2026-11-22, build 16:57:44: serial confirmed link down at boot, ready at 00:00:08.808, listener started at 00:01:14.511; LED breathing; fresh TCP status succeeded. |
-| [x] | 7. Repeated interruptions | PASS | Reported by Allan, 2026-11-22. |
+| [ ] | 7. Repeated interruptions | Earlier PASS | Reported by Allan, 2026-11-22; not repeated on final build. |
 | [x] | 8. Force-kill netcat | PASS | Retested 2026-11-22, build 16:57:44: SIGKILL terminated nc; fresh status succeeded without reset. |
-| [x] | 9. Client network disappears | PASS | Reported by Allan, 2026-11-22. |
+| [ ] | 9. Client network disappears | Earlier PASS | Reported by Allan, 2026-11-22; not repeated on final build. |
 | [x] | 10. Incomplete command cleanup | PASS | Retested 2026-11-22, build 16:57:44: unterminated sta closed after 600.373 s; immediate reconnect/status clean; uptime continued from 00:04:34 to 00:14:35. Earlier build failed at 630 s. |
 | [x] | 11. Controller reset | PASS | 2026-11-22: Allan pressed RESET with TCP connected; old session closed; fresh status succeeded with restarted uptime. |
-| [ ] | 12. Extended run | | |
+| [ ] | 12. Extended run | Not run | Allan elected to stop testing after final-build regression. |
 
 **Primary pass criterion:** Network interruptions recover without removing the
 Ethernet shield or power-cycling the controller. Tests that intentionally reset

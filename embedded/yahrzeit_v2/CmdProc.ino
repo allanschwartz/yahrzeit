@@ -3,12 +3,17 @@
  *
  * @brief       Shared command processing for serial and Ethernet input.
  *
+ *              Parses the compact command language, dispatches display operations,
+ *              and renders help, version, and controller/network status output.
+ *              Serial and TCP transports supply complete command lines.
+ *
  * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
  *              version 2.0 revised in July 2015
+ *              version 2.1 revised in November 2026
  *
  * @author      Allan M. Schwartz, allanschwartz@sbcglobal.net
  *
- * @copyright   copyright (c) 2008-15, by Allan M. Schwartz
+ * @copyright   copyright (c) 2008,2015,2026, by Allan M. Schwartz
  *              All rights reserved.
  */
 

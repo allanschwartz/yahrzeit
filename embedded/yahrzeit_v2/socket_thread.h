@@ -18,6 +18,9 @@
  *
  *              The socket code owns link polling, listener recovery, client
  *              connection handling, idle timeout, and incremental line input.
+ *              Only bytes actually consumed renew the 10-minute idle timer.
+ *              Read results include byte count and command collection status;
+ *              per-client counters are available for diagnostic reporting.
  *              It does not parse command semantics or manage wall geometry.
  *
  * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
