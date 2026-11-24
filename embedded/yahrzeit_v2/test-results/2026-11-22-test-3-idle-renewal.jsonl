@@ -1,0 +1,39 @@
+{"time": "2026-11-22T15:17:26-08:00", "elapsed_seconds": 0.0, "event": "test_started", "host": "192.168.86.143", "port": 2001, "renewal_seconds": 540, "idle_timeout_seconds": 600}
+{"time": "2026-11-22T15:17:26-08:00", "elapsed_seconds": 0.025, "event": "command_sent", "label": "initial", "command": "status"}
+{"time": "2026-11-22T15:17:26-08:00", "elapsed_seconds": 0.05, "event": "status_response", "text": "00:13:26.934 | status\nSTATUS\n\tfirmware=V2.1\n\tboard=Arduino Mega 2560\n\tconfiguration=YYZ 24x6 test fixture\n\trows=24 cols=6 panels=2\n\tpins DI=42 OE=44 CP=46 ST=48\n\tconfiguredIP=192.168.86.143 activeIP=192.168.86.143 port=2001\n\tgateway=192.168.86.1 subnet=255.255.255.0\n\tdns=8.8.8.8\n\tMAC=A8:61:0A:AE:E4:E2\n\tethernetHardware=W5500 link=up\n\tlistener=running port=2001\n\tclient=connected idle=0 seconds\n"}
+{"time": "2026-11-22T15:18:26-08:00", "elapsed_seconds": 60.079, "event": "waiting", "seconds_to_deadline": 479.9, "expecting_closure": false}
+{"time": "2026-11-22T15:19:26-08:00", "elapsed_seconds": 120.108, "event": "waiting", "seconds_to_deadline": 419.9, "expecting_closure": false}
+{"time": "2026-11-22T15:20:26-08:00", "elapsed_seconds": 180.127, "event": "waiting", "seconds_to_deadline": 359.9, "expecting_closure": false}
+{"time": "2026-11-22T15:21:26-08:00", "elapsed_seconds": 240.155, "event": "waiting", "seconds_to_deadline": 299.9, "expecting_closure": false}
+{"time": "2026-11-22T15:22:26-08:00", "elapsed_seconds": 300.182, "event": "waiting", "seconds_to_deadline": 239.8, "expecting_closure": false}
+{"time": "2026-11-22T15:23:26-08:00", "elapsed_seconds": 360.205, "event": "waiting", "seconds_to_deadline": 179.8, "expecting_closure": false}
+{"time": "2026-11-22T15:24:26-08:00", "elapsed_seconds": 420.249, "event": "waiting", "seconds_to_deadline": 119.8, "expecting_closure": false}
+{"time": "2026-11-22T15:25:26-08:00", "elapsed_seconds": 480.282, "event": "waiting", "seconds_to_deadline": 59.7, "expecting_closure": false}
+{"time": "2026-11-22T15:26:26-08:00", "elapsed_seconds": 540.033, "event": "renewal_interval", "seconds": 540.008}
+{"time": "2026-11-22T15:26:26-08:00", "elapsed_seconds": 540.035, "event": "command_sent", "label": "first nine-minute renewal", "command": "status"}
+{"time": "2026-11-22T15:26:26-08:00", "elapsed_seconds": 540.054, "event": "status_response", "text": "00:22:26.625 | status\nSTATUS\n\tfirmware=V2.1\n\tboard=Arduino Mega 2560\n\tconfiguration=YYZ 24x6 test fixture\n\trows=24 cols=6 panels=2\n\tpins DI=42 OE=44 CP=46 ST=48\n\tconfiguredIP=192.168.86.143 activeIP=192.168.86.143 port=2001\n\tgateway=192.168.86.1 subnet=255.255.255.0\n\tdns=8.8.8.8\n\tMAC=A8:61:0A:AE:E4:E2\n\tethernetHardware=W5500 link=up\n\tlistener=running port=2001\n\tclient=connected idle=0 seconds\n"}
+{"time": "2026-11-22T15:27:26-08:00", "elapsed_seconds": 600.088, "event": "waiting", "seconds_to_deadline": 479.9, "expecting_closure": false}
+{"time": "2026-11-22T15:28:26-08:00", "elapsed_seconds": 660.125, "event": "waiting", "seconds_to_deadline": 419.9, "expecting_closure": false}
+{"time": "2026-11-22T15:29:26-08:00", "elapsed_seconds": 720.171, "event": "waiting", "seconds_to_deadline": 359.9, "expecting_closure": false}
+{"time": "2026-11-22T15:30:26-08:00", "elapsed_seconds": 780.215, "event": "waiting", "seconds_to_deadline": 299.8, "expecting_closure": false}
+{"time": "2026-11-22T15:31:26-08:00", "elapsed_seconds": 840.26, "event": "waiting", "seconds_to_deadline": 239.8, "expecting_closure": false}
+{"time": "2026-11-22T15:32:26-08:00", "elapsed_seconds": 900.312, "event": "waiting", "seconds_to_deadline": 179.7, "expecting_closure": false}
+{"time": "2026-11-22T15:33:26-08:00", "elapsed_seconds": 960.359, "event": "waiting", "seconds_to_deadline": 119.7, "expecting_closure": false}
+{"time": "2026-11-22T15:34:26-08:00", "elapsed_seconds": 1020.392, "event": "waiting", "seconds_to_deadline": 59.6, "expecting_closure": false}
+{"time": "2026-11-22T15:35:26-08:00", "elapsed_seconds": 1080.046, "event": "renewal_interval", "seconds": 540.01}
+{"time": "2026-11-22T15:35:26-08:00", "elapsed_seconds": 1080.05, "event": "command_sent", "label": "second nine-minute renewal", "command": "status"}
+{"time": "2026-11-22T15:35:26-08:00", "elapsed_seconds": 1080.069, "event": "status_response", "text": "00:31:26.325 | status\nSTATUS\n\tfirmware=V2.1\n\tboard=Arduino Mega 2560\n\tconfiguration=YYZ 24x6 test fixture\n\trows=24 cols=6 panels=2\n\tpins DI=42 OE=44 CP=46 ST=48\n\tconfiguredIP=192.168.86.143 activeIP=192.168.86.143 port=2001\n\tgateway=192.168.86.1 subnet=255.255.255.0\n\tdns=8.8.8.8\n\tMAC=A8:61:0A:AE:E4:E2\n\tethernetHardware=W5500 link=up\n\tlistener=running port=2001\n\tclient=connected idle=0 seconds\n"}
+{"time": "2026-11-22T15:36:26-08:00", "elapsed_seconds": 1140.118, "event": "waiting", "seconds_to_deadline": 569.9, "expecting_closure": true}
+{"time": "2026-11-22T15:37:26-08:00", "elapsed_seconds": 1200.151, "event": "waiting", "seconds_to_deadline": 509.9, "expecting_closure": true}
+{"time": "2026-11-22T15:38:26-08:00", "elapsed_seconds": 1260.203, "event": "waiting", "seconds_to_deadline": 449.8, "expecting_closure": true}
+{"time": "2026-11-22T15:39:26-08:00", "elapsed_seconds": 1320.253, "event": "waiting", "seconds_to_deadline": 389.8, "expecting_closure": true}
+{"time": "2026-11-22T15:40:26-08:00", "elapsed_seconds": 1380.298, "event": "waiting", "seconds_to_deadline": 329.8, "expecting_closure": true}
+{"time": "2026-11-22T15:41:26-08:00", "elapsed_seconds": 1440.339, "event": "waiting", "seconds_to_deadline": 269.7, "expecting_closure": true}
+{"time": "2026-11-22T15:42:26-08:00", "elapsed_seconds": 1500.37, "event": "waiting", "seconds_to_deadline": 209.7, "expecting_closure": true}
+{"time": "2026-11-22T15:43:26-08:00", "elapsed_seconds": 1560.401, "event": "waiting", "seconds_to_deadline": 149.6, "expecting_closure": true}
+{"time": "2026-11-22T15:44:26-08:00", "elapsed_seconds": 1620.442, "event": "waiting", "seconds_to_deadline": 89.6, "expecting_closure": true}
+{"time": "2026-11-22T15:45:26-08:00", "elapsed_seconds": 1680.421, "event": "connection_closed", "expected": true}
+{"time": "2026-11-22T15:45:26-08:00", "elapsed_seconds": 1680.425, "event": "idle_close_timing", "seconds": 600.371}
+{"time": "2026-11-22T15:45:26-08:00", "elapsed_seconds": 1680.432, "event": "command_sent", "label": "post-timeout reconnection", "command": "status"}
+{"time": "2026-11-22T15:45:26-08:00", "elapsed_seconds": 1680.455, "event": "status_response", "text": "00:41:26.360 | status\nSTATUS\n\tfirmware=V2.1\n\tboard=Arduino Mega 2560\n\tconfiguration=YYZ 24x6 test fixture\n\trows=24 cols=6 panels=2\n\tpins DI=42 OE=44 CP=46 ST=48\n\tconfiguredIP=192.168.86.143 activeIP=192.168.86.143 port=2001\n\tgateway=192.168.86.1 subnet=255.255.255.0\n\tdns=8.8.8.8\n\tMAC=A8:61:0A:AE:E4:E2\n\tethernetHardware=W5500 link=up\n\tlistener=running port=2001\n\tclient=connected idle=0 seconds\n"}
+{"time": "2026-11-22T15:45:26-08:00", "elapsed_seconds": 1680.456, "event": "PASS", "summary": "Both nine-minute renewals survived; ten-minute idle close and reconnection verified"}

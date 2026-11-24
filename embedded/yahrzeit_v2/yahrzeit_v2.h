@@ -20,9 +20,9 @@
  *      Yahrzeit Appliance - LAMP (or equiv.) machine which presents
  *          a browsable GUI to the the end-user.
  *
- *      Yahrzeit Embedded Controller - The Arduino based microcontroller 
+ *      Yahrzeit Embedded Controller - The Arduino based microcontroller
  *          which sits behind the Yahrzeit wall and controls the LED array.
- *        
+ *
  *      Yahrzeit Pixel board (YPX) - the YPX board is a small
  *          number of LEDs on a single narrow board.  We have implemented
  *          6-pixel, 8-pixel and 10-pixel YPX boards.  A string of 7 YPX
@@ -30,21 +30,21 @@
  *          boards) are connected to comprise the entire LED array and the
  *          Yahrzeit Wall.  The YPX is referred to in this code as the
  *          "yyz_pixel" board.
- *        
+ *
  *      Arduino Ethenet Shield -- The Ethernet communications device
  *          which provides a TCP/IP connection between the Embedded
  *          Controller and the Yahrzeit Appliance.  With this device, the
  *          Yahrzeit Wall (the Yahrzeit Embedded Controller) is reachable with
  *          "telnet" or "nc", at a particular IP address and port number.
- *          
+ *
  * FURTHER DETAILS
- *      Version 1 of the Yahrzeit Embedded Controller was implemented with an 
+ *      Version 1 of the Yahrzeit Embedded Controller was implemented with an
  *      Atmel 89C51ED2 custom board.
  *
  *      The 89C51ED2 is an 8051-compatible 8bit microprocessor with 32K Flash.
  *      The AT89C51ED2 provides the following standard features: 32K
- *      bytes of Flash, 2KB EEPROM, 256 bytes of SRAM, 1792 bytes of XRAM, 
- *      32 I/O lines, three 16-bit timer/counters, full-duplex serial port, 
+ *      bytes of Flash, 2KB EEPROM, 256 bytes of SRAM, 1792 bytes of XRAM,
+ *      32 I/O lines, three 16-bit timer/counters, full-duplex serial port,
  *      on-chip oscillator, and clock circuitry.
  *
  *      Version 2 of the Yahrzeit Embedded Controller is implemented with
@@ -71,61 +71,41 @@
  *          TEst <testnumber> [<panel>|*]
  */
 
-#ifndef __YAHRZEIT_R2_H__
-#define __YAHRZEIT_R2_H__
+#pragma once
+
+#include "socket_thread.h"
+#include "serial_thread.h"
+#include "led_device.h"
+#include "CmdProc.h"
 
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
-class EthernetClient;
 //#include "stdlib.h"
 //#include "string.h"
-#define STRMATCH2(s1,s2)      (strncmp(s1,s2,2) == 0)
-
-enum { PANEL0 = 0 };
 
 enum streamIds { CONSOLE = 1, SOCKET = 2 };
 
-enum commandIds  {
-    NONE_OF_THE_ABOVE = 0,
-    CMD_ALL = 1,        // turn on/off all LEDs
-    CMD_BRIGHT,         // set the brightness
-    CMD_DATA,           // set a specific data bit pattern
-    CMD_DUMP,           // dump the pixel memory
-    CMD_HELP,           // display command help
-    CMD_LOAD,           // load the pixel memory from EEPROM
-    CMD_PIXEL,          // set a pixel memory on/off
-    CMD_REFRESH,        // refresh the LED display from pixel memory
-    CMD_SAVE,           // store the pixel memory into EEPROM
-    CMD_STATUS,         // display controller and network configuration
-    CMD_TEST,           // do one of several LED test pattern
-    CMD_VERSION,        // display firmware and compile-time board target
-    CMD_NOP,            // (was required on the slower 8051 inplementation)
-    MISSING_ARG = 255
-};
+constexpr uint16_t SOCKET_LISTEN_PORT = 2001;
 
-enum ResultIds {
-    NO_ERROR = 0, ERR_SYNTAX, ERR_MISSING, ERR_ROW,
-    ERR_COL, ERR_PANEL, ERR_BRIGHT, ERR_TESTNUM,
-};
+#if defined(ARDUINO_AVR_MEGA2560)
+    constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino Mega 2560";
+#elif defined(ARDUINO_AVR_UNO)
+    constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino Uno";
+#elif defined(ARDUINO_ARCH_AVR)
+    constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino AVR board";
+#else
+    constexpr const char *CONTROLLER_BOARD_MODEL = "Arduino-compatible board";
+#endif
 
-extern const char *ResultStrings[8];
-extern EthernetClient socketClient;
-extern boolean socketListenerRunning;
-extern unsigned long socketLastByteReceivedMs;
-    
 
-    
 // ----------------------------------------------------------------------------
 //            F U N C T I O N   P R O T O T Y P E S
 // ----------------------------------------------------------------------------
 
-// define as extern the public functions defined in yahrzeit_r2.c
-void    socket_thread( void );
-int     socket_gets( char *input, const unsigned int maxsize, int *piIndex );
+// Top-level controller services defined in yahrzeit_v2.ino.
 void    sleep_ms( boolean, const unsigned int ms );
-void    console_log( const char *msg );
-void    my_puts( byte streamID, const char *msg );
+void    writeOutput( byte streamID, const char *msg );
 char   *display_uptime( void );
 const char *versionText( void );
 void    panic( const char *expression, const char *file, int line );
@@ -136,31 +116,6 @@ void    panic( const char *expression, const char *file, int line );
             panic(#expression, __FILE__, __LINE__); \
         } \
     } while (0)
-
-// define as extern the public functions defined in "led_console.c"
-void    console_init( void );
-void    console_thread( void );
-boolean console_gets( char *input, const unsigned int maxsize, int *piIndex );
-const char *  shell_execute( byte streamID, char *command );
-void    parse_command( char *command, char **argv );
-boolean onoff_bool( char *token );
-int     console_data_cmd( byte row, byte col, char *bindata );
-void    hexdump( byte streamID, void *addr, const unsigned int len );
-int     console_dump( byte streamID, byte panel );
-
-// define as extern the public functions defined in "led_device.c"
-void    led_init( void );
-int     led_store_in_array( boolean pixelbit, byte row, byte col );
-boolean led_pixel_value( byte row, byte col );
-int     led_store_in_panel( boolean pixelbit, byte row, byte col, byte panel );
-void    led_savedata( void );
-void    led_loaddata( void );
-int     led_set_intensity( int intensity );
-int     led_all_on( boolean pixelbit, byte panel );
-extern const  byte led_row_of_panel[];
-extern const  byte led_col_of_panel[];
-extern const  byte nrows_perpanel[];
-extern const  byte ncols_perpanel[];
 
 // define as extern the public functions defined in "selftest.h"
 void  selftest_description( byte streamID, byte testNumber, const char * testDescription, byte panel );
@@ -173,38 +128,46 @@ void  selftest_marching_row( byte panel );
 // ----------------------------------------------------------------------------
 
 
-        // one of the following three lines must be uncommented
-#define CBS_56x40_WALL    1
-//#define TEST_16x64_LED_MATRIX    1
-//#define TEST_2x24_HARNESS    1
+// Select exactly one display geometry; this also selects site/lab networking.
+//#define CBS_56x40_WALL    1
+#define TEST_FIXTURE      1
+//#define TEST_2x24_HARNESS 1
 
+#if (defined(CBS_56x40_WALL) + defined(TEST_FIXTURE) + defined(TEST_2x24_HARNESS)) != 1
+#error "Select exactly one display geometry"
+#endif
 
 #if CBS_56x40_WALL
 
-#define NPANELS     21                  // At Beth Shalom, we have 3 * 7 panels
-#define NROWS       56                  // number of rows
-#define NCOLS       40                  // a column is 56 rows of consecutive pixel data
+constexpr const char DISPLAY_CONFIGURATION[] = "CBS 56x40 wall";
+
+constexpr byte NPANELS = 21;                  // At Beth Shalom, we have 3 * 7 panels
+constexpr byte NROWS = 56;                  // number of rows
+constexpr byte NCOLS = 40;                  // a column is 56 rows of consecutive pixel data
 
 #endif
 
-#if TEST_16x64_LED_MATRIX
-
-#define NPANELS     10                  // In this test-harness we have 2 * 5 panels
-#define NROWS       16
-#define NCOLS       40                  // a column is 40 rows of consecutive pixel data
-
-#endif
 
 #if TEST_2x24_HARNESS
 
-#define NPANELS     1                   // In this test-harness we have 1 panels
-#define NROWS       24                  // three 8-pixel yyz_pixel boards is 24 rows
-#define NCOLS       2                   // and we only have two columns
+constexpr const char DISPLAY_CONFIGURATION[] = "YYZ 2x24 test harness";
+
+constexpr byte NPANELS = 1;                   // In this test-harness we have 1 panels
+constexpr byte NROWS = 24;                  // three 8-pixel yyz_pixel boards is 24 rows
+constexpr byte NCOLS = 2;                   // and we only have two columns
 
 #endif
 
-#define MAXNROWS    64
-#define MAXNCOLS    64
-#define MAXDATA     ( MAXNROWS * MAXNCOLS / 8 )       // 512 bytes of data
+#if TEST_FIXTURE
 
-#endif  // __YAHRZEIT_R2_H__
+constexpr const char DISPLAY_CONFIGURATION[] = "YYZ 24x6 test fixture";
+
+constexpr byte NPANELS = 2;                   // two 24-row by 3-column fixture boards
+constexpr byte NROWS = 24;
+constexpr byte NCOLS = 6;
+
+#endif
+
+constexpr byte MAXNROWS = 64;
+constexpr byte MAXNCOLS = 64;
+constexpr unsigned int MAXDATA = MAXNROWS * MAXNCOLS / 8; // 512 bytes of data

@@ -1,7 +1,7 @@
 /**
- * @file        led_console.c
+ * @file        CmdProc.ino
  *
- * @brief       Console Interface code for the Yahrzeit Project
+ * @brief       Shared command processing for serial and Ethernet input.
  *
  * @history     version 1.0 created for Congregation Beth Sholom, 2007-2008
  *              version 2.0 revised in July 2015
@@ -12,72 +12,72 @@
  *              All rights reserved.
  */
 
+#include "CmdProc.h"
 #include "yahrzeit_v2.h"
+#include <string.h>
 
+static constexpr byte MAXARGS = 5;
 
-// ----------------------------------------------------------------------------
-//            C O N S O L E
-// ----------------------------------------------------------------------------
-
-
-/**
- * console_init ... initializes global data structures,
- *     display the initial pattern on the LED Matrix
- *
- * @param streamID    display output on the SOCKET or CONSOLE
- */
-void console_init( void )
-{
-    led_init();
-
-    // splash
-    my_puts( CONSOLE, versionText() );
-
-    // some initial pattern, on power-up (as a self-test)
-    console_log( "light test" );
-    led_all_on( 1, PANEL0 );
-    led_all_on( 0, PANEL0 );
-    led_set_intensity( 0 );
-    selftest_marching_row( PANEL0 );
-    console_log( "ready >" );
-}
-
-
-// ----------------------------------------------------------------------------
-//            C O N S O L E   C O M M A N D S
-// ----------------------------------------------------------------------------
-
-/**
- * @COMMAND LANGUAGE
- *      We have implemented a simple command interpreter that recognizes
- *      several commands.
- *      Each command may be abbrieviated to 2 characters.
- */
-
-#if 0
-enum commandIds  {
-    NONE_OF_THE_ABOVE = 0,
-    CMD_ALL = 1,        // turn on/off all LEDs
-    CMD_BRIGHT,         // set the brightness
-    CMD_DATA,           // set a specific data bit pattern
-    CMD_DUMP,           // dump the pixel memory
-    CMD_HELP,           // display command help
-    CMD_LOAD,           // load the pixel memory from EEPROM
-    CMD_PIXEL,          // set a pixel memory on/off
-    CMD_REFRESH,        // refresh the LED display from pixel memory
-    CMD_SAVE,           // store the pixel memory into EEPROM
-    CMD_TEST,           // do one of several LED test pattern
-    CMD_NOP,            // (was required on the slower 8051 inplementation)
-    MISSING_ARG = 255
+const char* const ResultStrings[8] = {
+    "OK", "Eh?", "ERR Missing Arg", "ERR Row",
+    "ERR Col", "ERR Panel", "ERR Brightness", "ERR Test Number"
 };
-#endif
+
+const char HelpText[]  =
+    "\n"
+    "\tAll  on|off [<panel>]\n"
+    "\tBRightness <n> (0:full, 255:off)\n"
+    "\tDAta <row> <col> <binary data>\n"
+    "\tDUmp [<panel>]\n"
+    "\tHElp\n"
+    "\tLOad\n"
+    "\tPIxel on|off <row> <col> [<panel>]\n"
+    "\tREfresh\n"
+    "\tSAve\n"
+    "\tSTatus\n"
+    "\tTEst <testnumber> [<panel>|*]\n"
+    "\tVErsion\n";
+
+const char TestMenu[]  =
+    "\n"
+    "\tTEst 1 [<panel>|*] --   4 corners ON\n"
+    "\tTEst 2 [<panel>|*] --   all pixels ON\n"
+    "\tTEst 3 [<panel>|*] --   all pixels OFF\n"
+    "\tTEst 4 [<panel>|*] --   checkerboard test\n"
+    "\tTEst 5 [<panel>|*] --   marching row pattern\n"
+    "\tTEst 6 [<panel>|*] --   marching column pattern\n"
+    "\t* repeats the test for panels 1 through n\n";
 
 
-static const struct commands {
-    const enum commandIds  cmd_identifier;            // see enum cmd_ids above
-    const byte  cmd_required_args;
-    const char * cmd_verb;
-} Commands[] = {
+// ----------------------------------------------------------------------------
+//            C O M M A N D   P R O C E S S I N G
+// ----------------------------------------------------------------------------
+
+
+/**
+ * @brief   Describe the compact server-to-controller command language.
+ *
+ * Commands use case-insensitive, two-character prefix matching (or "?").
+ * Arguments remain pointers into the original, unmodified command line.
+ * Numeric conversion stops at whitespace; exact-string arguments such as
+ * "*" must be last, without trailing whitespace. Boolean words use prefixes.
+ */
+
+
+
+/**
+ * @brief   Associate a command verb with its identifier and argument count.
+ */
+struct Command {
+    commandIds id;
+    byte requiredArgs;
+    const char *verb;
+};
+
+/**
+ * @brief   List supported commands in a fixed array for range traversal.
+ */
+static constexpr Command commands[] = {
     { CMD_ALL,    1, "all"    },
     { CMD_BRIGHT, 1, "bright" },
     { CMD_DATA,   3, "data"   },
@@ -92,15 +92,23 @@ static const struct commands {
     { CMD_TEST,   0, "test"   },
     { CMD_VERSION, 0, "version" },
     { CMD_NOP,    0, "nop"    },
-    { CMD_NOP,    0, "# "     },
-    { CMD_NOP,    0, "\r"     },
-    { CMD_NOP,    0, "\n"     },
-    { NONE_OF_THE_ABOVE, 0, 0 },
 };
 
 
 /**
- * match_cmd_verb ...  matches argv[0] as a command verb in the Commands table
+ * @brief   Compare the first two characters case-insensitively.
+ *
+ * @param s1    first null-terminated string
+ * @param s2    second null-terminated string
+ * @returns     true when the first two characters match
+ */
+inline bool strMatch2(const char *s1, const char *s2)
+{
+    return strncasecmp(s1, s2, 2) == 0;
+}
+
+/**
+ * @brief   Match a command prefix and check that required arguments exist.
  *
  * @param argv    argument array, required arguments are checked
  *
@@ -108,10 +116,10 @@ static const struct commands {
  */
 static enum commandIds  match_cmd_verb( char **argv )
 {
-    for ( const struct commands *p = &Commands[0]; p->cmd_verb != NULL; p++ ) {
-        if ( STRMATCH2( argv[0], p->cmd_verb ) ) {
-            if ( argv[p->cmd_required_args] != NULL ) {
-                return p->cmd_identifier;
+    for (const auto &command : commands) {
+        if ( strMatch2( argv[0], command.verb ) ) {
+            if ( argv[command.requiredArgs] != NULL ) {
+                return command.id;
             }
             else {
                 return MISSING_ARG;
@@ -123,7 +131,7 @@ static enum commandIds  match_cmd_verb( char **argv )
 
 
 /**
- * prompt ... print a time-stamped prompt
+ * @brief   Write a time-stamped prompt to the selected stream.
  *
  * @param streamID    display output on the SOCKET or CONSOLE
  */
@@ -131,19 +139,18 @@ static void prompt( byte streamID )
 {
       char *uptimeRendered = display_uptime();
       strcat( uptimeRendered, " >" );
-      my_puts( streamID, uptimeRendered );
+      writeOutput( streamID, uptimeRendered );
 }
 
 
 /**
- * status_text ... format the controller's compiled configuration and current
- *                 Ethernet address.
+ * @brief   Format the compiled display configuration and current network state.
  *
  * @returns a pointer to private static storage, overwritten by the next call
  */
 static const char *status_text( void )
 {
-    static char statusOutput[512];
+    static char statusOutput[640];
     IPAddress localAddress = Ethernet.localIP();
     const EthernetHardwareStatus hardwareStatus = Ethernet.hardwareStatus();
     const EthernetLinkStatus linkStatus = Ethernet.linkStatus();
@@ -178,135 +185,51 @@ static const char *status_text( void )
     snprintf(statusOutput, sizeof statusOutput,
              "STATUS\n"
              "\tfirmware=V2.1\n"
-             "\tconfiguration=CBS 56x40 wall\n"
+             "\tboard=%s\n"
+             "\tconfiguration=%s\n"
              "\trows=%u cols=%u panels=%u\n"
              "\tpins DI=%u OE=%u CP=%u ST=%u\n"
-             "\tconfiguredIP=%u.%u.%u.%u activeIP=%u.%u.%u.%u port=2001\n"
+             "\tconfiguredIP=%u.%u.%u.%u activeIP=%u.%u.%u.%u port=%u\n"
              "\tgateway=%u.%u.%u.%u subnet=%u.%u.%u.%u\n"
              "\tdns=%u.%u.%u.%u\n"
              "\tMAC=%02X:%02X:%02X:%02X:%02X:%02X\n"
              "\tethernetHardware=%s link=%s\n"
-             "\tlistener=%s port=2001\n"
-             "\tclient=%s idle=%lu seconds\n",
+             "\tlistener=%s port=%u\n"
+             "\tclient=%s idle=%lu seconds\n"
+             "\trxBytes=%lu pending=%d before=%d buffered=%u lastRead=%u result=%d\n"
+             "\trxZeroPartials=%lu stalls=%lu\n",
+             CONTROLLER_BOARD_MODEL,
+             DISPLAY_CONFIGURATION,
              NROWS, NCOLS, NPANELS,
              DI_pin, OE_pin, CP_pin, ST_pin,
              ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3],
              localAddress[0], localAddress[1],
              localAddress[2], localAddress[3],
+             SOCKET_LISTEN_PORT,
              gateway[0], gateway[1], gateway[2], gateway[3],
              subnet[0], subnet[1], subnet[2], subnet[3],
              dnsaddr[0], dnsaddr[1], dnsaddr[2], dnsaddr[3],
              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],
              hardwareName, linkName,
              socketListenerRunning ? "running" : "stopped",
+             SOCKET_LISTEN_PORT,
              clientConnected ? "connected" : "disconnected",
-             clientIdleSeconds);
+             clientIdleSeconds,
+             socketReadDiagnostics.bytesReceived,
+             clientConnected ? socketClient.available() : 0,
+             socketReadDiagnostics.availableBefore,
+             socketReadDiagnostics.buffered,
+             socketReadDiagnostics.lastRead.charsRead,
+             static_cast<int>(socketReadDiagnostics.lastRead.status),
+             socketReadDiagnostics.zeroBytePartials,
+             socketReadDiagnostics.readStalls);
 
     return statusOutput;
 }
 
 
 /**
- * console_thread ... implements the console I/O gets(), puts() loop.
- *    in each call to console_thread, we either read one line, and execute one command.
- *    or, if the line is not present, we return immediately, but keep state so we can
- *    resume reading the line
- *
- * @returns
- *      returns after every command line is executed
- */
-void  console_thread( void )
-{
-    // the command from the host
-#define MAXINPUTLINE 64
-    static char     inputBuf[ MAXINPUTLINE ] = { 0 };
-    static int      inputBufPos = 0;               // 0..MAXCMDLINE
-
-    if ( console_gets( inputBuf, sizeof inputBuf, &inputBufPos ) ) {
-        char *uptimeRendered = display_uptime();
-
-        if ( strlen( inputBuf ) > 0 ) {
-            const char *result = shell_execute( CONSOLE, inputBuf );
-            snprintf( CmdOutput, sizeof CmdOutput, "%s | %s\n",
-                      uptimeRendered, inputBuf );
-            my_puts( CONSOLE, CmdOutput );
-            if ( strlen(result) ) {
-                my_puts( CONSOLE, result );
-                if (result[strlen(result) - 1] != '\n') {
-                    my_puts( CONSOLE, "\n" );
-                }
-            }
-        }
-        else {
-            snprintf( CmdOutput, sizeof CmdOutput, "%s |\n", uptimeRendered );
-            my_puts( CONSOLE, CmdOutput );
-        }
-        inputBufPos = 0;            // reset to the beginning of the inputBuf
-        memset( inputBuf, 0, sizeof inputBuf );
-        prompt( CONSOLE );
-    }
-}
-
-
-/**
- * console_gets ... this is our fgets() routine which reads a single line from
- *       the Serial UART
- *
- *    console_gets() reads in at most one less than size characters from the
- *    serial UART stream and and stores them into the buffer pointed to by str.
- *    Reading stops after a newline or cr or the str is filled.
- *    If a newline or cr is read, it is not stored into the buffer.
- *    A terminating null byte ('0' is stored after the last character.
- *
- *    This non-threaded version of console_gets() does not block, rather it
- *    returns immediately, that is returns each character as read.
- *    The boolean result code indicates whether a full line was read
- *
- * @param input    the resulting null-terminated string
- * @param maxsize  max size we can store, including a NULL
- * @param piIndex  pointer to a count of the number of bytes read into input
- *
- * @returns boolean, true: a full line was read; false: if not
- */
-boolean console_gets( char *input, const unsigned int maxsize, int *piIndex )
-{
-    char c;
-
-    if ( Serial.available() > 0 ) {
-        c = Serial.read();
-
-        // Handle backspace
-        if (c == '\b') {
-            if (*piIndex > 0) {
-                *piIndex--;
-                Serial.write("\b \b");
-            }
-            return false;
-        }
-
-        // Handle CR or LF
-        if ((c == '\r') || (c == '\n')) {
-            Serial.write("\r\n");
-            return true;
-        }
-
-        // Handling potential overflow of buffer, by just returning
-        if (*piIndex >= (maxsize - 1)) {
-            return true;
-        }
-
-        // normal character
-        Serial.write(c);               // echoplex
-        input[*piIndex] = c;
-        *piIndex = *piIndex + 1;
-        input[*piIndex] = '\0';
-    }
-    return false;
-}
-
-
-/**
- * shell_execute ... perform one command
+ * @brief   Execute one command shared by serial and Ethernet input.
  *
  * @param streamID    display output on the SOCKET or CONSOLE
  * @param command     the unparsed command to interpret and execute
@@ -315,26 +238,24 @@ boolean console_gets( char *input, const unsigned int maxsize, int *piIndex )
  */
 const char * shell_execute( byte streamID, char *command )
 {
-#define MAXARGS 5
-    char *   arg_string[ MAXARGS ];
-    int      arg_value[ MAXARGS ];
+    char *   arg_string[ MAXARGS ] {};
+    int      arg_value[ MAXARGS ] {};
 
-    if ( command[0] == 0 || command[0] == '#' ) {
+    // The Unix command producer generates comments and blank lines.
+    if ( command[0] == 0 || command[0] == '#' || command[0] == '\r' || command[0] == '\n' ) {
         return "";
     }
 
-#define OPTIONAL_ARG(i)       (arg_string[i] != NULL)
-
-    memset( arg_string, 0, sizeof arg_string );
-    parse_command(command, arg_string);         // tokenize the command into arg_string[]
+    parse_command(command, arg_string);         // locate arguments without modifying input
+    if (arg_string[0] == NULL) {
+        return "";                            // whitespace-only command
+    }
 
     // as an code-size optimization, lets convert argv[1] ... argv[n] from ascii to an int
+    // We do not insert NULs into arg_string[], so any text argument must be last.
     for (byte i = 0; i < MAXARGS; i++ ) {
-        if ( OPTIONAL_ARG(i) ) {
+        if ( arg_string[i] != nullptr ) {
             arg_value[i] = atoi( arg_string[i] );
-        }
-        else {
-            arg_value[i] = 0;
         }
     }
 
@@ -367,16 +288,16 @@ const char * shell_execute( byte streamID, char *command )
         case CMD_DUMP:
             // dump [<panel>]
             rc = console_dump( streamID,
-                     arg_value[1] );               /* optional <panel> */ 
+                     arg_value[1] );               /* optional <panel> */
             break;
 
         case CMD_HELP:
-            // help or ? 
+            // help or ?
             return HelpText;
 
         case CMD_PIXEL:
             // pixel 0|1 <row> <col> [<panel>]
-            if ( OPTIONAL_ARG(4) ) {
+            if ( arg_string[4] != nullptr ) {
                 rc = led_store_in_panel(
                          onoff_bool( arg_string[1] ),  /* "on"|"off" or "0"|"1" */
                          arg_value[2],              /* row */
@@ -411,11 +332,11 @@ const char * shell_execute( byte streamID, char *command )
 
         case CMD_TEST:
             // test <testnumber> [<panel>|*]
-            if ( !OPTIONAL_ARG(1) ) {
+            if ( arg_string[1] == nullptr ) {
                 return TestMenu;
             }
 
-            if ( OPTIONAL_ARG(2) && strcmp(arg_string[2], "*") == 0 ) {
+            if ( arg_string[2] != nullptr && strcmp(arg_string[2], "*") == 0 ) {
                 rc = NO_ERROR;
                 for (byte panel = 1; panel <= NPANELS; panel++) {
                     rc = selftest(streamID,
@@ -453,7 +374,11 @@ const char * shell_execute( byte streamID, char *command )
 
 
 /**
- * parse_cmd_bufer ... function to parse the args in the command input
+ * @brief   Locate up to MAXARGS whitespace-separated argument starts.
+ *
+ * @note    Deliberately does not insert NUL terminators or modify command.
+ *          Each pointer includes the remaining command suffix. The caller
+ *          must initialize argv to NULL before calling this function.
  *
  * @param command   the unparsed command
  * @param argv      the resulting argument vector
@@ -481,24 +406,23 @@ void  parse_command( char *command, char **argv )
 
 
 /**
- * onoff_bool -- convert a string representing on/off, or true/false, or 1/0
- * to a boolean
+ * @brief   Convert boolean word prefixes or a numeric value to a boolean.
  *
  * @param token       the unparsed string
  *
- * @returns true or false
+ * @returns false for NULL, unknown text, or zero; true for on/true or nonzero digits.
  */
 boolean    onoff_bool( char *token )
 {
     if ( token == NULL )
         return false;
-    if ( STRMATCH2( token, "true" ) )
+    if ( strMatch2( token, "true" ) )
         return true;
-    if ( STRMATCH2( token, "on" ) )
+    if ( strMatch2( token, "on" ) )
         return true;
-    if ( STRMATCH2( token, "false" ) )
+    if ( strMatch2( token, "false" ) )
         return false;
-    if ( STRMATCH2( token, "off" ) )
+    if ( strMatch2( token, "off" ) )
         return false;
     if ( isdigit( *token ) )
         return ( atoi( token ) );
@@ -508,8 +432,7 @@ boolean    onoff_bool( char *token )
 
 
 /**
- * console_data_cmd ... performs the action of the "DATA" command.
- *    The given data is decoded, stored into the led data-store
+ * @brief   Decode the DATA command's binary suffix into the pixel buffer.
  *
  * @param row       starting row number
  * @param col       the col number
@@ -546,36 +469,12 @@ int console_data_cmd( byte row, byte col, char *bindata )
 }
 
 
-#if 0
-/**
- * hexdump -- a general purpose routine to dump a section of memory in hex
- *
- * @param streamID    display output on the SOCKET or CONSOLE
- * @param addr        pointer to memory to dump
- * @param len         number of bytes
- *
- * @returns         n/a
- */
-void  hexdump( byte streamID, void *addr, const unsigned int len )
-{
-    char buf[40];
-    byte *p = (byte *)addr;
-    for ( unsigned int offset = 0; offset < len; offset++ ) {
-        if ( (offset & 31 )  == 0 )  {
-            sprintf( buf, "\r\n%04x: ", offset );
-            my_puts( streamID, buf );
-        }
-        sprintf ( buf, "%02x ", p[offset] );
-        my_puts( streamID, buf );
-    }
-    my_puts( streamID, "\n" );
-}
-#endif
 
 
 /**
- * console_dump ... debug function to dump the LED data 
+ * @brief   Write pixel data for the whole display or one panel.
  *
+ * @param streamID  output stream, SOCKET or CONSOLE
  * @param panel     panel number 0 or [1..NPANELS]
  *
  * @returns        NO_ERROR or ERR_PANEL
@@ -585,45 +484,47 @@ int  console_dump( byte streamID, byte panel )
     if (panel > NPANELS ) {
         return ERR_PANEL;
     }
-    
+
     if ( panel == PANEL0 ) {
-        
-        my_puts( streamID, "Dump of Pixel Data\n" );
+
+        writeOutput( streamID, "Dump of Pixel Data\n" );
         for ( byte row = 1; row <= NROWS; row++ ) {
             sprintf( CmdOutput, "%02d:  ", row );
             for ( byte col = 1; col <= NCOLS; col++ ) {
                 #if CBS_56x40_WALL
                 if ( col == 6 || col == 12 || col == 18 || col == 24 || col == 30 || col == 36 ) {
-                   strcat( CmdOutput, " .  " ); 
+                   strcat( CmdOutput, " .  " );
                 }
                 #endif
                 boolean pixel = led_pixel_value(  row,  col );
                 strcat( CmdOutput, pixel ? "1 " : "0 " );
             }
             strcat( CmdOutput, "\n" );
-            my_puts( streamID, CmdOutput );
+            writeOutput( streamID, CmdOutput );
+            #if CBS_56x40_WALL
             if ( row == 16 || row == 38 ) {
-                my_puts( streamID,  "     .........     ...........     ...........     ...........     ...........     ...........     .........\n" );
+                writeOutput( streamID,  "     .........     ...........     ...........     ...........     ...........     ...........     .........\n" );
             }
+            #endif
         }
-        my_puts( streamID, "\n" );   
+        writeOutput( streamID, "\n" );
     }
     else {
 
         sprintf( CmdOutput, "Dump of Pixel Data - panel %d\n", panel );
-        my_puts( streamID, CmdOutput);
+        writeOutput( streamID, CmdOutput);
         for ( byte row = 1; row <= nrows_perpanel[panel]; row++ ) {
             CmdOutput[0] = '\0';
             for ( byte col = 1; col <= ncols_perpanel[panel]; col++ ) {
-                boolean pixel = led_pixel_value(  
+                boolean pixel = led_pixel_value(
                                         led_row_of_panel[panel] + row - 1,
                                         led_col_of_panel[panel] + col - 1 );
                 strcat( CmdOutput, pixel ? "1 " : "0 " );
             }
             strcat( CmdOutput, "\n" );
-            my_puts( streamID, CmdOutput );
+            writeOutput( streamID, CmdOutput );
         }
-        my_puts( streamID, "\n" ); 
+        writeOutput( streamID, "\n" );
     }
     return NO_ERROR;
 }

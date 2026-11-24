@@ -14,8 +14,7 @@
  *              All rights reserved.
  */
 
-#ifndef __YYZ_PIXEL_H__
-#define __YYZ_PIXEL_H__
+#pragma once
 
 #include <stdint.h>
 
@@ -116,5 +115,3 @@ private:
     bool     mask;
     bool     isDisplayOn;
 };
-
-#endif

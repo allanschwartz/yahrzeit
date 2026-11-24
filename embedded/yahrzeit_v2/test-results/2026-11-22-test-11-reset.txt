@@ -1,0 +1,19 @@
+Before intentional reset: uptime 00:58:46.068, active TCP session.
+Allan pressed RESET. Old nc exited when used afterward.
+Fresh connection:
+00:00:25.833 | status
+STATUS
+	firmware=V2.1
+	board=Arduino Mega 2560
+	configuration=YYZ 24x6 test fixture
+	rows=24 cols=6 panels=2
+	pins DI=42 OE=44 CP=46 ST=48
+	configuredIP=192.168.86.143 activeIP=192.168.86.143 port=2001
+	gateway=192.168.86.1 subnet=255.255.255.0
+	dns=8.8.8.8
+	MAC=A8:61:0A:AE:E4:E2
+	ethernetHardware=W5500 link=up
+	listener=running port=2001
+	client=connected idle=0 seconds
+	rxBytes=7 pending=0 before=7 buffered=6 lastRead=7 result=1
+	rxZeroPartials=0 stalls=0

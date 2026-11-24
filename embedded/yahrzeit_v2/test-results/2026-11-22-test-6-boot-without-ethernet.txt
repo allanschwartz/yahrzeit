@@ -1,0 +1,35 @@
+Test 6, 2026-11-22, build 16:57:44
+Allan unplugged Ethernet, reset Mega, observed ready in Serial Monitor and confirmed green LED breathing.
+No unplugged serial status response was supplied.
+Allan reconnected Ethernet without another requested reset.
+Fresh TCP response:
+00:01:32.576 | status
+STATUS
+	firmware=V2.1
+	board=Arduino Mega 2560
+	configuration=YYZ 24x6 test fixture
+	rows=24 cols=6 panels=2
+	pins DI=42 OE=44 CP=46 ST=48
+	configuredIP=192.168.86.143 activeIP=192.168.86.143 port=2001
+	gateway=192.168.86.1 subnet=255.255.255.0
+	dns=8.8.8.8
+	MAC=A8:61:0A:AE:E4:E2
+	ethernetHardware=W5500 link=up
+	listener=running port=2001
+	client=connected idle=0 seconds
+	rxBytes=7 pending=0 before=7 buffered=6 lastRead=7 result=1
+	rxZeroPartials=0 stalls=0
+
+PASS for startup and TCP recovery; separate offline serial command response not captured.
+
+Additional serial startup evidence supplied by Allan:
+00:00:00.106 | ethernet: begin
+00:00:00.677 | ethernet: W5500
+00:00:00.678 | ethernet: link down
+00:00:00.679 | ethernet: IP 192.168.86.143 port=2001
+built Nov 22 2026 16:57:44
+00:00:00.875 | light test
+00:00:08.808 | ready >
+00:01:14.511 | ethernet: listener started
+00:01:32.575 | socket: client connected
+Confirms startup completed with link down and listener started later without another reset.

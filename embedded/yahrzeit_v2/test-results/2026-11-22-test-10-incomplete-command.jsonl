@@ -1,0 +1,17 @@
+{"time": "2026-11-22T16:06:35-08:00", "elapsed_seconds": 0.001, "event": "test_started", "test": 10, "host": "192.168.86.143", "port": 2001}
+{"time": "2026-11-22T16:06:35-08:00", "elapsed_seconds": 0.032, "event": "command_sent", "command": "status"}
+{"time": "2026-11-22T16:06:35-08:00", "elapsed_seconds": 0.048, "event": "status_response", "text": "00:16:08.138 | status\nSTATUS\n\tfirmware=V2.1\n\tboard=Arduino Mega 2560\n\tconfiguration=YYZ 24x6 test fixture\n\trows=24 cols=6 panels=2\n\tpins DI=42 OE=44 CP=46 ST=48\n\tconfiguredIP=192.168.86.143 activeIP=192.168.86.143 port=2001\n\tgateway=192.168.86.1 subnet=255.255.255.0\n\tdns=8.8.8.8\n\tMAC=A8:61:0A:AE:E4:E2\n\tethernetHardware=W5500 link=up\n\tlistener=running port=2001\n\tclient=connected idle=0 seconds\n"}
+{"time": "2026-11-22T16:06:36-08:00", "elapsed_seconds": 1.053, "event": "partial_command_sent", "text": "sta", "bytes": 3, "newline": false}
+{"time": "2026-11-22T16:07:36-08:00", "elapsed_seconds": 61.08, "event": "waiting", "partial_idle_seconds": 60.025}
+{"time": "2026-11-22T16:08:36-08:00", "elapsed_seconds": 121.099, "event": "waiting", "partial_idle_seconds": 120.046}
+{"time": "2026-11-22T16:09:36-08:00", "elapsed_seconds": 181.13, "event": "waiting", "partial_idle_seconds": 180.076}
+{"time": "2026-11-22T16:10:36-08:00", "elapsed_seconds": 241.158, "event": "waiting", "partial_idle_seconds": 240.105}
+{"time": "2026-11-22T16:11:36-08:00", "elapsed_seconds": 301.18, "event": "waiting", "partial_idle_seconds": 300.127}
+{"time": "2026-11-22T16:12:36-08:00", "elapsed_seconds": 361.226, "event": "waiting", "partial_idle_seconds": 360.173}
+{"time": "2026-11-22T16:13:36-08:00", "elapsed_seconds": 421.263, "event": "waiting", "partial_idle_seconds": 420.209}
+{"time": "2026-11-22T16:14:36-08:00", "elapsed_seconds": 481.311, "event": "waiting", "partial_idle_seconds": 480.257}
+{"time": "2026-11-22T16:15:36-08:00", "elapsed_seconds": 541.362, "event": "waiting", "partial_idle_seconds": 540.309}
+{"time": "2026-11-22T16:16:36-08:00", "elapsed_seconds": 601.419, "event": "waiting", "partial_idle_seconds": 600.365}
+{"time": "2026-11-22T16:17:06-08:00", "elapsed_seconds": 631.057, "event": "FAIL", "reason": "Partial command connection did not close within 630 seconds"}
+{"time": "2026-11-22T16:27:23-08:00", "event": "post_failure_diagnostic", "command": "version", "response": "00:36:55.683 | version\n\tYahrzeit Embedded Controller, V2.1\n\ttarget=Arduino Mega 2560\n\tbuilt Nov 22 2026 15:03:47\n\tcopyright (c) 2008,2015,2026 AMS Consulting\n"}
+{"time": "2026-11-22T16:27:23-08:00", "event": "post_failure_diagnostic", "command": "status", "response": "00:36:55.696 | status\nSTATUS\n\tfirmware=V2.1\n\tboard=Arduino Mega 2560\n\tconfiguration=YYZ 24x6 test fixture\n\trows=24 cols=6 panels=2\n\tpins DI=42 OE=44 CP=46 ST=48\n\tconfiguredIP=192.168.86.143 activeIP=192.168.86.143 port=2001\n\tgateway=192.168.86.1 subnet=255.255.255.0\n\tdns=8.8.8.8\n\tMAC=A8:61:0A:AE:E4:E2\n\tethernetHardware=W5500 link=up\n\tlistener=running port=2001\n\tclient=connected idle=0 seconds\n"}
