@@ -6,13 +6,13 @@
 // disconnecting field wiring.
 
 /* [Part] */
-part = "pcb_mockup"; // [tray,cover,assembly,pcb_mockup,fit_coupon]
+part = "assembly"; // [tray,cover,assembly,pcb_mockup,fit_coupon]
 
 /* [PCB] */
-board_w = 140;
+board_w = 100;
 board_h = 50;
 board_t = 2.0;
-board_hole_inset = 7.5;
+board_hole_inset = 5.0;
 board_hole_d = 4.5;
 
 /* [Enclosure] */
@@ -59,19 +59,18 @@ mount_hole_dy = tray_h - 2 * ear_center_y;
 output_slot_x0 = board_clearance + 10;
 output_slot_w = board_w - 20;
 output_slot_depth = 15.0;
-input_slot_center_x = board_clearance + 58.5;
+input_slot_center_x = board_clearance + 31.16;
 input_slot_w = 18.0;
 input_slot_depth = 15.0;
 
 /* [Visibility and ventilation] */
-led_board_x = 121;
-led_board_y_kicad = 39.2625;
+led_board_x = 87;
+led_board_y_kicad = 39.3625;
 // KiCad has y=0 at the board top; this model has y=0 at the bottom.
 led_board_y = board_h - led_board_y_kicad;
-led_window_d = 5.0;
 mock_led_w = 1.25;         // rotated 0805 package footprint
 mock_led_l = 2.0;
-mock_led_h = 3.0;          // intentionally taller than the real LED
+mock_led_h = 1.0;          // representative low-profile 0805 LED envelope
 lightening_slot_w = 12;
 lightening_slot_h = 5;
 lightening_pitch_x = 16;
@@ -152,11 +151,12 @@ module pcb_support_ribs() {
               pcb_support_rib_w,
               rib_h]);
 
-    // J1: local support beneath the connector body, clear of its pin row.
-    translate([board_x + 53,
-               board_y + board_y_from_kicad(35.5) - pcb_support_rib_w/2,
+    // J1 and F1: support from board x=25 through x=53, clear of J1's pin row
+    // at KiCad y=41 and F1's leads at approximately y=32.34 and y=42.26.
+    translate([board_x + 25,
+               board_y + board_y_from_kicad(38.5) - pcb_support_rib_w/2,
                tray_t - 0.1])
-        cube([11, pcb_support_rib_w, rib_h]);
+        cube([28, pcb_support_rib_w, rib_h]);
 }
 
 module tray() {
@@ -222,25 +222,18 @@ module cover_shell() {
                          d=cover_screw_recess_d);
         }
 
-        // LED viewing hole.
-        translate([wall + cover_fit + board_x + led_board_x,
-                   wall + cover_fit + board_y + led_board_y,
-                   cover_depth - cover_front_t - 0.1])
-            cylinder(h=cover_front_t + 0.2, d=led_window_d);
-
-        // Broad lightening pattern. Preserve solid material around LED1.
+        // Broad lightening pattern. The lower-right slot also serves as the
+        // LED1 viewing window.
         for (x = [18 : lightening_pitch_x : tray_w - 18])
             for (y = [17 : lightening_pitch_y : tray_h - 15])
-                if (sqrt(pow(x - (board_x + led_board_x), 2) +
-                         pow(y - (board_y + led_board_y), 2)) > 11)
-                    hull()
-                        for (sx = [-1, 1])
-                            translate([wall + cover_fit + x +
-                                       sx*(lightening_slot_w-lightening_slot_h)/2,
-                                       wall + cover_fit + y,
-                                       cover_depth - cover_front_t - 0.1])
-                                cylinder(h=cover_front_t + 0.2,
-                                         d=lightening_slot_h, $fn=24);
+                hull()
+                    for (sx = [-1, 1])
+                        translate([wall + cover_fit + x +
+                                   sx*(lightening_slot_w-lightening_slot_h)/2,
+                                   wall + cover_fit + y,
+                                   cover_depth - cover_front_t - 0.1])
+                            cylinder(h=cover_front_t + 0.2,
+                                     d=lightening_slot_h, $fn=24);
     }
 }
 
@@ -255,53 +248,59 @@ module printable_pcb_mockup() {
                             cylinder(h=board_t+0.2, d=board_hole_d);
             }
 
-        // This occupies the actual rotated 0805 package area. The extra
-        // height makes LED1 easy to see through the cover window.
+        // LED1 occupies the actual rotated 0805 package area.
         color("limegreen")
             translate([led_board_x - mock_led_w/2,
                        led_board_y - mock_led_l/2,
                        board_t - 0.2])
                 cube([mock_led_w, mock_led_l, mock_led_h + 0.2]);
 
-        // J2-J7 terminal blocks. Footprint origins are at x=23..123,
-        // KiCad y=9, with each footprint rotated 180 degrees.
+        // J2-J7 terminal blocks. Footprint origins are at x=20..85 on
+        // 13 mm centers, KiCad y=9, with each footprint rotated 180 degrees.
         color("forestgreen")
-            for (x = [23 : 20 : 123])
+            for (x = [20 : 13 : 85])
                 translate([x - 7.62, 36.95, board_t - 0.2])
                     cube([10.16, 8.1, 10.2]);
 
-        // J1 terminal block at KiCad (55.92, 38).
+        // J1 terminal block at KiCad (28.62, 41).
         color("forestgreen")
-            translate([53.38, 7.95, board_t - 0.2])
+            translate([26.08, 4.95, board_t - 0.2])
                 cube([10.16, 8.1, 10.2]);
 
-        // C1: 10 mm diameter by 12.5 mm high, centered at the measured
-        // KiCad coordinate (96.7, 34.7).
+        // C1: 10 mm diameter by 12.5 mm high at KiCad (64.2, 32.1).
         color("navy")
-            translate([96.7, board_y_from_kicad(34.7), board_t - 0.2])
+            translate([64.2, board_y_from_kicad(32.1), board_t - 0.2])
                 cylinder(h=12.7, d=10);
 
-        // F1 holder with inserted MINI fuse. Measured KiCad bounds:
-        // x=76.5..83.4, y=26.9..43.2.
+        // F1 holder with inserted MINI fuse. Physical outline derived from
+        // the rotated footprint at KiCad (50.3, 32.34).
         color("dimgray")
-            translate([76.5, board_y_from_kicad(43.2), board_t - 0.2])
-                cube([83.4-76.5, 43.2-26.9, max_component_h + 0.2]);
+            translate([45.13, board_y_from_kicad(45.4), board_t - 0.2])
+                cube([6.94, 16.2, max_component_h + 0.2]);
 
         // F2-F7 resettable PTCs, rotated 1812 packages.
         color("goldenrod")
-            for (x = [23 : 20 : 123])
-                translate([x - 1.6, 30 - 2.25, board_t - 0.2])
+            for (x = [20 : 13 : 85])
+                translate([x - 1.6,
+                           board_y_from_kicad(21.3) - 2.25,
+                           board_t - 0.2])
                     cube([3.2, 4.5, 1.4]);
 
         // C2, C3, and R1. Heights are conservative printable envelopes.
         color("sienna")
-            translate([107 - 1.25, 15.5 - 1.6, board_t - 0.2])
+            translate([76.9 - 1.25,
+                       board_y_from_kicad(34.3) - 1.6,
+                       board_t - 0.2])
                 cube([2.5, 3.2, 2.7]);
         color("sienna")
-            translate([114 - 0.625, 15.5 - 1.0, board_t - 0.2])
+            translate([82.2 - 0.625,
+                       board_y_from_kicad(34.5) - 1.0,
+                       board_t - 0.2])
                 cube([1.25, 2.0, 1.2]);
         color("sienna")
-            translate([121 - 0.625, 15.2375 - 1.0, board_t - 0.2])
+            translate([87 - 0.625,
+                       board_y_from_kicad(34.8625) - 1.0,
+                       board_t - 0.2])
                 cube([1.25, 2.0, 1.2]);
     }
 }

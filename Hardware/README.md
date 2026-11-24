@@ -174,10 +174,10 @@ The screw terminals accept ferrules on the existing output cables, making the
 assembly easier to install, diagnose, and replace without connector crimping
 tools.
 
-The board is 140 × 50 mm and uses 2 oz finished copper. Ten PCBs and assembly
-of nine boards have been ordered: one assembly for each of the wall's seven
-panel columns and two onsite spares. A parametric 3D-printed enclosure and an
-alignment jig are being developed while the first article is fabricated.
+The current board is 100 × 50 mm and uses 2 oz finished copper. The production
+plan is one assembly for each of the wall's seven panel columns and two onsite
+spares. A parametric 3D-printed enclosure and an alignment jig are being
+developed with the compact board.
 
 - [yahrzeit\_power\_dist.kicad\_pro](yahrzeit_power_dist/yahrzeit_power_dist.kicad_pro)
   -- Open this project file in KiCad.
@@ -191,8 +191,11 @@ alignment jig are being developed while the first article is fabricated.
   -- KiCad 3D rendering.
 - [README.md](yahrzeit_power_dist/README.md) -- Electrical, mechanical, BOM,
   fabrication, and installation details.
-- [enclosure/](yahrzeit_power_dist/enclosure/) -- Parametric OpenSCAD enclosure,
-  alignment jig, printable STL models, and printing notes.
+- [enclosure-100-50/](yahrzeit_power_dist/enclosure-100-50/) -- Current
+  parametric OpenSCAD enclosure, alignment jig, printable STL models, and
+  printing notes.
+- [enclosure-140x50/](yahrzeit_power_dist/enclosure-140x50/) -- Archived
+  mechanical design for the superseded 140 × 50 mm board.
 - [DESIGN\_TODO.md](yahrzeit_power_dist/DESIGN_TODO.md) -- Remaining first-article
   and installation checks.
 

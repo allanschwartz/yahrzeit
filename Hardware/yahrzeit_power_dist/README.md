@@ -106,12 +106,12 @@ before installation. Measure voltage drop under maximum load before approving
 
 ## Mechanical and fabrication intent
 
-- Board outline: 140 mm × 50 mm; outputs spaced at 20 mm centers.
+- Board outline: 100 mm × 50 mm; outputs spaced at 13 mm centers.
 - Board material: 2.0 mm FR-4; KiCad board thickness is set to 2.0 mm.
 - Copper weight: 2 oz finished copper selected for the fabrication quote.
 - Fabrication: two layers, green solder mask, white silkscreen, lead-free HASL.
 - Mounting: four 4.5 mm mounting holes for attachment to plywood, with centers
-  7.5 mm from each adjacent edge. Mount on standoffs to provide clearance beneath the PCB.
+  5 mm from each adjacent edge. Mount on standoffs to provide clearance beneath the PCB.
 - Installation: behind each hinged wall panel, with all connectors and fuses
   accessible for service.
 
@@ -130,7 +130,9 @@ bend radius with a full-size print, STEP model, or physical mockup.
 - `yahrzeit_power_dist.3Dview.png` — saved 3D view; verify current terminal
   block models and wire access against physical parts
 - `yahrzeit_power_dist.pretty/` — project-specific footprints
-- `enclosure/` — parametric wall enclosure and 4 × 8 box alignment jig
+- `enclosure-100-50/` — current parametric wall enclosure and 4 × 8 box
+  alignment jig
+- `enclosure-140x50/` — archived enclosure for the superseded 140 × 50 mm board
 - `DESIGN_TODO.md` — remaining validation and release checks
 
 ## Component selection / BOM pricing

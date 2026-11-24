@@ -9,9 +9,11 @@
 - (next site visit) Measure and record column current in normal operation and full Yizkor mode,
   noting which column and operating settings were measured.
 
-**Status — September 29, 2026:** Direct-5 V distribution layout is ready for
-PCBWay quotation. Fabrication choice: 140 × 50 mm, two-layer FR-4, 2.0 mm
-thickness, 2 oz finished copper, green mask, white silkscreen, lead-free HASL.
+**Status — October 13, 2026:** The direct-5 V distribution layout has been
+reduced to 100 × 50 mm. Fabrication remains two-layer, 2.0 mm FR-4 with 2 oz
+finished copper, green mask, white silkscreen, and lead-free HASL. Replacement
+of the originally submitted 140 × 50 mm production files is being coordinated
+with PCBWay.
 
 ## Electrical validation
 

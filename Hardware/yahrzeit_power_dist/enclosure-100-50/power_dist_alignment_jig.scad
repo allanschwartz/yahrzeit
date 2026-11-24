@@ -8,7 +8,7 @@
 /* [Installation] */
 box_width = 203.2;          // nominal 8 inches; replace with measured width
 enclosure_gap = 50.8;      // bottom of enclosure above box: 50.8 or 76.2
-enclosure_outer_w = 156.5;
+enclosure_outer_w = 116.5;
 enclosure_outer_h = 66.5;
 ear_w = 13;
 ear_center_y = 12;

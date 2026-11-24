@@ -1,7 +1,7 @@
 # Power-distribution enclosure and alignment jig
 
 These OpenSCAD models are a first printable mechanical design for the
-140 × 50 mm Yahrzeit power-distribution PCB.
+100 × 50 mm Yahrzeit power-distribution PCB.
 
 ## Enclosure
 
@@ -10,12 +10,12 @@ These OpenSCAD models are a first printable mechanical design for the
 - `tray`: wall-mounted back tray with four external mounting ears, four PCB
   standoffs, and four cover posts.
 - `cover`: removable protective cover with top and bottom cable openings,
-  an extensive lightening pattern, a power-LED window, and four recessed M3
-  screw holes.
+  an extensive lightening pattern whose lower-right slot also reveals the
+  power LED, and four recessed M3 screw holes.
 - `assembly`: translucent-cover preview with simplified component envelopes.
-- `pcb_mockup`: complete printable clearance model with the 140 × 50 × 2 mm
+- `pcb_mockup`: complete printable clearance model with the 100 × 50 × 2 mm
   PCB, mounting holes, all component envelopes, the inserted-fuse envelope,
-  and a raised 0805-sized LED1 surrogate for checking the cover window.
+  and an 0805-sized LED1 surrogate for checking the cover window.
 - `fit_coupon`: small calibration print for the heat-set insert pilot and
   cover clearance.
 
@@ -29,7 +29,8 @@ screws are tightened. They avoid the through-hole pin rows and stop 0.15 mm
 below the normally seated PCB, so the four mounting standoffs remain the
 primary seating surfaces.
 
-The model uses Zwmssl `M3×6×5` heat-set inserts: M3 thread, 6 mm length,
+The board mounting-hole centers are 5 mm from their adjacent edges. The model
+uses Zwmssl `M3×6×5` heat-set inserts: M3 thread, 6 mm length,
 5 mm outside diameter, and the manufacturer's specified 3.93 mm printed-hole
 diameter. The 6 mm PCB standoffs remain unchanged because each insert reaches
 the tray surface without penetrating the 2.8 mm tray. Print the fit coupon
